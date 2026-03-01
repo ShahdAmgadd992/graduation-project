@@ -306,18 +306,9 @@ function SignUp() {
 
         {/* Right Side - Image with Wave */}
         <div className="right-content">
-          <svg
-            className="wave-divider"
-            viewBox="0 0 150 1000"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M 0,0 
-                     C 120,50 120,250 80,350
-                     C 40,450 120,550 80,650
-                     C 60,700 70,750 60,800
-                     C 55,850 50,900 0,1000
-                     L 0,0 Z"
+          <svg className="wave-divider" viewBox="0 0 1439 822" fill="none" preserveAspectRatio="none">
+            <path 
+              d="M1334.22 0C1334.22 0 1270.22 164.7 894.574 212.726C894.574 212.726 592.928 239.62 719.706 429.249C719.706 429.249 856.079 561.91 782.485 643.631C782.485 643.631 633.6 806.322 1138.31 820.034C1138.31 820.034 1384.08 823.457 1439 971H-284V0H1334.22Z" 
               fill="white"
             />
           </svg>

@@ -332,22 +332,19 @@
 .right-content {
   flex: 1;
   position: relative;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+  background: #1f3f9f;
   overflow: hidden;
 }
 
 /* Wave Divider */
 .wave-divider {
   position: absolute;
-  left: -1px;
-  top: 0;
-  width: 150px;
-  height: 100%;
-  z-index: 1;
-}
-
-.wave-divider path {
-  fill: white;
+  left: -95%;
+  top: -25%;
+  width: 220%;
+  height: 150%;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .background-image {
@@ -357,16 +354,18 @@
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  
 }
 
 .background-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center right;
+  
 }
 
 /* Responsive Design */
