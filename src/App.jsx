@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import SignUp from "./components/SignUp";
 import SignIn from "./components/SignIn";
+import ForgetPassword from "./components/ForgetPassword";
+import VerifyEmail from "./components/VerifyEmail";
+import ResetPassword from "./components/ResetPassword";
 
 function App() {
-  // Simple routing without react-router
   const [currentPage, setCurrentPage] = useState("signup");
 
   useEffect(() => {
@@ -11,6 +13,12 @@ function App() {
       const path = window.location.pathname;
       if (path === "/signin" || path === "/sign-in") {
         setCurrentPage("signin");
+      } else if (path === "/forget-password") {
+        setCurrentPage("forgetPassword");
+      } else if (path === "/verify-email") {
+        setCurrentPage("verifyEmail");
+      } else if (path === "/reset-password") {
+        setCurrentPage("resetPassword");
       } else {
         setCurrentPage("signup");
       }
@@ -18,11 +26,7 @@ function App() {
 
     updatePageFromPath();
 
-    const handlePopState = () => {
-      updatePageFromPath();
-    };
-
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", updatePageFromPath);
 
     window.navigateToSignIn = () => {
       window.history.pushState({}, "", "/signin");
@@ -36,14 +40,43 @@ function App() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    window.navigateToForgetPassword = () => {
+      window.history.pushState({}, "", "/forget-password");
+      setCurrentPage("forgetPassword");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.navigateToVerify = () => {
+      window.history.pushState({}, "", "/verify-email");
+      setCurrentPage("verifyEmail");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.navigateToResetPassword = () => {
+      window.history.pushState({}, "", "/reset-password");
+      setCurrentPage("resetPassword");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     return () => {
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("popstate", updatePageFromPath);
       delete window.navigateToSignIn;
       delete window.navigateToSignUp;
+      delete window.navigateToForgetPassword;
+      delete window.navigateToVerify;
+      delete window.navigateToResetPassword;
     };
   }, []);
 
-  return <>{currentPage === "signup" ? <SignUp /> : <SignIn />}</>;
+  const pages = {
+    signup: <SignUp />,
+    signin: <SignIn />,
+    forgetPassword: <ForgetPassword />,
+    verifyEmail: <VerifyEmail />,
+    resetPassword: <ResetPassword />,
+  };
+
+  return <>{pages[currentPage]}</>;
 }
 
 export default App;

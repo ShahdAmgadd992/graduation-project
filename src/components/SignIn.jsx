@@ -26,9 +26,21 @@ function SignIn() {
 
             <form className="signin-form" onSubmit={(e) => e.preventDefault()}>
               <div className="signin-input-group">
-                <input type="email" className="signin-input" placeholder="Enter your Email" required />
+                <input
+                  type="email"
+                  className="signin-input"
+                  placeholder="Enter your Email"
+                  required
+                />
                 <div className="signin-input-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <rect x="3" y="5" width="18" height="14" rx="2"></rect>
                     <path d="M3 7l9 6 9-6"></path>
                   </svg>
@@ -36,10 +48,29 @@ function SignIn() {
               </div>
 
               <div className="signin-input-group">
-                <input type="password" className="signin-input" placeholder="Enter your Password" required />
+                <input
+                  type="password"
+                  className="signin-input"
+                  placeholder="Enter your Password"
+                  required
+                />
                 <div className="signin-input-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect
+                      x="3"
+                      y="11"
+                      width="18"
+                      height="11"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                 </div>
@@ -50,9 +81,18 @@ function SignIn() {
                   <input type="checkbox" />
                   Remember me
                 </label>
-                <a href="#" className="signin-forgot">
+                <a
+                  href="#"
+                  className="signin-forgot"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (typeof window.navigateToForgetPassword === "function") {
+                      window.navigateToForgetPassword();
+                    }
+                  }}
+                >
                   Forget Password?
-                </a>
+                </a>{" "}
               </div>
 
               <button type="submit" className="signin-submit-btn">
@@ -108,9 +148,14 @@ function SignIn() {
         </div>
 
         <div className="signin-right">
-          <svg className="signin-wave" viewBox="0 0 1439 822" fill="none" preserveAspectRatio="none">
-            <path 
-              d="M1334.22 0C1334.22 0 1270.22 164.7 894.574 212.726C894.574 212.726 592.928 239.62 719.706 429.249C719.706 429.249 856.079 561.91 782.485 643.631C782.485 643.631 633.6 806.322 1138.31 820.034C1138.31 820.034 1384.08 823.457 1439 971H-284V0H1334.22Z" 
+          <svg
+            className="signin-wave"
+            viewBox="0 0 1439 822"
+            fill="none"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M1334.22 0C1334.22 0 1270.22 164.7 894.574 212.726C894.574 212.726 592.928 239.62 719.706 429.249C719.706 429.249 856.079 561.91 782.485 643.631C782.485 643.631 633.6 806.322 1138.31 820.034C1138.31 820.034 1384.08 823.457 1439 971H-284V0H1334.22Z"
               fill="white"
             />
           </svg>
@@ -123,5 +168,4 @@ function SignIn() {
     </div>
   );
 }
-
 export default SignIn;

@@ -7,19 +7,19 @@
 
 .signup-wrapper {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f5f7fb;
   padding: 0;
+  overflow: hidden;
 }
 
 .signup-container-new {
   display: flex;
   width: 100%;
-  max-width: 100%;
-  min-height: 100vh; /* على الأقل بطول الشاشة */
+  height: 100vh;
   background: white;
   border-radius: 0;
   overflow: hidden;
@@ -29,30 +29,30 @@
 
 /* Left Side - Form */
 .left-content {
-  flex: 0 0 45%;
-  padding: 80px 50px; /* زودت من 60px */
+  flex: 0 0 50%;
+  padding: 28px 52px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background: white;
   z-index: 2;
-  min-height: 100vh; /* لازم يكون بطول الشاشة على الأقل */
+  height: 100vh;
 }
 
 .form-wrapper {
-  max-width: 400px;
+  max-width: 480px;
   width: 100%;
   text-align: center;
 }
 
 /* Title */
 .main-title {
-  font-size: 96px; /* كانت 48px */
+  font-size: 62px;
   font-weight: 700;
-  margin-bottom: 25px; /* زودت من 15px */
-  line-height: auto;
-  letter-spacing: 0%;
+  margin-bottom: 10px;
+  line-height: 1;
+  color: #34435e;
 }
 
 .sign-text {
@@ -60,20 +60,22 @@
 }
 
 .up-text {
-  color: #374151; /* كانت #1a1a1a */
+  color: #34435e;
 }
 
 /* Description */
 .description {
-  font-size: 20px; /* كانت 13px */
-  color: #888;
-  margin-bottom: 45px; /* زودت من 35px */
+  font-size: 15px;
+  color: #8f98ac;
+  font-size: 20px;
+  margin-bottom: 20px;
   line-height: auto;
-  letter-spacing: 0%;
 }
 
 .brand-name {
   color: #5b9eff;
+  font-size: 24px;
+  line-height: auto;
   font-weight: 600;
 }
 
@@ -84,19 +86,20 @@
 
 .input-group {
   position: relative;
-  margin-bottom: 25px; /* زودت من 18px */
+  margin-bottom: 13px;
 }
 
 .input-icon {
   position: absolute;
-  left: 18px;
+  left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  color: #bbb;
+  color: #a8b2c5;
   display: flex;
   align-items: center;
   z-index: 1;
   transition: all 0.3s;
+  pointer-events: none;
 }
 
 /* Floating Label */
@@ -106,17 +109,16 @@
   top: 0;
   transform: translateY(-50%);
   color: #5b9eff;
-  font-size: 12px;
+  font-size: 11px;
   pointer-events: none;
   transition: all 0.3s ease;
   background: white;
-  padding: 0 8px;
+  padding: 0 6px;
   z-index: 2;
-  opacity: 0; /* مخفي في البداية */
+  opacity: 0;
   visibility: hidden;
 }
 
-/* Show label on hover, focus, or when input has value */
 .input-group:hover .floating-label,
 .form-input:focus ~ .floating-label,
 .form-input:not(:placeholder-shown) ~ .floating-label {
@@ -132,28 +134,28 @@
 
 .form-input {
   width: 100%;
-  padding: 15px 20px 15px 50px;
-  border: 1.5px solid #e5e5e5;
+  height: 50px;
+  padding: 0 20px 0 50px;
+  border: 1px solid #dce3f0;
   border-radius: 30px;
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
   transition: all 0.3s;
   background: white;
-  color: #333;
+  color: #4d5872;
   position: relative;
   z-index: 1;
 }
 
 .form-input::placeholder {
-  color: #bbb;
+  color: #aab3c5;
   transition: opacity 0.3s;
 }
 
 .form-input:focus,
 .input-group:hover .form-input {
   border-color: #5b9eff;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(91, 158, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(91, 158, 255, 0.12);
 }
 
 /* Icon color change on hover/focus */
@@ -171,11 +173,12 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #bbb;
-  padding: 5px;
+  color: #a8b2c5;
+  padding: 4px;
   display: flex;
   align-items: center;
   transition: color 0.3s;
+  z-index: 2;
 }
 
 .password-toggle:hover {
@@ -183,88 +186,73 @@
 }
 
 /* Remember Me */
-.remember-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 25px;
-  margin-top: 5px;
-}
-
-/* Remember Me & Forgot Password Row */
 .remember-forgot {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  margin-top: 5px;
+  margin-top: 8px;
+  margin-bottom: 16px;
 }
 
-.remember-forgot .remember-checkbox {
+.remember-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
 }
 
-.forgot-password {
-  font-size: 14px;
-  color: #5b9eff;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.forgot-password:hover {
-  text-decoration: underline;
-}
-
 .remember-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
   accent-color: #5b9eff;
 }
 
 .remember-checkbox label {
   font-size: 14px;
-  color: #666;
+  color: #7a869f;
   cursor: pointer;
   user-select: none;
+}
+
+.forgot-password {
+  font-size: 14px;
+  color: #5b9eff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
 }
 
 /* Submit Button */
 .submit-btn {
   width: 100%;
-  padding: 16px;
+  height: 50px;
   border: none;
   border-radius: 30px;
-  background: linear-gradient(
-    to left,
-    #97ceff 0%,
-    #5596fe 100%
-  ); /* من اليمين للشمال */
+  background: linear-gradient(to left, #97ceff 0%, #5596fe 100%);
   color: white;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 8px 20px rgba(91, 158, 255, 0.3);
-  margin-bottom: 35px; /* زودت من 25px */
+  margin-bottom: 0;
 }
 
 .submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 25px rgba(91, 158, 255, 0.4);
-}
-
-.submit-btn:active {
-  transform: translateY(0);
+  filter: brightness(1.03);
 }
 
 /* Divider */
 .or-divider {
   display: flex;
   align-items: center;
-  margin: 25px 0;
-  color: #999;
-  font-size: 13px;
+  margin: 16px 0;
+  color: #9ca6b8;
+  font-size: px;
 }
 
 .or-divider::before,
@@ -272,50 +260,47 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: #e5e5e5;
+  background: #dce3ef;
 }
 
 .or-divider span {
-  padding: 0 15px;
+  padding: 0 14px;
 }
 
 /* Social Buttons */
 .social-login {
   display: flex;
-  gap: 15px;
-  margin-bottom: 35px; /* زودت من 25px */
+  gap: 12px;
 }
 
 .social-btn-new {
   flex: 1;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 13px 20px;
-  border: 1.5px solid #e5e5e5;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid #dce3f0;
   border-radius: 30px;
   background: white;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  font-size: 15px;
+  font-weight: 600;
+  color: #50607d;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .social-btn-new:hover {
   border-color: #5b9eff;
-  background: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Sign In Link */
 .signin-text {
   text-align: center;
-  font-size: 14px;
-  color: #666;
-  margin-top: 30px; /* ضفت margin من فوق */
+  font-size: 15px;
+  color: #8f99ac;
+  margin-top: 16px;
 }
 
 .signin-text a {
@@ -336,7 +321,6 @@
   overflow: hidden;
 }
 
-/* Wave Divider */
 .wave-divider {
   position: absolute;
   left: -95%;
@@ -357,7 +341,6 @@
   align-items: stretch;
   justify-content: stretch;
   padding: 0;
-  
 }
 
 .background-image img {
@@ -365,32 +348,41 @@
   height: 100%;
   object-fit: cover;
   object-position: center right;
-  
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 1024px) {
-  .signup-container-new {
-    height: auto;
-    min-height: 700px;
-  }
-
   .left-content {
     flex: 0 0 50%;
-    padding: 50px 40px;
+    padding: 24px 36px;
+  }
+
+  .form-wrapper {
+    max-width: 420px;
+  }
+
+  .main-title {
+    font-size: 52px;
   }
 }
 
 @media (max-width: 768px) {
+  .signup-wrapper {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
   .signup-container-new {
     flex-direction: column;
-    max-width: 500px;
     height: auto;
   }
 
   .left-content {
     flex: 1;
-    padding: 40px 30px;
+    width: 100%;
+    height: auto;
+    padding: 40px 28px;
   }
 
   .right-content {
@@ -420,8 +412,7 @@
   }
 
   .form-input {
-    padding: 14px 18px 14px 45px;
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .input-icon {
@@ -430,5 +421,197 @@
 
   .password-toggle {
     right: 15px;
+  }
+}
+
+/* ============================================ */
+/* FORGET PASSWORD PAGE STYLES */
+/* ============================================ */
+
+.forget-password-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  padding: 20px;
+}
+
+.forget-password-container {
+  width: 100%;
+  max-width: 550px;
+  background: white;
+  border-radius: 20px;
+  padding: 60px 50px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  background: transparent;
+  border: none;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #6b7280;
+  border-radius: 8px;
+}
+
+.back-button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.forget-password-content {
+  text-align: center;
+}
+
+.forget-title {
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 35px;
+  line-height: 1.2;
+}
+
+.forget-text {
+  color: #5b9eff;
+}
+
+.password-text {
+  color: #374151;
+}
+
+.forget-illustration {
+  margin: 20px 0 35px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.forget-subtitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.forget-description {
+  font-size: 16px;
+  color: #9ca3af;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.forget-form {
+  width: 100%;
+}
+
+.input-group-forget {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.input-icon-forget {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}
+
+.form-input-forget {
+  width: 100%;
+  padding: 16px 20px 16px 55px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 50px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.3s;
+  background: white;
+  color: #374151;
+}
+
+.form-input-forget::placeholder {
+  color: #d1d5db;
+}
+
+.form-input-forget:focus {
+  border-color: #5b9eff;
+  box-shadow: 0 0 0 4px rgba(91, 158, 255, 0.1);
+}
+
+.form-input-forget:focus ~ .input-icon-forget {
+  color: #5b9eff;
+}
+
+.recover-btn {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #5b9eff;
+  border-radius: 50px;
+  background: white;
+  color: #5b9eff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+
+.recover-btn:hover {
+  background: #5b9eff;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(91, 158, 255, 0.25);
+}
+
+.recover-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .forget-password-container {
+    padding: 50px 35px;
+  }
+
+  .forget-title {
+    font-size: 32px;
+  }
+
+  .forget-subtitle {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .forget-password-container {
+    padding: 40px 25px;
+  }
+
+  .forget-title {
+    font-size: 28px;
+  }
+
+  .forget-subtitle {
+    font-size: 16px;
+  }
+
+  .forget-description {
+    font-size: 13px;
+  }
+
+  .back-button {
+    width: 36px;
+    height: 36px;
   }
 }

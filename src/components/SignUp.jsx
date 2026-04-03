@@ -12,6 +12,7 @@ function SignUp() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -19,10 +20,19 @@ function SignUp() {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
+    if (name === "confirmPassword" || name === "password") {
+      setPasswordError("");
+    }
   };
 
   const handleSubmit = (e) => {
+    if (formData.password !== formData.confirmPassword) {
+      e.preventDefault();
+      setPasswordError("Passwords do not match");
+      return;
+    }
     e.preventDefault();
+    setPasswordError("");
     console.log("Form Data:", formData);
   };
 
@@ -180,7 +190,7 @@ function SignUp() {
                   placeholder="Confirm password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="form-input"
+                  className={`form-input ${passwordError ? "input-error" : ""}`}
                   required
                 />
                 <label htmlFor="confirmPassword" className="floating-label">
@@ -238,6 +248,11 @@ function SignUp() {
                   )}
                 </button>
               </div>
+
+              {/* Password Error Message */}
+              {passwordError && (
+                <p className="password-error-msg">{passwordError}</p>
+              )}
 
               {/* Remember Me */}
               <div className="remember-checkbox">
@@ -306,9 +321,14 @@ function SignUp() {
 
         {/* Right Side - Image with Wave */}
         <div className="right-content">
-          <svg className="wave-divider" viewBox="0 0 1439 822" fill="none" preserveAspectRatio="none">
-            <path 
-              d="M1334.22 0C1334.22 0 1270.22 164.7 894.574 212.726C894.574 212.726 592.928 239.62 719.706 429.249C719.706 429.249 856.079 561.91 782.485 643.631C782.485 643.631 633.6 806.322 1138.31 820.034C1138.31 820.034 1384.08 823.457 1439 971H-284V0H1334.22Z" 
+          <svg
+            className="wave-divider"
+            viewBox="0 0 1439 822"
+            fill="none"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M1334.22 0C1334.22 0 1270.22 164.7 894.574 212.726C894.574 212.726 592.928 239.62 719.706 429.249C719.706 429.249 856.079 561.91 782.485 643.631C782.485 643.631 633.6 806.322 1138.31 820.034C1138.31 820.034 1384.08 823.457 1439 971H-284V0H1334.22Z"
               fill="white"
             />
           </svg>
