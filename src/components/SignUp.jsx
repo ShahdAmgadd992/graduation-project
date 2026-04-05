@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import "./SignUp.css";
+import { useAuth } from "../context/AuthContext";
 
 function SignUp() {
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,6 +15,8 @@ function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -22,18 +26,48 @@ function SignUp() {
     });
     if (name === "confirmPassword" || name === "password") {
       setPasswordError("");
+      setServerError("");
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      e.preventDefault();
       setPasswordError("Passwords do not match");
       return;
     }
-    e.preventDefault();
+
+    if (!formData.name || !formData.email || !formData.password) {
+      setServerError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
     setPasswordError("");
-    console.log("Form Data:", formData);
+    setServerError("");
+
+    try {
+      await register(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.confirmPassword,
+        formData.rememberMe
+      );
+
+      // Store email temporarily for VerifyEmail component
+      sessionStorage.setItem("verifyEmail", formData.email);
+      
+      // Navigate to verify email page
+      if (typeof window.navigateToVerify === "function") {
+        window.navigateToVerify();
+      }
+    } catch (error) {
+      setServerError(error.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -254,6 +288,11 @@ function SignUp() {
                 <p className="password-error-msg">{passwordError}</p>
               )}
 
+              {/* Server Error Message */}
+              {serverError && (
+                <p className="password-error-msg">{serverError}</p>
+              )}
+
               {/* Remember Me */}
               <div className="remember-checkbox">
                 <input
@@ -267,8 +306,8 @@ function SignUp() {
               </div>
 
               {/* Submit Button */}
-              <button type="submit" className="submit-btn">
-                Sign Up
+              <button type="submit" className="submit-btn" disabled={loading}>
+                {loading ? "Signing Up..." : "Sign Up"}
               </button>
             </form>
 

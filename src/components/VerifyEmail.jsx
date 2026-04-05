@@ -1,16 +1,47 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 function VerifyEmail() {
-  const [code, setCode] = useState(["", "", "", ""]);
+  const { verifyEmail, resendEmailOtp, verifyPasswordOtp, resendPasswordOtp } = useAuth();
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [status, setStatus] = useState("idle");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const [verifyMode, setVerifyMode] = useState("email"); // 'email' or 'password'
   const inputs = useRef([]);
+
+  useEffect(() => {
+    // Determine if this is for email verification or password reset
+    const resetEmail = sessionStorage.getItem("resetEmail");
+    const verifyEmailValue = sessionStorage.getItem("verifyEmail");
+
+    if (resetEmail) {
+      setVerifyMode("password");
+      setEmail(resetEmail);
+    } else if (verifyEmailValue) {
+      setVerifyMode("email");
+      setEmail(verifyEmailValue);
+    } else {
+      setError("Email not found. Please try again.");
+    }
+  }, []);
+
+  useEffect(() => {
+    let timer;
+    if (resendTimer > 0) {
+      timer = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendTimer]);
 
   const handleChange = (val, i) => {
     if (!/^\d?$/.test(val)) return;
     const newCode = [...code];
     newCode[i] = val;
     setCode(newCode);
-    if (val && i < 3) inputs.current[i + 1].focus();
+    setError("");
+    if (val && i < 5) inputs.current[i + 1].focus();
   };
 
   const handleKeyDown = (e, i) => {
@@ -24,30 +55,67 @@ function VerifyEmail() {
     const pasted = e.clipboardData
       .getData("text")
       .replace(/\D/g, "")
-      .slice(0, 4);
+      .slice(0, 6);
     const newCode = [...code];
     pasted.split("").forEach((ch, i) => {
       newCode[i] = ch;
     });
     setCode(newCode);
     const nextEmpty = newCode.findIndex((v) => !v);
-    inputs.current[nextEmpty === -1 ? 3 : nextEmpty]?.focus();
+    inputs.current[nextEmpty === -1 ? 5 : nextEmpty]?.focus();
   };
 
-  const handleSubmit = () => {
-    if (code.some((d) => !d)) return;
+  const handleSubmit = async () => {
+    if (code.some((d) => !d) || !email) return;
+
     setStatus("loading");
-    setTimeout(() => {
-      if (typeof window.navigateToResetPassword === "function") {
-        window.navigateToResetPassword();
+    setError("");
+
+    try {
+      const otp = code.join("");
+
+      if (verifyMode === "email") {
+        // Email verification after signup
+        await verifyEmail(email, otp);
+        sessionStorage.removeItem("verifyEmail");
+        if (typeof window.navigateToSignIn === "function") {
+          window.navigateToSignIn();
+        }
+      } else {
+        // Password reset OTP verification
+        const response = await verifyPasswordOtp(email, otp);
+        // Store the resetToken for the next step (response is already unwrapped data from context)
+        sessionStorage.setItem("resetToken", response.resetToken || response.data?.resetToken);
+        // DON'T remove resetEmail here - we need it in the next step!
+        
+        if (typeof window.navigateToResetPassword === "function") {
+          window.navigateToResetPassword();
+        }
       }
-    }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.message || "Verification failed. Please try again.");
+      setStatus("idle");
+    }
   };
 
-  const handleResend = () => {
-    setCode(["", "", "", ""]);
-    setStatus("idle");
-    inputs.current[0].focus();
+  const handleResend = async () => {
+    if (!email) return;
+
+    setStatus("resending");
+    setError("");
+
+    try {
+      if (verifyMode === "email") {
+        await resendEmailOtp(email);
+      } else {
+        await resendPasswordOtp(email);
+      }
+      setResendTimer(60);
+      setStatus("idle");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to resend OTP.");
+      setStatus("idle");
+    }
   };
 
   return (
@@ -90,7 +158,9 @@ function VerifyEmail() {
 
         <h1 style={{ fontSize: 38, fontWeight: 700, margin: "0 0 36px" }}>
           <span style={{ color: "#5b9eff" }}>Verify </span>
-          <span style={{ color: "#374151" }}>your email</span>
+          <span style={{ color: "#374151" }}>
+            {verifyMode === "email" ? "your email" : "your identity"}
+          </span>
         </h1>
 
         <div
@@ -102,20 +172,26 @@ function VerifyEmail() {
         >
           <img
             src="/Email Verification.svg"
-            alt="Verify Email"
+            alt="Verify"
             style={{ width: 240, height: "auto" }}
           />
         </div>
 
         <p style={{ fontSize: 15, color: "#374151", margin: "0 0 28px" }}>
-          Please enter 4 digit code that sent to your email address
+          Please enter the 6-digit code that was sent to {email || "your email"}
         </p>
+
+        {error && (
+          <p style={{ fontSize: 14, color: "#dc2626", margin: "0 0 16px" }}>
+            {error}
+          </p>
+        )}
 
         <div
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: 16,
+            gap: 12,
             marginBottom: 22,
           }}
         >
@@ -131,14 +207,14 @@ function VerifyEmail() {
               onKeyDown={(e) => handleKeyDown(e, i)}
               onPaste={handlePaste}
               style={{
-                width: 72,
-                height: 72,
+                width: 56,
+                height: 56,
                 textAlign: "center",
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: 600,
                 color: "#1f2937",
                 border: digit ? "2px solid #5b9eff" : "1.5px solid #e5e7eb",
-                borderRadius: 14,
+                borderRadius: 12,
                 outline: "none",
                 background: "white",
                 transition: "all 0.2s",
@@ -152,35 +228,36 @@ function VerifyEmail() {
         </div>
 
         <p style={{ fontSize: 14, color: "#9ca3af", marginBottom: 28 }}>
-          if you don't receive code !{" "}
+          didn't receive code?{" "}
           <span
             onClick={handleResend}
             style={{
-              color: "#374151",
+              color: resendTimer > 0 ? "#9ca3af" : "#374151",
               fontWeight: 700,
-              cursor: "pointer",
-              textDecoration: "underline",
+              cursor: resendTimer > 0 ? "not-allowed" : "pointer",
+              textDecoration: resendTimer > 0 ? "none" : "underline",
+              opacity: resendTimer > 0 ? 0.6 : 1,
             }}
           >
-            Resend
+            {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend"}
           </span>
         </p>
 
         <button
           onClick={handleSubmit}
-          disabled={code.some((d) => !d) || status === "loading"}
+          disabled={code.some((d) => !d) || status === "loading" || !email}
           style={{
             width: "100%",
             padding: "16px",
             border: "none",
             borderRadius: 50,
-            background: code.every((d) => d)
+            background: code.every((d) => d) && email
               ? "linear-gradient(to right, #93c5fd, #5b9eff)"
               : "#e5e7eb",
-            color: code.every((d) => d) ? "white" : "#9ca3af",
+            color: code.every((d) => d) && email ? "white" : "#9ca3af",
             fontSize: 17,
             fontWeight: 600,
-            cursor: code.every((d) => d) ? "pointer" : "not-allowed",
+            cursor: code.every((d) => d) && email ? "pointer" : "not-allowed",
             transition: "all 0.3s",
           }}
         >

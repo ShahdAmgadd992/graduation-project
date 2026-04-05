@@ -1,18 +1,33 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 function ForgetPassword() {
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
+
     setStatus("loading");
-    setTimeout(() => {
+    setError("");
+
+    try {
+      await forgotPassword(email);
+
+      // Store email for verification page
+      sessionStorage.setItem("resetEmail", email);
+
+      // Navigate to reset password verification
       if (typeof window.navigateToVerify === "function") {
         window.navigateToVerify();
       }
-    }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send recovery email");
+      setStatus("idle");
+    }
   };
 
   return (
@@ -101,6 +116,12 @@ function ForgetPassword() {
         >
           We will send a verification code to your registered email
         </p>
+
+        {error && (
+          <p style={{ fontSize: 14, color: "#dc2626", marginBottom: 16 }}>
+            {error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ position: "relative", marginBottom: 16 }}>

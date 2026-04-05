@@ -4,6 +4,7 @@ import SignIn from "./components/SignIn";
 import ForgetPassword from "./components/ForgetPassword";
 import VerifyEmail from "./components/VerifyEmail";
 import ResetPassword from "./components/ResetPassword";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("signup");
@@ -76,7 +77,11 @@ function App() {
     resetPassword: <ResetPassword />,
   };
 
-  return <>{pages[currentPage]}</>;
+  return (
+    <AuthProvider>
+      <>{pages[currentPage]}</>
+    </AuthProvider>
+  );
 }
 
 export default App;
