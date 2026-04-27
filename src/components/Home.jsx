@@ -15,48 +15,24 @@ import nile from "../assets/Nile.jpg";
 import deepBlue from "../assets/DeepBlue.jpg";
 import pyramid from "../assets/Pyramid.jpg";
 import logo from "../assets/logo.png";
-import locationIcon from "../assets/location-icon.jpeg";
+import locationIcon from "../assets/location-icon.png";
+import aiIcon from "../assets/ai-icon.png";
+import travelIcon from "../assets/travel-Icon.png";
+import AiTrip from "../assets/AiTrip.png";
+import smart from "../assets/smart.png";
+import Hidden from "../assets/Hidden.png";
+import location2 from "../assets/location2.png";
+import location3 from "../assets/location3.png";
+import calender from "../assets/calender.png";
 import clint1 from "../assets/clint1.jpg";
 import clint2 from "../assets/clint2.jpg";
 import clint3 from "../assets/clint3.jpg";
-
-const ArrowIcon = () => (
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 22 22"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <line
-      x1="0"
-      y1="22"
-      x2="22"
-      y2="0"
-      stroke="white"
-      strokeWidth="2.64"
-      strokeLinecap="round"
-    />
-    <line
-      x1="6"
-      y1="0"
-      x2="22"
-      y2="0"
-      stroke="white"
-      strokeWidth="2.64"
-      strokeLinecap="round"
-    />
-    <line
-      x1="22"
-      y1="0"
-      x2="22"
-      y2="16"
-      stroke="white"
-      strokeWidth="2.64"
-      strokeLinecap="round"
-    />
-  </svg>
-);
+import Arrow from "../assets/Arrow.png";
+import airbnb from "../assets/airbnb.png";
+import Uber from "../assets/Uber.png";
+import TripAdvisor from "../assets/TripAdvisor.png";
+import Expedia from "../assets/Expedia.png";
+import booking from "../assets/booking.png";
 
 const testimonials = [
   {
@@ -242,7 +218,9 @@ const Home = () => {
             </p>
           </div>
           <div className="card">
-            <div className="card-icon">✨</div>
+            <div className="card-icon">
+              <img src={aiIcon} alt="ai-icon" style={{ width: "50px" }} />
+            </div>
             <p>
               <span className="blue">AI</span> <strong>builds</strong>{" "}
               <span className="blue">your</span>
@@ -251,7 +229,13 @@ const Home = () => {
             </p>
           </div>
           <div className="card">
-            <div className="card-icon">📈</div>
+            <div className="card-icon">
+              <img
+                src={travelIcon}
+                alt="travel-icon"
+                style={{ width: "50px" }}
+              />
+            </div>
             <p>
               <span className="blue">Travel</span> <strong>better</strong>
             </p>
@@ -277,7 +261,9 @@ const Home = () => {
             </div>
             <div className="why-features">
               <div className="feature-card">
-                <div className="feature-icon">✨</div>
+                <div className="feature-icon">
+                  <img src={AiTrip} alt="Aitrip" style={{ width: "50px" }} />
+                </div>
                 <div>
                   <h4>AI Trip Planner</h4>
                   <p>
@@ -287,7 +273,9 @@ const Home = () => {
                 </div>
               </div>
               <div className="feature-card">
-                <div className="feature-icon">💰</div>
+                <div className="feature-icon">
+                  <img src={smart} alt="smart" style={{ width: "50px" }} />
+                </div>
                 <div>
                   <h4>Smart Budget Optimizer</h4>
                   <p>
@@ -297,7 +285,9 @@ const Home = () => {
                 </div>
               </div>
               <div className="feature-card">
-                <div className="feature-icon">📍</div>
+                <div className="feature-icon">
+                  <img src={Hidden} alt="Hidden" style={{ width: "50px" }} />
+                </div>
                 <div>
                   <h4>Hidden Gems</h4>
                   <p>Discover places you won't find in typical travel guides</p>
@@ -323,35 +313,70 @@ const Home = () => {
               <img src={dahab} alt="Dahab" />
               <div className="dest-overlay">
                 <span className="dest-name">Dahab</span>
-                <span className="dest-region">📍 South Sinai</span>
+                <span className="dest-region">
+                  <img
+                    src={location2}
+                    alt="location2"
+                    style={{ width: "8px" }}
+                  />{" "}
+                  South Sinai
+                </span>
               </div>
             </div>
             <div className="dest-card tall">
               <img src={siwa} alt="Siwa" />
               <div className="dest-overlay">
                 <span className="dest-name">Siwa</span>
-                <span className="dest-region">📍 Western Desert</span>
+                <span className="dest-region">
+                  <img
+                    src={location2}
+                    alt="location2"
+                    style={{ width: "8px" }}
+                  />{" "}
+                  Western Desert
+                </span>
               </div>
             </div>
             <div className="dest-card featured">
               <img src={luxor} alt="Luxor" />
               <div className="dest-overlay">
                 <span className="dest-name">Luxor</span>
-                <span className="dest-region">📍 Upper Egypt</span>
+                <span className="dest-region">
+                  <img
+                    src={location2}
+                    alt="location2"
+                    style={{ width: "8px" }}
+                  />{" "}
+                  Upper Egypt
+                </span>
               </div>
             </div>
             <div className="dest-card tall">
               <img src={aswan} alt="Aswan" />
               <div className="dest-overlay">
                 <span className="dest-name">Aswan</span>
-                <span className="dest-region">📍 Nubia</span>
+                <span className="dest-region">
+                  <img
+                    src={location2}
+                    alt="location2"
+                    style={{ width: "8px" }}
+                  />{" "}
+                  Nubia
+                </span>
               </div>
             </div>
             <div className="dest-card saint">
               <img src={saintCatherine} alt="Saint Catherine" />
               <div className="dest-overlay">
                 <span className="dest-name">Saint Catherine</span>
-                <span className="dest-region">📍 Mount Sinai</span>
+                <span className="dest-region">
+                  <img
+                    src={location2}
+                    alt="location2"
+                    style={{ width: "8px" }}
+                  />{" "}
+                  Mount Sinai
+                </span>
               </div>
             </div>
           </div>
@@ -372,7 +397,6 @@ const Home = () => {
             your arrival
           </p>
           <div className="explore-cards">
-            {/* Alexandria */}
             <div className="explore-card">
               <img src={alexandria} alt="Alexandria" />
               <div className="explore-overlay">
@@ -380,11 +404,9 @@ const Home = () => {
                 <span className="explore-rating">⭐ 4.9</span>
               </div>
               <button className="arrow-btn">
-                <ArrowIcon />
+                <img src={Arrow} alt="arrow" />
               </button>
             </div>
-
-            {/* Marsa Matrouh - featured */}
             <div className="explore-card featured-explore">
               <img src={marsaMatrouh} alt="Marsa Matrouh" />
               <div className="explore-overlay">
@@ -392,11 +414,9 @@ const Home = () => {
                 <span className="explore-rating">⭐ 4.9</span>
               </div>
               <button className="arrow-btn">
-                <ArrowIcon />
+                <img src={Arrow} alt="arrow" />
               </button>
             </div>
-
-            {/* Hurghada */}
             <div className="explore-card">
               <img src={hurghada} alt="Hurghada" />
               <div className="explore-overlay">
@@ -404,7 +424,7 @@ const Home = () => {
                 <span className="explore-rating">⭐ 4.9</span>
               </div>
               <button className="arrow-btn">
-                <ArrowIcon />
+                <img src={Arrow} alt="arrow" />
               </button>
             </div>
           </div>
@@ -423,7 +443,6 @@ const Home = () => {
             Best-value trips designed by AI. We balance experiences, stays, and
             activities to get you the best trip within your budget.
           </p>
-
           <div className="packages-row" ref={sliderRef}>
             <div className="package-card">
               <div className="package-img">
@@ -432,8 +451,22 @@ const Home = () => {
               <div className="package-info">
                 <h4>Siwa Mystic Retreat</h4>
                 <div className="package-meta">
-                  <span>🗓 4 days</span>
-                  <span>📍 Western Desert</span>
+                  <span>
+                    <img
+                      src={calender}
+                      alt="calender"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    4 days
+                  </span>
+                  <span>
+                    <img
+                      src={location3}
+                      alt="location3"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    Western Desert
+                  </span>
                 </div>
                 <p className="package-price">
                   USD 60 <span>/ person</span>
@@ -441,7 +474,6 @@ const Home = () => {
                 <button className="book-now-btn">Book now</button>
               </div>
             </div>
-
             <div className="package-card">
               <div className="package-img">
                 <img src={nile} alt="The Nile Heritage Path" />
@@ -449,8 +481,22 @@ const Home = () => {
               <div className="package-info">
                 <h4>The Nile Heritage Path</h4>
                 <div className="package-meta">
-                  <span>🗓 6 days</span>
-                  <span>📍 Luxor & Aswan</span>
+                  <span>
+                    <img
+                      src={calender}
+                      alt="calender"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    6 days
+                  </span>
+                  <span>
+                    <img
+                      src={location3}
+                      alt="location3"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    Luxor & Aswan
+                  </span>
                 </div>
                 <p className="package-price">
                   USD 60 <span>/ person</span>
@@ -458,7 +504,6 @@ const Home = () => {
                 <button className="book-now-btn">Book now</button>
               </div>
             </div>
-
             <div className="package-card">
               <div className="package-img">
                 <img src={deepBlue} alt="Deep Blue Serenity" />
@@ -466,8 +511,22 @@ const Home = () => {
               <div className="package-info">
                 <h4>Deep Blue Serenity</h4>
                 <div className="package-meta">
-                  <span>🗓 5 days</span>
-                  <span>📍 Marsa Alam</span>
+                  <span>
+                    <img
+                      src={calender}
+                      alt="calender"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    5 days
+                  </span>
+                  <span>
+                    <img
+                      src={location3}
+                      alt="location3"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    Marsa Alam
+                  </span>
                 </div>
                 <p className="package-price">
                   USD 60 <span>/ person</span>
@@ -475,7 +534,6 @@ const Home = () => {
                 <button className="book-now-btn">Book now</button>
               </div>
             </div>
-
             <div className="package-card">
               <div className="package-img">
                 <img src={pyramid} alt="The Pyramid" />
@@ -483,8 +541,22 @@ const Home = () => {
               <div className="package-info">
                 <h4>The Pyramid</h4>
                 <div className="package-meta">
-                  <span>🗓 1 day</span>
-                  <span>📍 Giza</span>
+                  <span>
+                    <img
+                      src={calender}
+                      alt="calender"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    1 day
+                  </span>
+                  <span>
+                    <img
+                      src={location3}
+                      alt="location3"
+                      style={{ width: "12px" }}
+                    />{" "}
+                    Giza
+                  </span>
                 </div>
                 <p className="package-price">
                   USD 60 <span>/ person</span>
@@ -493,7 +565,6 @@ const Home = () => {
               </div>
             </div>
           </div>
-
           <button className="more-packages-btn">More Packages ↗</button>
         </div>
       </div>
@@ -503,7 +574,6 @@ const Home = () => {
         <h2 className="testimonials-title">
           <span className="blue-text">What Our</span> Clients Say ?
         </h2>
-
         <div className="testimonials-wrapper">
           <div className="testimonials-track">
             {visibleTestimonials.map((t) => (
@@ -524,7 +594,6 @@ const Home = () => {
             ))}
           </div>
         </div>
-
         <div className="testimonials-dots">
           {testimonials.map((_, i) => (
             <button
@@ -535,6 +604,226 @@ const Home = () => {
           ))}
         </div>
       </div>
+
+      {/* ===== Trusted Partners Section ===== */}
+      <div className="partners-section">
+        <h2 className="partners-title">
+          <span className="blue-text">Our Trusted</span> Partners
+        </h2>
+        <div className="partners-row">
+          <div className="partner-item">
+            <img src={airbnb} alt="airbnb" style={{ width: "120px" }} />
+          </div>
+          <div className="partner-item">
+            <img src={booking} alt="booking" style={{ width: "160px" }} />
+          </div>
+          <div className="partner-item">
+            <img src={Uber} alt="Uber" style={{ width: "70px" }} />
+          </div>
+          <div className="partner-item">
+            <img
+              src={TripAdvisor}
+              alt="TripAdvisor"
+              style={{ width: "160px" }}
+            />
+          </div>
+          <div className="partner-item">
+            <img src={Expedia} alt="Expedia" style={{ width: "160px" }} />
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Footer ===== */}
+      <footer className="footer">
+        <div className="footer-inner">
+          {/* Brand Column */}
+          <div className="footer-brand">
+            <img src={logo} alt="Mind Trip Logo" className="footer-logo" />
+            <p className="footer-brand-name">Mind Trip</p>
+            <p className="footer-tagline">
+              Smart AI, Unforgettable Journeys. Personalized Egyptian trips,
+              ready in seconds
+            </p>
+            <div className="footer-socials">
+              <a href="#" className="social-icon" aria-label="Facebook">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="#5596fe"
+                    strokeWidth="1.8"
+                  />
+                  <path
+                    d="M13.5 8H15V6h-1.5C12.12 6 11 7.12 11 8.5V10H9.5v2H11v6h2v-6h1.5l.5-2H13V8.5c0-.28.22-.5.5-.5z"
+                    fill="#5596fe"
+                  />
+                </svg>
+              </a>
+              <a href="#" className="social-icon" aria-label="Instagram">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    x="2"
+                    y="2"
+                    width="20"
+                    height="20"
+                    rx="6"
+                    stroke="#5596fe"
+                    strokeWidth="1.8"
+                  />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="4"
+                    stroke="#5596fe"
+                    strokeWidth="1.8"
+                  />
+                  <circle cx="17.5" cy="6.5" r="1" fill="#5596fe" />
+                </svg>
+              </a>
+              <a href="#" className="social-icon" aria-label="YouTube">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    x="2"
+                    y="5"
+                    width="20"
+                    height="14"
+                    rx="4"
+                    stroke="#5596fe"
+                    strokeWidth="1.8"
+                  />
+                  <polygon points="10,9 10,15 16,12" fill="#5596fe" />
+                </svg>
+              </a>
+              <a href="#" className="social-icon" aria-label="Pinterest">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="#5596fe"
+                    strokeWidth="1.8"
+                  />
+                  <path
+                    d="M12 7c-2.76 0-5 2.24-5 5 0 2.12 1.31 3.93 3.18 4.71-.04-.37-.08-.94.02-1.35l.56-2.38s-.14-.29-.14-.71c0-.67.39-1.17.87-1.17.41 0 .61.31.61.68 0 .41-.26 1.03-.4 1.6-.11.48.24.87.71.87.85 0 1.51-.9 1.51-2.19 0-1.15-.82-1.95-2-1.95-1.36 0-2.16 1.02-2.16 2.07 0 .41.16.85.35 1.09.04.05.04.09.03.14l-.13.54c-.02.09-.08.11-.18.07-.63-.3-1.03-1.22-1.03-1.97 0-1.6 1.16-3.07 3.35-3.07 1.76 0 3.12 1.25 3.12 2.93 0 1.75-1.1 3.15-2.63 3.15-.51 0-1-.27-1.17-.58l-.32 1.19c-.11.44-.42.99-.63 1.32.47.15.97.22 1.49.22 2.76 0 5-2.24 5-5s-2.24-5-5-5z"
+                    fill="#5596fe"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Links Columns */}
+          <div className="footer-links">
+            <div className="footer-col">
+              <h4>About</h4>
+              <ul>
+                <li>
+                  <a href="#">About Us</a>
+                </li>
+                <li>
+                  <a href="#">Our Story</a>
+                </li>
+                <li>
+                  <a href="#">Careers</a>
+                </li>
+                <li>
+                  <a href="#">Press and media</a>
+                </li>
+                <li>
+                  <a href="#">Sustainability</a>
+                </li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Help</h4>
+              <ul>
+                <li>
+                  <a href="#">Contact Us</a>
+                </li>
+                <li>
+                  <a href="#">FAQS</a>
+                </li>
+                <li>
+                  <a href="#">How to book</a>
+                </li>
+                <li>
+                  <a href="#">Travel insurance</a>
+                </li>
+                <li>
+                  <a href="#">Live Chat</a>
+                </li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Legal</h4>
+              <ul>
+                <li>
+                  <a href="#">Terms and conditions</a>
+                </li>
+                <li>
+                  <a href="#">Privacy Policy</a>
+                </li>
+                <li>
+                  <a href="#">Cookies Policy</a>
+                </li>
+                <li>
+                  <a href="#">User Agreement</a>
+                </li>
+                <li>
+                  <a href="#">Accessibility</a>
+                </li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Resources</h4>
+              <ul>
+                <li>
+                  <a href="#">Travel Blog</a>
+                </li>
+                <li>
+                  <a href="#">Destination Guides</a>
+                </li>
+                <li>
+                  <a href="#">Trip Planner</a>
+                </li>
+                <li>
+                  <a href="#">Customer Reviews</a>
+                </li>
+                <li>
+                  <a href="#">Safety Tips</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="footer-divider" />
+        <p className="footer-copyright">@2026 MindTrip. All Rights Reserved</p>
+      </footer>
     </>
   );
 };

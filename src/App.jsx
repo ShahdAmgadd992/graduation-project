@@ -87,6 +87,7 @@ function App() {
     verifyEmail: <VerifyEmail />,
     resetPassword: <ResetPassword />,
   };
+
   return (
     <AuthProvider>
       <div style={{ width: "100%", overflowY: "auto" }}>

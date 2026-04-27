@@ -397,7 +397,9 @@ body {
   letter-spacing: 0;
   color: #374151;
   margin: 0;
-} /* ===== Popular Destinations Section ===== */
+}
+
+/* ===== Popular Destinations Section ===== */
 .popular-destinations {
   background: white;
   padding: 80px 60px;
@@ -460,25 +462,21 @@ body {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
 }
 
-/* Dahab - short */
 .dest-card.short {
   width: 200px;
   height: 240px;
 }
 
-/* Siwa - tall (goes lower) */
 .dest-card.tall {
   width: 200px;
   height: 300px;
 }
 
-/* Luxor - featured (tallest, center) */
 .dest-card.featured {
   width: 210px;
   height: 340px;
 }
 
-/* Saint Catherine - short like Dahab */
 .dest-card.saint {
   width: 200px;
   height: 240px;
@@ -536,6 +534,7 @@ body {
   background: #2e8fe0;
   transform: translateY(-2px);
 }
+
 /* ===== Explore Without Limits Section ===== */
 .explore-section {
   background: #f3f4f6;
@@ -581,7 +580,6 @@ body {
   margin-bottom: 48px;
 }
 
-/* البطاقة العادية (Alexandria & Hurghada) */
 .explore-card {
   position: relative;
   border-radius: 24px;
@@ -595,7 +593,7 @@ body {
     transform 0.3s ease,
     box-shadow 0.3s ease;
 }
-/* البطاقة الوسطى (Marsa Matrouh) - أكبر */
+
 .explore-card.featured-explore {
   flex: 1.3;
   max-width: 380px;
@@ -617,7 +615,6 @@ body {
   position: relative;
 }
 
-/* زر السهم في الزاوية العلوية اليمنى */
 .arrow-btn {
   position: absolute;
   top: 16px;
@@ -625,48 +622,66 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(6px);
+  background: none;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    opacity 0.2s ease;
   z-index: 3;
+}
+
+.arrow-btn img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  display: block;
 }
 
 .arrow-btn:hover {
-  background: rgba(255, 255, 255, 0.45);
   transform: scale(1.1);
+  opacity: 0.85;
 }
 
-/* الـ overlay في الأسفل (الاسم والتقييم) */
-.arrow-btn {
+/* ===== Explore Overlay (Name + Rating Bar) ===== */
+.explore-overlay {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(6px);
-  border: none;
-  cursor: pointer;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 103.4px;
+  border-bottom-right-radius: 52.8px;
+  border-bottom-left-radius: 52.8px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2.64px);
+  -webkit-backdrop-filter: blur(2.64px);
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-  z-index: 3;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 2;
 }
+
 .explore-name {
   color: white;
-  font-size: 18px;
+  font-family:
+    "SF Pro",
+    "SF Pro Display",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-weight: 700;
+  font-style: normal;
+  font-size: 23.76px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  width: 119px;
+  display: block;
 }
 
 .explore-rating {
@@ -677,6 +692,7 @@ body {
   align-items: center;
   gap: 5px;
 }
+
 /* ===== Exclusive Travel Packages Section ===== */
 .packages-section {
   background: white;
@@ -715,7 +731,6 @@ body {
   line-height: 1.7;
 }
 
-/* ===== Slider Row ===== */
 .packages-row {
   display: flex;
   justify-content: flex-start;
@@ -737,8 +752,6 @@ body {
   display: none;
 }
 
-/* ===== Package Card ===== */
-
 .package-card {
   background: white;
   border-radius: 15px;
@@ -759,7 +772,6 @@ body {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
 }
 
-/* الصورة */
 .package-img {
   width: 370px;
   height: 389px;
@@ -779,7 +791,7 @@ body {
 .package-card:hover .package-img img {
   transform: scale(1.05);
 }
-/* معلومات الكارد */
+
 .package-info {
   padding: 18px 16px 20px;
   display: flex;
@@ -805,7 +817,6 @@ body {
   margin: 0;
 }
 
-/* الأيام والموقع */
 .package-meta {
   display: flex;
   align-items: center;
@@ -821,7 +832,6 @@ body {
   font-weight: 400;
 }
 
-/* السعر */
 .package-price {
   font-size: 16px;
   font-weight: 700;
@@ -834,7 +844,6 @@ body {
   color: #6b7280;
 }
 
-/* زر Book Now */
 .book-now-btn {
   background: #5596fe;
   color: white;
@@ -857,7 +866,7 @@ body {
   background: #2e8fe0;
   transform: translateY(-1px);
 }
-/* زر More Packages */
+
 .more-packages-btn {
   background: white;
   color: #5596fe;
@@ -878,6 +887,7 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(85, 150, 254, 0.35);
 }
+
 /* ===== Testimonials Section ===== */
 .testimonials-section {
   padding: 70px 60px;
@@ -932,7 +942,6 @@ body {
   flex: 1;
 }
 
-/* ── اسم العميل ── */
 .client-name {
   font-family: "Inter", sans-serif;
   font-weight: 700;
@@ -944,7 +953,6 @@ body {
   margin: 0;
 }
 
-/* ── الوظيفة والريفيو ── */
 .client-role,
 .client-review {
   font-family:
@@ -1022,5 +1030,227 @@ body {
   .client-role,
   .client-review {
     font-size: 15px;
+  }
+}
+/* ===== Trusted Partners Section ===== */
+.partners-section {
+  background: white;
+  padding: 60px 80px;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+}
+
+.partners-title {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 40px;
+  font-weight: 590;
+  color: #374151;
+  margin-bottom: 40px;
+}
+
+.blue-text {
+  color: #5596fe;
+}
+
+.partners-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+
+.partner-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.partner-item:hover {
+  opacity: 0.7;
+}
+
+.partner-item span,
+.partner-name {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: -0.3px;
+}
+
+/* ===== Footer ===== */
+.footer {
+  background: #c9dff2;
+  border-radius: 20px;
+  margin: 0 24px 24px;
+  padding: 48px 60px 32px;
+}
+
+.footer-inner {
+  display: flex;
+  gap: 60px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+/* Brand Column */
+.footer-brand {
+  flex: 0 0 220px;
+}
+
+.footer-logo {
+  width: 70px;
+  margin-bottom: 8px;
+}
+
+.footer-brand-name {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #5596fe;
+  margin: 0 0 12px;
+}
+
+.footer-tagline {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.15);
+  opacity: 0.75;
+}
+
+/* Links Grid */
+.footer-links {
+  flex: 1;
+  display: flex;
+  gap: 40px;
+  justify-content: space-between;
+}
+
+.footer-col h4 {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer-col ul li a {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 14px;
+  color: #4b5563;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-col ul li a:hover {
+  color: #5596fe;
+}
+
+/* Divider & Copyright */
+.footer-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(85, 150, 254, 0.25);
+  margin-bottom: 24px;
+}
+
+.footer-copyright {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .footer {
+    margin: 0 12px 12px;
+    padding: 36px 28px 24px;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 28px;
+  }
+
+  .partners-row {
+    gap: 36px;
+  }
+
+  .partners-title {
+    font-size: 28px;
   }
 }
