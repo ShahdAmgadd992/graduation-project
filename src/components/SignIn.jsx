@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./SignIn.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
+import IllustrationImg from "../assets/Illustrartion.png";
 
 function SignIn() {
   const { login, verifyLoginOtp, resendLoginOtp } = useAuth();
@@ -369,7 +370,7 @@ function SignIn() {
           </svg>
           <div className="signin-dot"></div>
           <div className="signin-image-wrap">
-            <img src="/Illustrartion.png" alt="Egypt Illustration" />
+            <img src={IllustrationImg} alt="Egypt Illustration" />
           </div>
         </div>
       </div>

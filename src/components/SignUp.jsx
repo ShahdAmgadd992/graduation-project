@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./SignUp.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
+import IllustrationImg from "../assets/Illustrartion.png";
 
 function SignUp() {
   const { register } = useAuth();
@@ -372,7 +373,7 @@ function SignUp() {
             />
           </svg>
           <div className="background-image">
-            <img src="/Illustrartion.png" alt="Egypt Illustration" />
+            <img src={IllustrationImg} alt="Egypt Illustration" />
           </div>
         </div>
       </div>

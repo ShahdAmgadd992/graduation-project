@@ -1,31 +1,24 @@
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 function VerifyEmail() {
   const { verifyEmail, resendEmailOtp, verifyPasswordOtp, resendPasswordOtp } = useAuth();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [status, setStatus] = useState("idle");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [resendTimer, setResendTimer] = useState(0);
-  const [verifyMode, setVerifyMode] = useState("email"); // 'email' or 'password'
-  const inputs = useRef([]);
-
-  useEffect(() => {
-    // Determine if this is for email verification or password reset
+  const [email] = useState(() => {
+    return sessionStorage.getItem("resetEmail") || sessionStorage.getItem("verifyEmail") || "";
+  });
+  const [error, setError] = useState(() => {
     const resetEmail = sessionStorage.getItem("resetEmail");
     const verifyEmailValue = sessionStorage.getItem("verifyEmail");
+    return resetEmail || verifyEmailValue ? "" : "Email not found. Please try again.";
+  });
+  const [resendTimer, setResendTimer] = useState(0);
+  const [verifyMode] = useState(() => {
+    return sessionStorage.getItem("resetEmail") ? "password" : "email";
+  });
+  const inputs = useRef([]);
 
-    if (resetEmail) {
-      setVerifyMode("password");
-      setEmail(resetEmail);
-    } else if (verifyEmailValue) {
-      setVerifyMode("email");
-      setEmail(verifyEmailValue);
-    } else {
-      setError("Email not found. Please try again.");
-    }
-  }, []);
 
   useEffect(() => {
     let timer;

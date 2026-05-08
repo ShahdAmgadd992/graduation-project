@@ -73,6 +73,12 @@ const Home = () => {
     testimonials[(currentTestimonial + 1) % testimonials.length],
   ];
 
+  const handleNavigation = (page) => {
+    if (page === "explore") {
+      window.navigateToExplore?.();
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const scrolled = window.scrollY;
@@ -148,7 +154,7 @@ const Home = () => {
           </div>
           <ul className="nav-links">
             <li className="active">Home</li>
-            <li>Explore</li>
+            <li onClick={() => handleNavigation("explore")}>Explore</li>
             <li>About Us</li>
             <li>Tour Packages</li>
             <li>Ai Planner</li>

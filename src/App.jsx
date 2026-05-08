@@ -5,6 +5,7 @@ import ForgetPassword from "./components/ForgetPassword";
 import VerifyEmail from "./components/VerifyEmail";
 import ResetPassword from "./components/ResetPassword";
 import Home from "./components/Home";
+import Explore from "./components/Explore";
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {
@@ -23,6 +24,8 @@ function App() {
         setCurrentPage("verifyEmail");
       } else if (path === "/reset-password") {
         setCurrentPage("resetPassword");
+      } else if (path === "/explore") {
+        setCurrentPage("explore");
       } else {
         setCurrentPage("home");
       }
@@ -68,6 +71,12 @@ function App() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    window.navigateToExplore = () => {
+      window.history.pushState({}, "", "/explore");
+      setCurrentPage("explore");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     return () => {
       window.removeEventListener("popstate", updatePageFromPath);
       delete window.navigateToHome;
@@ -76,6 +85,7 @@ function App() {
       delete window.navigateToForgetPassword;
       delete window.navigateToVerify;
       delete window.navigateToResetPassword;
+      delete window.navigateToExplore;
     };
   }, []);
 
@@ -86,6 +96,7 @@ function App() {
     forgetPassword: <ForgetPassword />,
     verifyEmail: <VerifyEmail />,
     resetPassword: <ResetPassword />,
+    explore: <Explore />,
   };
 
   return (
