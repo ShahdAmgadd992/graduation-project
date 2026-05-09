@@ -309,3 +309,495 @@
 
   .search-btn { padding: 10px 24px; font-size: 13px; }
 }
+   /* places cards  */
+
+/* ===== Main Layout ===== */
+.explore-main {
+  display: flex;
+  gap: 0;
+  padding: 32px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+/* ===== Sidebar ===== */
+.explore-sidebar {
+  width: 280px;
+  min-width: 180px;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.sidebar-section h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 10px;
+}
+
+.sidebar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.sidebar-search input {
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: #333;
+  width: 100%;
+  background: transparent;
+}
+
+.sidebar-search input::placeholder { color: #bbb; }
+
+.sidebar-city-list {
+  max-height: 130px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-city-list::-webkit-scrollbar { width: 4px; }
+.sidebar-city-list::-webkit-scrollbar-thumb { background: #c0d4ff; border-radius: 4px; }
+
+.sidebar-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.sidebar-checkbox input[type="checkbox"] {
+  accent-color: #5596fe;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+/* Price Range */
+.price-slider {
+  width: 100%;
+  accent-color: #5596fe;
+  margin: 6px 0;
+}
+
+.price-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #888;
+}
+
+/* Moments Grid */
+.moments-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.moment-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* ===== Cards Section ===== */
+.explore-cards-section {
+  flex: 1;
+  padding-left: 32px;
+}
+
+.cards-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-family: 'Inter', sans-serif;
+}
+
+.cards-header h2 {
+  font-size: 29px;
+  font-weight: 700;
+  color: #222;
+  font-family: 'Inter', sans-serif;
+}
+
+.text-blue { color: #5596fe; }
+
+/* Sort */
+.sort-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  font-family: 'Inter', sans-serif;
+}
+
+.sort-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.sort-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  min-width: 180px;
+  justify-content: space-between;
+  transition: border-color 0.2s;
+}
+
+.sort-trigger:hover, .sort-trigger.open { border-color: #5596fe; }
+
+.sort-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  min-width: 200px;
+  z-index: 200;
+  animation: fadeDown 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.sort-option {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+
+.sort-option:hover { background: #f0f6ff; color: #5596fe; }
+.sort-option.selected { color: #5596fe; font-weight: 600; background: #eef3ff; }
+
+/* Active Filters */
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 20px;
+  font-family: 'Inter', sans-serif;
+  /* width: 700px; */
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef3ff;
+  color: #5596fe;
+  border: 1px solid #c0d4ff;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.filter-tag button {
+  background: none;
+  border: none;
+  color: #5596fe;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  line-height: 1;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #5596fe;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Tours Grid */
+.tours-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Tour Card */
+.tour-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.tour-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+}
+
+.tour-card-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.tour-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.tour-card:hover .tour-card-img { transform: scale(1.04); }
+
+/* Badges */
+.tour-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.badge-discount {
+  background: #ff4d4d;
+  color: #fff;
+}
+
+.badge-new {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+/* Fav Button */
+.fav-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transition: transform 0.2s;
+  z-index: 2;
+}
+
+.fav-btn:hover { transform: scale(1.1); }
+.fav-btn.liked img { filter: invert(27%) sepia(90%) saturate(600%) hue-rotate(320deg); }
+
+/* Card Body */
+.tour-card-body {
+  padding: 14px 14px 12px;
+  font-family: 'Inter', sans-serif;
+}
+
+.tour-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tour-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.tour-card-city {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+.tour-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+.star-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.tour-card-duration {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.time-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+.tour-card-footer {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+}
+
+.tour-card-price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #f4f4f4;
+  border-radius: 14px;
+  padding: 10px 14px;
+  width: fit-content;
+  font-size: 13px;
+  color: #444;
+  font-weight: 600;
+}
+
+.tour-card-price strong {
+  color: #5596fe;
+}
+/* Show More */
+.show-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.show-more-btn {
+  background: transparent;
+  border: 1.5px solid #5596fe;
+  color: #5596fe;
+  padding: 10px 36px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.show-more-btn:hover {
+  background: #5596fe;
+  color: #fff;
+}
+
+/* ===== Map Section ===== */
+.map-section {
+  padding: 48px 120px;
+  text-align: center;
+}
+
+.map-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 6px;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.5px;
+}
+
+.map-subtitle {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 24px;
+  font-family: 'Inter', sans-serif;
+}
+
+.map-container-wrap {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  border: 1px solid #e8e8e8;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.leaflet-map {
+  width: 100%;
+  height: 520px;
+}
+
+.map-city-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  text-align: center !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .tours-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .explore-main { flex-direction: column; padding: 16px; }
+  .explore-sidebar { width: 100%; position: static; }
+  .explore-cards-section { padding-left: 0; padding-top: 20px; }
+  .tours-grid { grid-template-columns: repeat(2, 1fr); }
+  .map-section { padding: 24px 16px; }
+  .leaflet-map { height: 350px; }
+}
+
+@media (max-width: 480px) {
+  .tours-grid { grid-template-columns: 1fr; }
+  .cards-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
