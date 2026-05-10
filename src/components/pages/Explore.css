@@ -934,3 +934,516 @@
     gap: 10px;
   }
 }
+/* trending now style  */
+/* ============================================
+   ADD THESE STYLES TO THE BOTTOM OF Explore.css
+   ============================================ */
+
+/* ===== Trending Now Section ===== */
+.trending-section {
+  padding: 60px 120px;
+  text-align: center;
+  background: #fff;
+}
+
+.trending-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 6px;
+  font-family: "Inter", sans-serif;
+  letter-spacing: -0.5px;
+}
+
+.trending-subtitle {
+  font-size: 18px;
+  color: #999;
+  margin-bottom: 40px;
+  font-family: "Inter", sans-serif;
+}
+
+/* ===== Trending Grid ===== */
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ===== Trending Card ===== */
+.trending-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 220px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+}
+
+.trending-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  transition: background 0.35s ease;
+}
+
+.trending-card:hover .trending-card-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.72) 100%
+  );
+}
+
+.trending-card-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 24px 28px;
+  color: #fff;
+  text-align: center;
+}
+
+.trending-card-title {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: "Inter", sans-serif;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.trending-card-city {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Inter", sans-serif;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10px;
+}
+
+/* Description hidden by default, fades in on hover */
+.trending-card-description {
+  font-size: 13px;
+  font-family: "Inter", sans-serif;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+  max-width: 380px;
+  margin-bottom: 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.trending-card:hover .trending-card-description {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Visit Now button */
+.trending-visit-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  padding: 8px 28px;
+  border-radius: 30px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  white-space: nowrap;
+}
+
+.trending-card:hover .trending-visit-btn {
+  background: rgba(255, 255, 255, 0.95);
+  color: #5596fe;
+  border-color: #fff;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .trending-section {
+    padding: 40px 40px;
+  }
+  .trending-card {
+    height: 200px;
+  }
+}
+
+@media (max-width: 640px) {
+  .trending-section {
+    padding: 32px 16px;
+  }
+  .trending-title {
+    font-size: 30px;
+  }
+  .trending-grid {
+    grid-template-columns: 1fr;
+  }
+  .trending-card {
+    height: 200px;
+  }
+}
+
+
+
+/* ===== Unique Experience Section ===== */
+.unique-exp-section {
+  padding: 0 60px 60px;
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.unique-exp-divider {
+  border: none;
+  border-top: 1.5px solid #ebebeb;
+  margin: 0 0 48px;
+}
+
+.unique-exp-heading {
+  text-align: center;
+  font-size: 42px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 36px;
+  letter-spacing: -0.3px;
+}
+
+/* ===== Carousel wrapper with arrow positioning ===== */
+.unique-exp-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.unique-exp-carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 8px 4px 16px;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+}
+
+.unique-exp-carousel::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari */
+}
+
+/* ===== Arrow Buttons ===== */
+.unique-exp-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1.6rem;
+  line-height: 1;
+  color: #5596fe;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.unique-exp-arrow:hover {
+  background: #f0f5ff;
+  box-shadow: 0 4px 14px rgba(85, 150, 254, 0.18);
+}
+
+.unique-exp-arrow-left {
+  left: -20px;
+}
+
+.unique-exp-arrow-right {
+  right: -20px;
+}
+
+/* ===== Card ===== */
+.unique-exp-card {
+  flex: 0 0 calc((100% - 60px) / 4);
+  max-width: 280px;
+  min-width: 240px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.unique-exp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(85, 150, 254, 0.16);
+}
+
+/* ===== Card Image ===== */
+.unique-exp-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 185px;
+  overflow: hidden;
+}
+
+.unique-exp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 16px 16px 0 0;
+  transition: transform 0.3s ease;
+}
+
+.unique-exp-card:hover .unique-exp-img {
+  transform: scale(1.04);
+}
+
+/* ===== Rating badge (star + number, top-right) ===== */
+.unique-exp-rating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 3px 9px 3px 4px;
+}
+
+.unique-exp-star {
+  /* Use the same star-rate.svg but apply a golden gradient tint via filter */
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) saturate(100%) invert(72%) sepia(80%) saturate(500%)
+    hue-rotate(5deg) brightness(105%);
+}
+
+.unique-exp-rating span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  /* Gradient text to match the blue palette of the site */
+  background: linear-gradient(90deg, #5596fe 0%, #38c2f5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Card Body ===== */
+.unique-exp-body {
+  padding: 14px 16px 18px;
+}
+
+.unique-exp-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 5px;
+  line-height: 1.3;
+}
+
+.unique-exp-vibe {
+  font-size: 0.82rem;
+  color: #777;
+  margin: 0 0 2px;
+}
+
+.unique-exp-reviews {
+  font-size: 0.78rem;
+  color: #aaa;
+  margin: 0 0 14px;
+}
+
+/* ===== More Details Button — gradient matching site blue ===== */
+.unique-exp-btn {
+  display: block;
+  width: 100%;
+  padding: 9px 0;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #5596fe 0%, #38c2f5 100%);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.unique-exp-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.01);
+}
+
+.ai-magic-section {
+  padding: 40px 60px 60px;
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.ai-magic-heading {
+  text-align: center;
+  font-size: 42px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+
+.ai-magic-subtitle {
+  font-size: 18px ;
+  color: #7e7e7e;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.ai-magic-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: minmax(280px, auto) minmax(220px, auto);
+  gap: 30px;
+  max-height: 920px;
+}
+
+.ai-magic-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  min-height: 280px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ai-magic-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.14);
+}
+
+.ai-magic-card-large {
+  grid-column: 1 / 3;
+  grid-row: 1 / 2;
+  min-height: 280px;
+}
+
+.ai-magic-card:nth-child(2) {
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
+  min-height: 280px;
+}
+
+.ai-magic-card:nth-child(3) {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  min-height: 280px;
+}
+
+.ai-magic-card:nth-child(4) {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  min-height: 280px;
+}
+
+.ai-magic-card:nth-child(5) {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+  min-height: 280px;
+}
+
+.ai-magic-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ai-magic-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ai-magic-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.16) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+.ai-magic-card-content {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 24px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 2;
+}
+
+.ai-magic-title {
+  font-size: 1.55rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.ai-magic-action-btn {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+  width: fit-content;
+}
+
+.ai-magic-action-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.24);
+}
+
+@media (max-width: 1024px) {
+  .ai-magic-grid {
+    grid-template-columns: 1.4fr 1fr;
+  }
+  .ai-magic-card-large {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-magic-grid {
+    grid-template-columns: 1fr;
+  }
+  .ai-magic-card-large {
+    min-height: 320px;
+  }
+}

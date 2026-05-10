@@ -15,6 +15,11 @@ import popularImg7 from "../assets/explore/pottery-village-fayoum.jpg";
 import popularImg8 from "../assets/explore/nile-meets-mediterranean.jpg";
 import popularImg9 from "../assets/explore/rock-formations-nuweiba.jpg";
 import popularImg10 from "../assets/explore/sunset-sailing-ismailia.jpg";
+import ainElsokhnaImg from "../assets/explore/ain-elsokhna.jpg";
+import alexandriaImg from "../assets/explore/alexandria.jpg";
+import saqqaraImg from "../assets/explore/saqqara.jpg";
+import sinaiImg from "../assets/explore/sinai.jpg";
+import frafraImg from "../assets/explore/frafra.jpg";
 
 // City coordinates on Egypt map (lat, lng)
 export const cityCoordinates = {
@@ -498,5 +503,178 @@ export const popularDestinations = [
     price: 60,
     badge: "-20%",
     image: popularImg10,
+  },
+];
+
+// ===== Trending Now Data =====
+export const trendingDestinations = [
+  {
+    id: 201,
+    title: "The Blue Hole",
+    city: "Dahab",
+    description:
+      "Dive into one of the world's most famous dive sites, with crystal-clear waters plunging over 100 meters deep.",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Dahab_Blue_Hole.jpg/1280px-Dahab_Blue_Hole.jpg",
+  },
+  {
+    id: 202,
+    title: "Salt Lakes",
+    city: "Siwa",
+    description:
+      "Float in crystal clear salt lakes for a surreal natural spa experience.",
+    image:
+      "https://herasianadventures.com/wp-content/uploads/2025/06/best-things-to-do-in-Siwa-Oasis-egypt-4.jpg",
+  },
+  {
+    id: 203,
+    title: "Orange Bay",
+    city: "Hurghada",
+    description:
+      "Escape to a secluded paradise island surrounded by turquoise waters and vibrant coral reefs.",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Hurghada_bay.jpg/1280px-Hurghada_bay.jpg",
+  },
+  {
+    id: 204,
+    title: "White Desert",
+    city: "Farafra",
+    description:
+      "Wander through a surreal moonscape of chalk-white rock formations sculpted by centuries of wind.",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/White_Desert%2C_Egypt.jpg/1280px-White_Desert%2C_Egypt.jpg",
+  },
+  {
+    id: 205,
+    title: "Karnak Temple",
+    city: "Luxor",
+    description:
+      "Walk through the largest ancient religious site in the world, built over 2,000 years of pharaonic history.",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Karnak_Tempel_Eingang.jpg/1280px-Karnak_Tempel_Eingang.jpg",
+  },
+  {
+    id: 206,
+    title: "Siwa Oasis",
+    city: "Siwa",
+    description:
+      "Discover a remote desert oasis where ancient ruins, palm groves, and freshwater springs coexist.",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Siwa_oasis_from_the_mountain.jpg/1280px-Siwa_oasis_from_the_mountain.jpg",
+  },
+  {
+    id: 207,
+    title: "Mount Sinai",
+    city: "Saint Catherine",
+    description:
+      "Trek to the summit at dawn and witness a breathtaking sunrise above the clouds from a biblical peak.",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Mount_Sinai_Egypt.jpg/1280px-Mount_Sinai_Egypt.jpg",
+  },
+  {
+    id: 208,
+    title: "Nile Cruise",
+    city: "Luxor",
+    description:
+      "Sail the world's longest river past ancient temples, fertile banks, and golden sunsets.",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Nile_River_Boats_Luxor.jpg/1280px-Nile_River_Boats_Luxor.jpg",
+  },
+];
+
+// ===== Unique Experience Data =====
+export const uniqueExperiences = [
+  {
+    id: 301,
+    title: "Sunrise over the Pyramids",
+    vibe: "Adrenaline / Luxury",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=600",
+  },
+  {
+    id: 302,
+    title: "Authentic Bedouin Dinner",
+    vibe: "Adventure / Foodie.",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600",
+  },
+  {
+    id: 303,
+    title: "Mud Bath & Hot Spring Therapy",
+    vibe: "Mystery / Architecture",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600",
+  },
+  {
+    id: 304,
+    title: "Private Dahabiya Sunset Sailing",
+    vibe: "Heritage / Romantic.",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1500835556837-99ac94a94552?w=600",
+  },
+  {
+    id: 305,
+    title: "Midnight Yoga in the White Desert",
+    vibe: "Relaxation / Nature.",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600",
+  },
+  {
+    id: 306,
+    title: "Salt Cave Healing & Hot Springs",
+    vibe: "Wellness / Unique.",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1559825481-12a05cc00344?w=600",
+  },
+  {
+    id: 307,
+    title: "Diving with Dugongs (Sea Cows)",
+    vibe: "Adrenaline / Wildlife.",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1546026423-cc4642628d2b?w=600",
+  },
+  {
+    id: 308,
+    title: "Master the Art of Papyrus Making",
+    vibe: "Heritage / Workshop",
+    rating: 4.9,
+    reviews: 12,
+    image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600",
+  },
+];
+
+export const aiMagicDestinations = [
+  {
+    id: 401,
+    title: "Sinai",
+    image: sinaiImg,
+    large: true,
+  },
+  {
+    id: 402,
+    title: "Ain El Sokhna",
+    image: ainElsokhnaImg,
+  },
+  {
+    id: 403,
+    title: "Alexandria",
+    image: alexandriaImg,
+  },
+  {
+    id: 404,
+    title: "Farafra",
+    image: frafraImg,
+  },
+  {
+    id: 405,
+    title: "Saqqara",
+    image: saqqaraImg,
   },
 ];

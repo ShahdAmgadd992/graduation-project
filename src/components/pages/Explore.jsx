@@ -24,6 +24,8 @@ import {
   toursData,
   popularDestinations,
   cityCoordinates,
+  uniqueExperiences,
+  aiMagicDestinations,
 } from "../../data/exploreData";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
@@ -107,6 +109,74 @@ const momentImages = [
   heritageImg6,
 ];
 
+// ===== Trending Now Data =====
+const trendingDestinations = [
+  {
+    id: 201,
+    title: "The Blue Hole",
+    city: "Dahab",
+    description:
+      "Dive into one of the world's most famous dive sites, with crystal-clear waters plunging over 100 meters deep.",
+    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800",
+  },
+  {
+    id: 202,
+    title: "Salt Lakes",
+    city: "Siwa",
+    description:
+      "Float in crystal clear salt lakes for a surreal natural spa experience.",
+    image: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800",
+  },
+  {
+    id: 203,
+    title: "Orange Bay",
+    city: "Hurghada",
+    description:
+      "Escape to a secluded paradise island surrounded by turquoise waters and vibrant coral reefs.",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800",
+  },
+  {
+    id: 204,
+    title: "White Desert",
+    city: "Farafra",
+    description:
+      "Wander through a surreal moonscape of chalk-white rock formations sculpted by centuries of wind.",
+    image: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800",
+  },
+  {
+    id: 205,
+    title: "Karnak Temple",
+    city: "Luxor",
+    description:
+      "Walk through the largest ancient religious site in the world, built over 2,000 years of pharaonic history.",
+    image: "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800",
+  },
+  {
+    id: 206,
+    title: "Siwa Oasis",
+    city: "Siwa",
+    description:
+      "Discover a remote desert oasis where ancient ruins, palm groves, and freshwater springs coexist.",
+    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800",
+  },
+  {
+    id: 207,
+    title: "Mount Sinai",
+    city: "Saint Catherine",
+    description:
+      "Trek to the summit at dawn and witness a breathtaking sunrise above the clouds from a biblical peak.",
+    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
+  },
+  {
+    id: 208,
+    title: "Nile Cruise",
+    city: "Luxor",
+    description:
+      "Sail the world's longest river past ancient temples, fertile banks, and golden sunsets.",
+    image: "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=800",
+  },
+];
+
 // ===== Tour Card =====
 const TourCard = ({ tour }) => {
   const [liked, setLiked] = useState(false);
@@ -165,6 +235,156 @@ const TourCard = ({ tour }) => {
   );
 };
 
+// ===== Trending Card =====
+const TrendingCard = ({ item }) => {
+  return (
+    <div
+      className="trending-card"
+      style={{ backgroundImage: `url(${item.image})` }}
+    >
+      <div className="trending-card-overlay" />
+      <div className="trending-card-content">
+        <h3 className="trending-card-title">{item.title}</h3>
+        <p className="trending-card-city">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          {item.city}
+        </p>
+        <p className="trending-card-description">{item.description}</p>
+        <button className="trending-visit-btn">Visit Now</button>
+      </div>
+    </div>
+  );
+};
+
+const AIMagicCard = ({ item }) => {
+  return (
+    <div className={`ai-magic-card ${item.large ? "ai-magic-card-large" : ""}`}>
+      <div className="ai-magic-img-wrap">
+        <img src={item.image} alt={item.title} className="ai-magic-img" />
+        <div className="ai-magic-img-overlay" />
+        <div className="ai-magic-card-content">
+          <h3 className="ai-magic-title">{item.title}</h3>
+          <button className="ai-magic-action-btn">View Now</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AIMagicSection = () => {
+  return (
+    <div className="ai-magic-section">
+      <hr className="unique-exp-divider" />
+      <h2 className="ai-magic-heading">
+        <span className="text-blue">AI</span> Magic
+      </h2>
+      <p className="ai-magic-subtitle">Smartly curated just for your taste</p>
+      <div className="ai-magic-grid">
+        {aiMagicDestinations.map((item) => (
+          <AIMagicCard key={item.id} item={item} />
+        ))}
+      </div>
+      <hr className="unique-exp-divider" />
+    </div>
+  );
+};
+
+// ===== Unique Experience Card =====
+const UniqueExperienceCard = ({ item }) => {
+  return (
+    <div className="unique-exp-card">
+      <div className="unique-exp-img-wrap">
+        <img src={item.image} alt={item.title} className="unique-exp-img" />
+        <div className="unique-exp-rating">
+          <img src={starRate} alt="star" className="unique-exp-star" />
+          <span>{item.rating}</span>
+        </div>
+      </div>
+      <div className="unique-exp-body">
+        <h3 className="unique-exp-title">{item.title}</h3>
+        <p className="unique-exp-vibe">Vibe: {item.vibe}</p>
+        <p className="unique-exp-reviews">({item.reviews} reviews)</p>
+        <button className="unique-exp-btn">More Details</button>
+      </div>
+    </div>
+  );
+};
+
+// ===== Unique Experience Carousel =====
+const UniqueExperienceSection = () => {
+  const carouselRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const updateScrollState = () => {
+    const el = carouselRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  };
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (el) {
+      el.addEventListener("scroll", updateScrollState);
+      updateScrollState();
+      return () => el.removeEventListener("scroll", updateScrollState);
+    }
+  }, []);
+
+  const scroll = (dir) => {
+    const el = carouselRef.current;
+    if (el) {
+      const card = el.querySelector(".unique-exp-card");
+      const itemWidth = (card?.clientWidth || 260) + 20;
+      el.scrollBy({ left: dir * itemWidth * 4, behavior: "smooth" });
+    }
+  };
+
+  return (
+    <div className="unique-exp-section">
+      <hr className="unique-exp-divider" />
+      <h2 className="unique-exp-heading">
+        <span className="text-blue">Unique</span> Experience
+      </h2>
+      <div className="unique-exp-carousel-wrapper">
+        {canScrollLeft && (
+          <button
+            className="unique-exp-arrow unique-exp-arrow-left"
+            onClick={() => scroll(-1)}
+          >
+            &#8249;
+          </button>
+        )}
+        <div className="unique-exp-carousel" ref={carouselRef}>
+          {uniqueExperiences.map((item) => (
+            <UniqueExperienceCard key={item.id} item={item} />
+          ))}
+        </div>
+        {canScrollRight && (
+          <button
+            className="unique-exp-arrow unique-exp-arrow-right"
+            onClick={() => scroll(1)}
+          >
+            &#8250;
+          </button>
+        )}
+      </div>
+      <hr className="unique-exp-divider" />
+    </div>
+  );
+};
+
 // ===== Explore Page =====
 const Explore = () => {
   const [selectedCity, setSelectedCity] = useState("Cairo");
@@ -178,6 +398,7 @@ const Explore = () => {
   const [sortBy, setSortBy] = useState("Popularity");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [showMorePopular, setShowMorePopular] = useState(false);
+  const [showMoreTrending, setShowMoreTrending] = useState(false);
 
   const dropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
@@ -253,6 +474,10 @@ const Explore = () => {
     setFilterCity([]);
   };
 
+  const displayedTrending = showMoreTrending
+    ? trendingDestinations
+    : trendingDestinations.slice(0, 4);
+
   return (
     <>
       {/* ===== Hero Section ===== */}
@@ -261,9 +486,7 @@ const Explore = () => {
         style={{ backgroundImage: `url(${exploreBg})` }}
       >
         <div className="overlay" />
-
         <Navbar activePage="explore" />
-
         <div className="explore-content" style={{ marginLeft: "15%" }}>
           <h1>Discover more</h1>
           <div className="search-container">
@@ -557,6 +780,37 @@ const Explore = () => {
           </MapContainer>
         </div>
       </div>
+
+      {/* ===== Trending Now ===== */}
+      <div className="trending-section">
+        <h2 className="trending-title">
+          <span className="text-blue">Trending</span> Now
+        </h2>
+        <p className="trending-subtitle">Warm winter escapes.</p>
+
+        <div className="trending-grid">
+          {displayedTrending.map((item) => (
+            <TrendingCard key={item.id} item={item} />
+          ))}
+        </div>
+
+        {!showMoreTrending && trendingDestinations.length > 4 && (
+          <div className="show-more-wrap">
+            <button
+              className="show-more-btn"
+              onClick={() => setShowMoreTrending(true)}
+            >
+              Show More
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ===== Unique Experience ===== */}
+      <UniqueExperienceSection />
+
+      {/* ===== AI Magic ===== */}
+      <AIMagicSection />
 
       {/* ===== Footer ===== */}
       <Footer />
