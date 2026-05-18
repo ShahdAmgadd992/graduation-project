@@ -6,8 +6,8 @@ import VerifyEmail from "./components/auth/VerifyEmail";
 import ResetPassword from "./components/auth/ResetPassword";
 import Home from "./components/pages/Home";
 import Explore from "./components/pages/Explore";
-// import Explore from "./components/Explore";
 import { AuthProvider } from "./context/AuthContext";
+import Profile from "./components/pages/Profile";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -27,6 +27,8 @@ function App() {
         setCurrentPage("resetPassword");
       } else if (path === "/explore") {
         setCurrentPage("explore");
+      } else if (path === "/profile") {
+        setCurrentPage("profile");
       } else {
         setCurrentPage("home");
       }
@@ -77,6 +79,11 @@ function App() {
       setCurrentPage("explore");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+    window.navigateToProfile = () => {
+      window.history.pushState({}, "", "/profile");
+      setCurrentPage("profile");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
     return () => {
       window.removeEventListener("popstate", updatePageFromPath);
@@ -87,6 +94,7 @@ function App() {
       delete window.navigateToVerify;
       delete window.navigateToResetPassword;
       delete window.navigateToExplore;
+      delete window.navigateToProfile;
     };
   }, []);
 
@@ -98,6 +106,7 @@ function App() {
     verifyEmail: <VerifyEmail />,
     resetPassword: <ResetPassword />,
     explore: <Explore />,
+    profile: <Profile />,
   };
 
   return (

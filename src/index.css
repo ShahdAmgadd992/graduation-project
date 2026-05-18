@@ -4,3 +4,35 @@
   padding: 0;
   text-align: center;
 }
+.profile-tabs {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #f0f0f0;
+  padding: 12px 0;
+  justify-content: center;
+}
+.profile-tab {
+  background: none;
+  border: none;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  border-radius: 20px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.profile-tab:hover {
+  color: #5596fe;
+  background: #eef4ff;
+}
+
+.profile-tab.active {
+  color: #5596fe;
+  background: #eef4ff;
+  font-weight: 600;
+  border-bottom: none;
+}

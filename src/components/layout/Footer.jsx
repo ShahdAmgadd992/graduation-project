@@ -5,7 +5,9 @@ import Uber from "../../assets/partners/Uber.png";
 import TripAdvisor from "../../assets/partners/TripAdvisor.png";
 import Expedia from "../../assets/partners/Expedia.png";
 import booking from "../../assets/partners/Booking.png";
-import "../pages/Home.css";
+// import "../pages/Home.css";
+// import Navbar from "../layout/Navbar";
+// import Footer from "../layout/Footer";
 
 const Footer = () => {
   return (

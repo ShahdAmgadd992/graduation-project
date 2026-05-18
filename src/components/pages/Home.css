@@ -41,15 +41,36 @@ body {
   justify-content: space-between;
   padding: 20px 40px;
 }
-
 .logo {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 18px;
-  font-weight: bold;
   flex-direction: column;
   text-align: center;
+  cursor: pointer;
+}
+
+.brand-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5596fe;
+  letter-spacing: 0.5px;
+  width: 85px;
+  text-align: center;
+}
+.nav-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.nav-icon-btn:hover {
+  background: rgba(85, 150, 254, 0.1);
 }
 
 .logo-icon {

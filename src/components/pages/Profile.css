@@ -1,0 +1,1039 @@
+/* ===== Profile Page ===== */
+.profile-page {
+  background: #f7f9fc;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ===== Cover Photo ===== */
+.profile-cover {
+  position: relative;
+  width: calc(100% - 100px);
+  max-width: 1274px;
+  height: 275px;
+  margin: 30px auto 0;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 15px;
+}
+
+.cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.profile-cover:hover .cover-img {
+  transform: scale(1.03);
+}
+
+/* ===== Profile Header Wrap ===== */
+.profile-header-wrap {
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  max-width: 1274px;
+  width: calc(100% - 100px);
+  margin: 0 auto;
+  padding: 0 40px;
+  border-radius: 0 0 12px 12px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+  text-align: left;
+}
+
+/* ===== Avatar ===== */
+.avatar-section {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.avatar-wrap {
+  position: relative;
+  margin-top: -65px;
+}
+
+.profile-avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #5596fe;
+  border: 2px solid #fff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.avatar-edit-btn:hover {
+  background: #3a7df5;
+}
+
+.profile-info {
+  padding-bottom: 4px;
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.profile-bio {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 6px;
+}
+
+.profile-location {
+  font-size: 13px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+}
+
+/* ===== Profile Actions ===== */
+.profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 20px;
+}
+
+.edit-profile-btn {
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.15s;
+}
+
+.edit-profile-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ===== Tabs ===== */
+.profile-tabs {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #f0f0f0;
+  padding: 12px 0;
+  justify-content: center;
+}
+
+.profile-tab {
+  background: none;
+  border: none;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  border-radius: 20px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.profile-tab:hover {
+  color: #5596fe;
+  background: #eef4ff;
+}
+
+.profile-tab.active {
+  color: #5596fe;
+  background: #eef4ff;
+  font-weight: 600;
+}
+
+/* ===== Content ===== */
+.profile-content {
+  max-width: 1274px;
+  width: calc(100% - 100px);
+  margin: 32px auto;
+  padding: 0 0 60px;
+  background: transparent;
+}
+
+/* ===== Overview Tab ===== */
+.overview-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.welcome-card {
+  background: transparent;
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.welcome-card h3 {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 100%;
+  text-align: left;
+  color: #374151;
+  margin: 0;
+}
+
+.welcome-card p {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #374151;
+  margin: 0;
+  text-align: left;
+}
+
+.blue-name {
+  color: #5596fe;
+}
+
+/* ===== Stats Grid ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 24px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px 16px;
+  text-align: center;
+  border: 1px solid #eef0f4;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.stat-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e8f0fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 6px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+}
+
+/* ===== Overview Section ===== */
+.overview-section {
+  padding: 28px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.overview-section h4 {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #374151;
+  margin: 0 0 20px;
+  text-align: left;
+}
+
+.section-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-card-header h4 {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #374151;
+  margin: 0;
+  text-align: left;
+}
+
+.edit-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  display: flex;
+}
+
+.edit-icon-btn:hover {
+  background: #f0f5ff;
+}
+
+.see-all-btn {
+  background: none;
+  border: none;
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #5596fe;
+  text-decoration: underline;
+  text-decoration-style: solid;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ===== Interests ===== */
+.interests-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.interest-tag {
+  background: #eef4ff;
+  color: #374151;
+  border: 1px solid #e0eaff;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.interest-tag.active {
+  background: #ddeeff;
+  color: #5596fe;
+  border-color: #b3d4ff;
+  font-weight: 600;
+}
+
+.interest-tag:hover {
+  background: #d0e6ff;
+}
+
+/* ===== Upcoming Trip Card ===== */
+.upcoming-trip-card {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s;
+}
+
+.upcoming-trip-card:hover {
+  box-shadow: 0 4px 16px rgba(85, 150, 254, 0.1);
+}
+
+.trip-thumb {
+  width: 140px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.trip-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.trip-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.trip-title {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #374151;
+  margin: 0;
+  text-align: left;
+}
+
+.trip-desc {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #374151;
+  margin: 0 0 10px;
+  max-width: 324px;
+  text-align: left;
+}
+
+.trip-date {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+  text-align: left;
+}
+
+.trip-highlights-title {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #374151;
+  margin: 0 0 10px;
+  text-align: left;
+}
+
+.trip-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.highlight-item {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #374151;
+  max-width: 281px;
+  text-align: left;
+}
+
+.ai-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #fff8e6;
+  color: #f5a623;
+  border: 1px solid #f5e0a0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.view-itinerary-btn {
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  width: 200px;
+  height: 46px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.view-itinerary-btn:hover {
+  opacity: 0.9;
+}
+
+/* ===== My Trips Tab ===== */
+.trips-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Toolbar */
+.trips-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0 0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.trips-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-btn {
+  background: #f3f4f6;
+  border: 1px solid #e8e8e8;
+  border-radius: 20px;
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn.active {
+  /* background: #5596fe; */
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border-color: #5596fe;
+  font-weight: 600;
+}
+
+.filter-btn:hover:not(.active) {
+  background: #f0f5ff;
+  color: #5596fe;
+}
+
+.trips-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #fff;
+  border: 0.8px solid #e8e8e8;
+  border-radius: 15px;
+  padding: 0 16px;
+  width: 581px;
+  height: 45px;
+  box-sizing: border-box;
+}
+.search-sort-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  flex-shrink: 0;
+  margin-right: 0px;
+}
+.search-sort-btn img {
+  display: block;
+  border: none;
+  outline: none;
+  width: 35px;
+  height: 35px;
+  /* display: block; */
+  /* border: none; */
+  /* outline: none; */
+}
+.search-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #333;
+  background: transparent;
+  width: 100%;
+}
+
+.search-input::placeholder {
+  color: #aaa;
+}
+
+/* My Trips Grid */
+.my-trips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.my-trip-card {
+  background: #f3f4f6;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #eef0f4;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.my-trip-card:hover {
+  box-shadow: 0 6px 20px rgba(85, 150, 254, 0.1);
+  transform: translateY(-2px);
+}
+
+.my-trip-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 160px;
+}
+
+.my-trip-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trip-status-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #f3f4f6;
+  color: #5596fe;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.trip-more-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+}
+
+.my-trip-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.my-trip-title {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #374151;
+  margin: 0;
+  text-align: left;
+}
+
+.my-trip-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.my-trip-highlights {
+  margin: 4px 0 8px;
+}
+
+.my-trip-highlight-item {
+  font-size: 12px;
+  color: #666;
+  margin: 2px 0;
+}
+
+.my-trip-highlight-item.more {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 100%;
+  color: #aaa;
+}
+/* ===== Reviews Tab ===== */
+.reviews-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 16px;
+  transition: box-shadow 0.2s;
+}
+
+.review-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.review-header h5 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.review-date {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.review-stars {
+  color: #f5a623;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.review-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===== Settings Tab ===== */
+.settings-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-row label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.setting-input {
+  border: 1.5px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.setting-input:focus {
+  border-color: #5596fe;
+}
+
+.save-settings-btn {
+  background: #5596fe;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+.save-settings-btn:hover {
+  background: #3a7df5;
+}
+
+.danger-zone h4 {
+  color: #e53935;
+}
+
+.delete-account-btn {
+  background: none;
+  border: 1.5px solid #e53935;
+  color: #e53935;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.delete-account-btn:hover {
+  background: #e53935;
+  color: #fff;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .profile-cover,
+  .profile-header-wrap,
+  .profile-content {
+    width: calc(100% - 32px);
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .my-trips-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .upcoming-trip-card {
+    flex-direction: column;
+  }
+
+  .trip-thumb {
+    width: 100%;
+    height: 180px;
+  }
+
+  .profile-tabs {
+    overflow-x: auto;
+  }
+
+  .trips-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.draft-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.draft-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.draft-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.draft-edited {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.draft-hint {
+  font-size: 12px;
+  color: #555;
+  margin: 4px 0 8px;
+}
+
+.draft-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.draft-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.draft-progress-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.draft-progress-pct {
+  font-size: 12px;
+  color: #999;
+}
+
+.draft-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.draft-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  border-radius: 10px;
+}
+
+.continue-planning-btn {
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  width: 100%;
+  height: 46px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.continue-planning-btn:hover {
+  opacity: 0.9;
+}
+.completed-meta-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.completed-last-updated {
+  font-size: 12px;
+  color: #999;
+  margin: 8px 0 0;
+}
+
+/* No Image Placeholder */
+.no-img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Show More */
+.show-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.show-more-btn {
+  background: transparent;
+  border: 1.5px solid #d1d5db;
+  border-radius: 30px;
+  padding: 10px 36px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.show-more-btn:hover {
+  border-color: #5596fe;
+  color: #5596fe;
+  background: #f0f5ff;
+}
