@@ -1,0 +1,651 @@
+/* ══════════════════════════════
+   PAGE
+══════════════════════════════ */
+.aip-page {
+  min-height: 100vh;
+  background-color: #f5f6fa;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════
+   HERO
+══════════════════════════════ */
+.aip-hero {
+  text-align: center;
+  padding: 48px 16px 24px;
+}
+
+.aip-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+}
+
+.aip-title-ai {
+  color: #3b82f6;
+}
+
+.aip-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════
+   CARD
+══════════════════════════════ */
+.aip-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 28px 36px 32px;
+  max-width: 560px;
+  width: 90%;
+  margin: 0 auto 32px;
+}
+
+/* ══════════════════════════════
+   PROGRESS BAR
+══════════════════════════════ */
+.aip-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.aip-progress-fill {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* ══════════════════════════════
+   QUESTION HEADER
+══════════════════════════════ */
+.aip-question-header {
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.aip-back-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-60%);
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #374151;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.aip-question-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.aip-question-sub {
+  font-size: 0.82rem;
+  color: #9ca3af;
+}
+
+/* ══════════════════════════════
+   STEP 1 — DESTINATION
+══════════════════════════════ */
+.aip-search-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  gap: 8px;
+}
+
+.aip-search-icon {
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+.aip-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.88rem;
+  color: #6b7280;
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+}
+
+.aip-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.aip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.aip-dest-btn {
+  padding: 10px 8px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Poppins", sans-serif;
+}
+
+.aip-dest-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.aip-dest-btn--active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+/* ══════════════════════════════
+   STEP 2 — CALENDAR
+══════════════════════════════ */
+.aip-calendar {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.aip-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.aip-cal-month {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.aip-cal-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 1.1rem;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.aip-cal-nav:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.aip-cal-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin-bottom: 14px;
+}
+
+.aip-cal-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.aip-cal-day-name {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #9ca3af;
+  font-weight: 500;
+  padding: 4px 0;
+}
+
+.aip-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.aip-cal-day {
+  text-align: center;
+  padding: 8px 4px;
+  font-size: 0.88rem;
+  color: #374151;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+  font-weight: 400;
+}
+
+.aip-cal-day:hover {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.aip-cal-day--other {
+  color: #d1d5db;
+  cursor: default;
+}
+
+.aip-cal-day--other:hover {
+  background: none;
+  color: #d1d5db;
+}
+
+.aip-cal-day--selected {
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.aip-cal-day--selected:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.aip-cal-day--range {
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 0;
+}
+
+/* ══════════════════════════════
+   STEP 3 — TRAVELERS
+══════════════════════════════ */
+.aip-travelers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.aip-traveler-card {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.aip-traveler-card--active {
+  border-color: #3b82f6;
+}
+
+.aip-traveler-emoji {
+  font-size: 1.6rem;
+  filter: grayscale(1);
+  opacity: 0.5;
+  transition: all 0.2s;
+}
+
+.aip-traveler-emoji--active {
+  filter: none;
+  opacity: 1;
+}
+
+.aip-traveler-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.aip-counter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 99px;
+  padding: 4px 12px;
+}
+
+.aip-counter-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  font-family: "Poppins", sans-serif;
+}
+
+.aip-counter-btn:hover {
+  color: #3b82f6;
+}
+
+.aip-counter-val {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #9ca3af;
+  min-width: 16px;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+.aip-counter-val--active {
+  color: #3b82f6;
+}
+
+/* ══════════════════════════════
+   STEP 4 — BUDGET
+══════════════════════════════ */
+.aip-budget-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.aip-budget-btn {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "Poppins", sans-serif;
+}
+
+.aip-budget-btn:hover {
+  border-color: #3b82f6;
+}
+
+.aip-budget-btn--active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.aip-budget-btn--active .aip-budget-label,
+.aip-budget-btn--active .aip-budget-price {
+  color: #fff;
+}
+
+.aip-budget-emoji {
+  font-size: 1.4rem;
+}
+
+.aip-budget-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.aip-budget-price {
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.aip-or-divider {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin: 16px 0;
+  font-weight: 500;
+}
+
+.aip-custom-input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 99px;
+  font-size: 0.88rem;
+  color: #374151;
+  outline: none;
+  font-family: "Poppins", sans-serif;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  margin-bottom: 24px;
+}
+
+.aip-custom-input::placeholder {
+  color: #9ca3af;
+}
+
+.aip-custom-input:focus {
+  border-color: #3b82f6;
+}
+
+/* ══════════════════════════════
+   STEP 5 — INTERESTS
+══════════════════════════════ */
+.aip-interests-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+  justify-content: center;
+}
+
+.aip-interest-btn {
+  padding: 8px 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 99px;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "Poppins", sans-serif;
+  white-space: nowrap;
+}
+
+.aip-interest-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.aip-interest-btn--active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.aip-interest-btn--active:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+/* ══════════════════════════════
+   CONTINUE BUTTON
+══════════════════════════════ */
+.aip-continue-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 99px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+  cursor: not-allowed;
+  background: #9ca3af;
+  color: #fff;
+  transition: background 0.3s ease;
+}
+
+.aip-continue-btn--active {
+  background: #3b82f6;
+  cursor: pointer;
+}
+
+.aip-continue-btn--active:hover {
+  background: #2563eb;
+}
+
+/* ══════════════════════════════
+   BOT BUBBLE
+══════════════════════════════ */
+.aip-bot-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0 40px 40px;
+  max-width: 560px;
+  width: 90%;
+  margin: 0 auto;
+  gap: 8px;
+}
+
+.aip-bot-text {
+  font-size: 0.82rem;
+  color: #374151;
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.aip-bot-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.aip-bot-btn:hover {
+  transform: scale(1.08);
+}
+
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+@media (max-width: 560px) {
+  .aip-card {
+    padding: 20px 16px 24px;
+  }
+
+  .aip-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .aip-budget-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .aip-travelers-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .aip-calendar {
+    padding: 16px 12px;
+  }
+}
+
+/* ══════════════════════════════
+   LOADING SCREEN
+══════════════════════════════ */
+.aip-loading-screen {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: "Poppins", sans-serif;
+  gap: 20px;
+  padding: 40px 16px;
+}
+
+.aip-loading-robot-wrapper {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.aip-loading-ellipse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.aip-loading-robot {
+  position: relative;
+  z-index: 2;
+  width: 200px;
+  animation: aip-robot-float 2s ease-in-out infinite;
+}
+
+@keyframes aip-robot-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-14px); }
+}
+
+/* Spinner */
+.aip-loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3.5px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: aip-spin 0.85s linear infinite;
+}
+
+@keyframes aip-spin {
+  to { transform: rotate(360deg); }
+}
+
+.aip-loading-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+  text-align: center;
+}
+
+.aip-loading-sub {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  margin: 0;
+  text-align: center;
+}

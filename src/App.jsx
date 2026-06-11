@@ -8,6 +8,7 @@ import Home from "./components/pages/Home";
 import Explore from "./components/pages/Explore";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./components/pages/Profile";
+import AiPlanner from "./components/pages/AiPlanner";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -29,6 +30,8 @@ function App() {
         setCurrentPage("explore");
       } else if (path === "/profile") {
         setCurrentPage("profile");
+      } else if (path === "/ai-planner") {
+        setCurrentPage("aiplanner");
       } else {
         setCurrentPage("home");
       }
@@ -79,9 +82,16 @@ function App() {
       setCurrentPage("explore");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
     window.navigateToProfile = () => {
       window.history.pushState({}, "", "/profile");
       setCurrentPage("profile");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.navigateToAiPlanner = () => {
+      window.history.pushState({}, "", "/ai-planner");
+      setCurrentPage("aiplanner");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -95,6 +105,7 @@ function App() {
       delete window.navigateToResetPassword;
       delete window.navigateToExplore;
       delete window.navigateToProfile;
+      delete window.navigateToAiPlanner;
     };
   }, []);
 
@@ -107,6 +118,7 @@ function App() {
     resetPassword: <ResetPassword />,
     explore: <Explore />,
     profile: <Profile />,
+    aiplanner: <AiPlanner />,
   };
 
   return (

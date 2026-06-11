@@ -9,6 +9,7 @@ const Navbar = ({ activePage = "home" }) => {
     if (page === "explore") window.navigateToExplore?.();
     if (page === "home") window.navigateToHome?.();
     if (page === "profile") window.navigateToProfile?.();
+    if (page === "aiplanner") window.navigateToAiPlanner?.();
   };
 
   return (
@@ -20,7 +21,6 @@ const Navbar = ({ activePage = "home" }) => {
         style={{ cursor: "pointer" }}
       >
         <img src={logo} alt="Mind Trip" style={{ width: "85px" }} />
-        {/* <span className="brand-name">Mind Trip</span> */}
       </div>
 
       {/* Nav Links */}
@@ -31,14 +31,19 @@ const Navbar = ({ activePage = "home" }) => {
         >
           Home
         </li>
-        <li>AI Planner</li>
+        <li
+          className={activePage === "aiplanner" ? "active" : ""}
+          onClick={() => handleNavigation("aiplanner")}
+        >
+          AI Planner
+        </li>
         <li
           className={activePage === "explore" ? "active" : ""}
           onClick={() => handleNavigation("explore")}
         >
           Explore
         </li>
-        <li>Tour packages</li>
+        <li>Calendar</li>
         <li>About Us</li>
       </ul>
 
