@@ -6,11 +6,21 @@ import Footer from "../layout/Footer";
 import "./AiPlanner.css";
 
 const destinations = [
-  "Cairo", "Giza", "Alexandria",
-  "Aswan", "Luxor", "Asyut",
-  "Beheira", "Fayoum", "Ismailia",
-  "Port Said", "Matroh", "Suez",
-  "Red Sea", "Sinai", "Hurghada",
+  "Cairo",
+  "Giza",
+  "Alexandria",
+  "Aswan",
+  "Luxor",
+  "Asyut",
+  "Beheira",
+  "Fayoum",
+  "Ismailia",
+  "Port Said",
+  "Matroh",
+  "Suez",
+  "Red Sea",
+  "Sinai",
+  "Hurghada",
   "Sharm Elsheikh",
 ];
 
@@ -40,59 +50,172 @@ const interestOptions = [
   { label: "Handmade Crafts", emoji: "📦" },
 ];
 
-// Simple calendar helper
+const defaultDayDetails = {
+  1: [
+    {
+      time: "Morning",
+      title: "Arrival & Check-in",
+      activities: ["Check in", "Relax", "Promenade walk"],
+    },
+    {
+      time: "Afternoon",
+      title: "Beach Time",
+      activities: ["Beach time", "Seaside lunch", "Light activities"],
+    },
+    {
+      time: "Evening",
+      title: "Sunset & Vibes",
+      activities: ["Sunset", "Café time", "Dinner"],
+    },
+  ],
+  2: [
+    {
+      time: "Morning",
+      title: "Desert Start",
+      activities: ["Early breakfast", "Desert tour", "Camel ride"],
+    },
+    {
+      time: "Afternoon",
+      title: "Local Life",
+      activities: ["Local market", "Street food", "Cultural visit"],
+    },
+    {
+      time: "Evening",
+      title: "Night Out",
+      activities: ["Local restaurant", "Music", "Night walk"],
+    },
+  ],
+  3: [
+    {
+      time: "Morning",
+      title: "Snorkeling",
+      activities: ["Early dive", "Coral reef", "Underwater photos"],
+    },
+    {
+      time: "Afternoon",
+      title: "Blue Waters",
+      activities: ["Boat trip", "Swimming", "Beach lunch"],
+    },
+    {
+      time: "Evening",
+      title: "Farewell",
+      activities: ["Sunset view", "Dinner", "Pack & rest"],
+    },
+  ],
+  4: [
+    {
+      time: "Morning",
+      title: "Hidden Gems",
+      activities: ["Old town walk", "Local guide", "Photo spots"],
+    },
+    {
+      time: "Afternoon",
+      title: "Culture & Food",
+      activities: ["Cultural site", "Local lunch", "Souvenir shopping"],
+    },
+    {
+      time: "Evening",
+      title: "Night Life",
+      activities: ["Rooftop dinner", "Night market", "Live music"],
+    },
+  ],
+  5: [
+    {
+      time: "Morning",
+      title: "Last Explore",
+      activities: ["Final sightseeing", "Breakfast cafe", "Packing"],
+    },
+    {
+      time: "Afternoon",
+      title: "Relaxation",
+      activities: ["Spa", "Pool time", "Light lunch"],
+    },
+    {
+      time: "Evening",
+      title: "Farewell",
+      activities: ["Sunset view", "Farewell dinner", "Check out"],
+    },
+  ],
+};
+
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 function getFirstDayOfMonth(year, month) {
-  let day = new Date(year, month, 1).getDay(); // 0=Sun
-  return day === 0 ? 6 : day - 1; // convert to Mon=0
+  let day = new Date(year, month, 1).getDay();
+  return day === 0 ? 6 : day - 1;
 }
 const MONTH_NAMES = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
-const DAY_NAMES = ["Mo","Tu","We","Th","Fr","Sa","Su"];
+const DAY_NAMES = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 const AiPlanner = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [tripPlan, setTripPlan] = useState(null);
   const totalSteps = 5;
 
-  // Step 1 - Destination
+  const [dayDetails, setDayDetails] = useState(defaultDayDetails);
+  const [expandedDay, setExpandedDay] = useState(null);
   const [selectedDest, setSelectedDest] = useState(null);
   const [search, setSearch] = useState("");
 
-  // Step 2 - Calendar
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  // Step 3 - Travelers
   const [adults, setAdults] = useState(0);
   const [children, setChildren] = useState(0);
   const [pets, setPets] = useState(0);
-
-  // Step 4 - Budget
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
-
-  // Step 5 - Interests
   const [selectedInterests, setSelectedInterests] = useState([]);
 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingDay, setEditingDay] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [isEditLoading, setIsEditLoading] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [showSavedModal, setShowSavedModal] = useState(false);
+
+  const editSuggestions = [
+    "Water Sports",
+    "Relaxation",
+    "More Activity",
+    "Budget-Friendly",
+  ];
+  const suggestionColors = ["#C4E0F9", "#EDF9F0", "#FCE8D1", "#D7F1F3"];
+  const suggestionTextColors = ["#3b82f6", "#22c55e", "#f97316", "#06b6d4"];
   const progressPercent = (step / totalSteps) * 100;
 
-  // ── Calendar logic ──
   const handlePrevMonth = () => {
-    if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
-    else setCalMonth(m => m - 1);
+    if (calMonth === 0) {
+      setCalMonth(11);
+      setCalYear((y) => y - 1);
+    } else setCalMonth((m) => m - 1);
   };
   const handleNextMonth = () => {
-    if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
-    else setCalMonth(m => m + 1);
+    if (calMonth === 11) {
+      setCalMonth(0);
+      setCalYear((y) => y + 1);
+    } else setCalMonth((m) => m + 1);
   };
+
   const handleDayClick = (day) => {
     if (!startDate || (startDate && endDate)) {
       setStartDate({ year: calYear, month: calMonth, day });
@@ -108,8 +231,17 @@ const AiPlanner = () => {
       }
     }
   };
-  const isDayStart = (day) => startDate && calYear === startDate.year && calMonth === startDate.month && day === startDate.day;
-  const isDayEnd = (day) => endDate && calYear === endDate.year && calMonth === endDate.month && day === endDate.day;
+
+  const isDayStart = (day) =>
+    startDate &&
+    calYear === startDate.year &&
+    calMonth === startDate.month &&
+    day === startDate.day;
+  const isDayEnd = (day) =>
+    endDate &&
+    calYear === endDate.year &&
+    calMonth === endDate.month &&
+    day === endDate.day;
   const isDayInRange = (day) => {
     if (!startDate || !endDate) return false;
     const d = new Date(calYear, calMonth, day);
@@ -121,14 +253,17 @@ const AiPlanner = () => {
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(calYear, calMonth);
     const firstDay = getFirstDayOfMonth(calYear, calMonth);
-    const prevMonthDays = getDaysInMonth(calYear, calMonth === 0 ? 11 : calMonth - 1);
+    const prevMonthDays = getDaysInMonth(
+      calYear,
+      calMonth === 0 ? 11 : calMonth - 1,
+    );
     const cells = [];
-
-    // prev month padding
-    for (let i = firstDay - 1; i >= 0; i--) {
-      cells.push(<div key={`prev-${i}`} className="aip-cal-day aip-cal-day--other">{prevMonthDays - i}</div>);
-    }
-    // current month
+    for (let i = firstDay - 1; i >= 0; i--)
+      cells.push(
+        <div key={`prev-${i}`} className="aip-cal-day aip-cal-day--other">
+          {prevMonthDays - i}
+        </div>,
+      );
     for (let d = 1; d <= daysInMonth; d++) {
       const isStart = isDayStart(d);
       const isEnd = isDayEnd(d);
@@ -137,48 +272,210 @@ const AiPlanner = () => {
       if (isStart || isEnd) cls += " aip-cal-day--selected";
       else if (inRange) cls += " aip-cal-day--range";
       cells.push(
-        <div key={`d-${d}`} className={cls} onClick={() => handleDayClick(d)}>{d}</div>
+        <div key={`d-${d}`} className={cls} onClick={() => handleDayClick(d)}>
+          {d}
+        </div>,
       );
     }
-    // next month padding
     const remaining = 42 - cells.length;
-    for (let d = 1; d <= remaining; d++) {
-      cells.push(<div key={`next-${d}`} className="aip-cal-day aip-cal-day--other">{d}</div>);
-    }
+    for (let d = 1; d <= remaining; d++)
+      cells.push(
+        <div key={`next-${d}`} className="aip-cal-day aip-cal-day--other">
+          {d}
+        </div>,
+      );
     return cells;
   };
 
-  // ── Step 3 helpers ──
-  const changeCount = (setter, val, delta) => {
-    setter(Math.max(0, val + delta));
-  };
+  const changeCount = (setter, val, delta) => setter(Math.max(0, val + delta));
   const totalTravelers = adults + children + pets;
-
-  // ── Step 4 helpers ──
   const hasBudget = selectedBudget !== null || customAmount.trim() !== "";
 
-  // ── Step 5 helpers ──
-  const toggleInterest = (label) => {
-    setSelectedInterests(prev =>
-      prev.includes(label) ? prev.filter(i => i !== label) : [...prev, label]
+  const toggleInterest = (label) =>
+    setSelectedInterests((prev) =>
+      prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label],
     );
+
+  const getBudgetAmount = () => {
+    if (customAmount) return customAmount;
+    if (selectedBudget === "Basic") return 300;
+    if (selectedBudget === "Standard") return 500;
+    if (selectedBudget === "Comfort") return 1000;
+    if (selectedBudget === "Premium") return 2000;
+    return 0;
   };
 
-  // ── Continue handlers ──
+  const getTripDays = () => {
+    if (!startDate || !endDate) return 3;
+    const s = new Date(startDate.year, startDate.month, startDate.day);
+    const e = new Date(endDate.year, endDate.month, endDate.day);
+    const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
+  };
+
+  // ── Edit with AI ──
+  const handleUpdateItinerary = async () => {
+    if (!editText.trim()) return;
+    setIsEditLoading(true);
+    setEditError("");
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    const mockUpdates = {
+      "Water Sports": [
+        {
+          time: "Morning",
+          title: "Water Sports",
+          activities: ["Jet skiing", "Wakeboarding", "Speed boat"],
+        },
+        {
+          time: "Afternoon",
+          title: "Diving & Snorkeling",
+          activities: ["Coral reef dive", "Underwater photos", "Fish feeding"],
+        },
+        {
+          time: "Evening",
+          title: "Beach Bonfire",
+          activities: ["Sunset swim", "BBQ dinner", "Beach games"],
+        },
+      ],
+      Relaxation: [
+        {
+          time: "Morning",
+          title: "Spa Morning",
+          activities: ["Full body massage", "Steam room", "Healthy breakfast"],
+        },
+        {
+          time: "Afternoon",
+          title: "Pool & Chill",
+          activities: ["Pool lounging", "Light reading", "Juice bar"],
+        },
+        {
+          time: "Evening",
+          title: "Quiet Dinner",
+          activities: ["Sunset view", "Fine dining", "Early rest"],
+        },
+      ],
+      "More Activity": [
+        {
+          time: "Morning",
+          title: "Adventure Start",
+          activities: ["Hiking trail", "Rock climbing", "Zip line"],
+        },
+        {
+          time: "Afternoon",
+          title: "Extreme Sports",
+          activities: ["ATV riding", "Paragliding", "Kayaking"],
+        },
+        {
+          time: "Evening",
+          title: "Night Adventure",
+          activities: ["Night safari", "Campfire", "Stargazing"],
+        },
+      ],
+      "Budget-Friendly": [
+        {
+          time: "Morning",
+          title: "Free Beach",
+          activities: ["Public beach", "Packed breakfast", "Morning walk"],
+        },
+        {
+          time: "Afternoon",
+          title: "Local Spots",
+          activities: ["Street food lunch", "Local market", "Free museum"],
+        },
+        {
+          time: "Evening",
+          title: "Local Eats",
+          activities: ["Local restaurant", "Night market", "Tea & sweets"],
+        },
+      ],
+    };
+
+    const matched = mockUpdates[editText] || [
+      {
+        time: "Morning",
+        title: "Custom Morning",
+        activities: [`${editText} activity`, "Breakfast", "Explore"],
+      },
+      {
+        time: "Afternoon",
+        title: "Custom Afternoon",
+        activities: ["Local lunch", "Sightseeing", `${editText} tour`],
+      },
+      {
+        time: "Evening",
+        title: "Custom Evening",
+        activities: ["Dinner", "Relax", `${editText} wrap-up`],
+      },
+    ];
+
+    setDayDetails((prev) => ({ ...prev, [editingDay]: matched }));
+    setShowEditModal(false);
+    setEditText("");
+    setIsEditLoading(false);
+    setShowSavedModal(true);
+  };
+
+  // ── handleContinue ──
   const handleContinue = () => {
-    if (step < totalSteps) setStep(s => s + 1);
-    else {
+    if (step < totalSteps) {
+      setStep((s) => s + 1);
+    } else {
       setIsLoading(true);
-      // Simulate AI generating plan (3 seconds)
       setTimeout(() => {
         setIsLoading(false);
-        console.log("Plan data:", { selectedDest, startDate, endDate, adults, children, pets, selectedBudget, customAmount, selectedInterests });
+        const days = getTripDays();
+        setTripPlan({
+          destination: selectedDest,
+          days,
+          nights: days - 1,
+          adults,
+          children,
+          pets,
+          budget: getBudgetAmount(),
+          itinerary: Array.from({ length: days }, (_, i) => {
+            const dayNum = i + 1;
+            const imgs = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80",
+              "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&q=80",
+              "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=400&q=80",
+              "https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=400&q=80",
+              "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80",
+            ];
+            const descriptions = [
+              `Arrival & Chill in ${selectedDest}`,
+              "Desert Vibes & Local Life",
+              "Adventure & Blue Magic",
+              "Hidden Gems & Local Culture",
+              "Relaxation & Farewell",
+            ];
+            const tagSets = [
+              ["Relax", "Beach", "Culture"],
+              ["Culture", "Local", "Relax"],
+              ["Adventure", "Snorkling", "Nature"],
+              ["Culture", "History", "Food"],
+              ["Relax", "Nature", "Sunset"],
+            ];
+            const idx = Math.min(i, imgs.length - 1);
+            return {
+              day: dayNum,
+              description: descriptions[idx],
+              duration: "4 hrs",
+              type: "Full day",
+              cost: 1000,
+              tags: tagSets[idx],
+              img: imgs[idx],
+            };
+          }),
+        });
+        setShowResult(true);
       }, 3000);
     }
   };
-  const handleBack = () => setStep(s => s - 1);
 
-  // ── Can continue? ──
+  const handleBack = () => setStep((s) => s - 1);
+
   const canContinue = () => {
     if (step === 1) return selectedDest !== null;
     if (step === 2) return startDate !== null && endDate !== null;
@@ -188,11 +485,10 @@ const AiPlanner = () => {
     return false;
   };
 
-  const filteredDests = destinations.filter(d =>
-    d.toLowerCase().includes(search.toLowerCase())
+  const filteredDests = destinations.filter((d) =>
+    d.toLowerCase().includes(search.toLowerCase()),
   );
 
-  // ── Bot messages per step ──
   const botMessages = {
     1: "Tap the bot if you need some inspiration.",
     2: "Not sure about the dates? Ask AI",
@@ -211,34 +507,292 @@ const AiPlanner = () => {
         </div>
         <div className="aip-loading-spinner" />
         <h2 className="aip-loading-title">Mindy is working his magic...</h2>
-        <p className="aip-loading-sub">Analyzing best spots and matching your budget...</p>
+        <p className="aip-loading-sub">
+          Analyzing best spots and matching your budget...
+        </p>
       </div>
     );
   }
 
+  // ── Result Screen ──
+  if (showResult && tripPlan) {
+    return (
+      <div className="aip-page">
+        <Navbar activePage="aiplanner" />
+
+        <div className="aip-result-header">
+          <h1 className="aip-result-title">
+            Your <span className="aip-result-dest">{tripPlan.destination}</span>{" "}
+            Getaway
+          </h1>
+          <p className="aip-result-meta">
+            {tripPlan.days} Days, {tripPlan.nights} Nights &nbsp;|&nbsp;
+            {tripPlan.adults} Adults
+            {tripPlan.children > 0 ? `, ${tripPlan.children} Kid` : ""}
+            {tripPlan.pets > 0 ? `, ${tripPlan.pets} Pet` : ""}
+            &nbsp;|&nbsp; Est. {tripPlan.budget} EGP / person
+          </p>
+        </div>
+
+        <div className="aip-result-container">
+          <div className="aip-result-left">
+            <div className="aip-result-days">
+              {tripPlan.itinerary.map((item) => {
+                const isExpanded = expandedDay === item.day;
+                const details = dayDetails[item.day] || [];
+
+                return (
+                  <div
+                    key={item.day}
+                    className={`aip-result-day-card ${isExpanded ? "aip-result-day-card--expanded" : ""}`}
+                  >
+                    <img
+                      src={item.img}
+                      alt={item.description}
+                      className="aip-result-day-img"
+                    />
+                    <div className="aip-result-day-info">
+                      <div className="aip-result-day-header-row">
+                        <p className="aip-result-day-label">Day {item.day}</p>
+                        {isExpanded && (
+                          <button
+                            className="aip-edit-ai-btn"
+                            onClick={() => {
+                              setEditingDay(item.day);
+                              setShowEditModal(true);
+                              setEditText("");
+                              setEditError("");
+                            }}
+                          >
+                            ✏️ Edit with AI
+                          </button>
+                        )}
+                      </div>
+
+                      <h3 className="aip-result-day-title">
+                        {item.description}
+                      </h3>
+                      <div className="aip-result-day-meta">
+                        <span>🕐 {item.duration}</span>
+                        <span>⏱ {item.type}</span>
+                        <span className="aip-result-cost">
+                          ~{item.cost} EGP
+                        </span>
+                      </div>
+                      <div className="aip-result-tags">
+                        {item.tags.map((tag) => (
+                          <span key={tag} className="aip-result-tag">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {isExpanded && (
+                        <div className="aip-day-details">
+                          <div className="aip-timeline-dots">
+                            {details.map((_, i) => (
+                              <React.Fragment key={i}>
+                                <div
+                                  className={`aip-timeline-dot ${i === 0 ? "aip-timeline-dot--active" : ""}`}
+                                />
+                                {i < details.length - 1 && (
+                                  <div className="aip-timeline-line" />
+                                )}
+                              </React.Fragment>
+                            ))}
+                          </div>
+                          <div className="aip-day-columns">
+                            {details.map((slot, i) => (
+                              <div key={i} className="aip-day-column">
+                                <p className="aip-day-slot-time">
+                                  {slot.time} —
+                                </p>
+                                <p className="aip-day-slot-title">
+                                  {slot.title}
+                                </p>
+                                <ul className="aip-day-slot-list">
+                                  {slot.activities.map((act, j) => (
+                                    <li key={j}>• {act}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        className="aip-result-view-btn"
+                        onClick={() =>
+                          setExpandedDay(isExpanded ? null : item.day)
+                        }
+                      >
+                        {isExpanded ? "View less" : "View >"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="aip-result-map">
+            <img
+              src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80"
+              alt="Map"
+              className="aip-result-map-img"
+            />
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "0 0 40px",
+          }}
+        >
+          <button className="aip-save-btn">Save Trip</button>
+        </div>
+
+        {/* AI Edit Modal */}
+        {showEditModal && (
+          <div
+            className="aip-modal-overlay"
+            onClick={() => !isEditLoading && setShowEditModal(false)}
+          >
+            <div className="aip-modal" onClick={(e) => e.stopPropagation()}>
+              <button
+                className="aip-modal-close"
+                onClick={() => !isEditLoading && setShowEditModal(false)}
+                disabled={isEditLoading}
+              >
+                ✕
+              </button>
+              <h3 className="aip-modal-title">Customize Day {editingDay}</h3>
+
+              <textarea
+                className="aip-modal-textarea"
+                placeholder="What would you like to change? (e.g. 'Replace Safari with Diving' or 'Make it cheaper')"
+                value={editText}
+                onChange={(e) => {
+                  setEditText(e.target.value);
+                  setEditError("");
+                }}
+                disabled={isEditLoading}
+              />
+
+              <div className="aip-modal-suggestions">
+                {editSuggestions.map((s, i) => (
+                  <button
+                    key={s}
+                    className="aip-modal-suggestion"
+                    style={{
+                      background: suggestionColors[i],
+                      color: suggestionTextColors[i],
+                    }}
+                    onClick={() => {
+                      setEditText(s);
+                      setEditError("");
+                    }}
+                    disabled={isEditLoading}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              {editError && <p className="aip-modal-error">{editError}</p>}
+
+              <button
+                className="aip-modal-update-btn"
+                onClick={handleUpdateItinerary}
+                disabled={isEditLoading || !editText.trim()}
+                style={{ opacity: isEditLoading || !editText.trim() ? 0.6 : 1 }}
+              >
+                {isEditLoading ? (
+                  <span className="aip-modal-loading">
+                    <span className="aip-modal-spinner" /> Updating...
+                  </span>
+                ) : (
+                  "Update Itinerary"
+                )}
+              </button>
+
+              <button
+                className="aip-modal-cancel-btn"
+                onClick={() => !isEditLoading && setShowEditModal(false)}
+                disabled={isEditLoading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Changed Saved Modal */}
+        {showSavedModal && (
+          <div
+            className="aip-modal-overlay"
+            onClick={() => setShowSavedModal(false)}
+          >
+            <div
+              className="aip-modal aip-saved-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="aip-modal-close"
+                onClick={() => setShowSavedModal(false)}
+              >
+                ✕
+              </button>
+              <p className="aip-saved-text">Trip saved to My Trip</p>
+              <button
+                className="aip-modal-update-btn"
+                onClick={() => setShowSavedModal(false)}
+              >
+                View
+              </button>
+            </div>
+          </div>
+        )}
+
+        <Footer />
+      </div>
+    );
+  }
+
+  // ── Main Planner ──
   return (
     <div className="aip-page">
       <Navbar activePage="aiplanner" />
-
       <div className="aip-hero">
-        <h1 className="aip-title"><span className="aip-title-ai">AI</span> Planner</h1>
+        <h1 className="aip-title">
+          <span className="aip-title-ai">AI</span> Planner
+        </h1>
         <p className="aip-subtitle">
-          Design your dream trip in seconds. Answer a few quick questions, and let Mindy do the magic!
+          Design your dream trip in seconds. Answer a few quick questions, and
+          let Mindy do the magic!
         </p>
       </div>
 
       <div className="aip-card">
-        {/* Progress Bar */}
         <div className="aip-progress-bar">
-          <div className="aip-progress-fill" style={{ width: `${progressPercent}%` }} />
+          <div
+            className="aip-progress-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
 
-        {/* ── STEP 1: Destination ── */}
         {step === 1 && (
           <>
             <div className="aip-question-header">
-              <h2 className="aip-question-title">Where do you want to go? 📍</h2>
-              <p className="aip-question-sub">Pick a destination or type your dream place or chat with your.</p>
+              <h2 className="aip-question-title">
+                Where do you want to go? 📍
+              </h2>
+              <p className="aip-question-sub">
+                Pick a destination or type your dream place or chat with your.
+              </p>
             </div>
             <div className="aip-search-wrapper">
               <span className="aip-search-icon">🔍</span>
@@ -247,11 +801,11 @@ const AiPlanner = () => {
                 type="text"
                 placeholder="Destinations, trips, activities..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             <div className="aip-grid" style={{ marginBottom: "28px" }}>
-              {filteredDests.map(dest => (
+              {filteredDests.map((dest) => (
                 <button
                   key={dest}
                   className={`aip-dest-btn ${selectedDest === dest ? "aip-dest-btn--active" : ""}`}
@@ -264,52 +818,92 @@ const AiPlanner = () => {
           </>
         )}
 
-        {/* ── STEP 2: Calendar ── */}
         {step === 2 && (
           <>
             <div className="aip-question-header">
-              <button className="aip-back-btn" onClick={handleBack}>←</button>
+              <button className="aip-back-btn" onClick={handleBack}>
+                ←
+              </button>
               <h2 className="aip-question-title">How long is your trip? 🗓️</h2>
-              <p className="aip-question-sub">Choose how many days you're planning to travel.</p>
+              <p className="aip-question-sub">
+                Choose how many days you're planning to travel.
+              </p>
             </div>
             <div className="aip-calendar">
               <div className="aip-cal-header">
-                <button className="aip-cal-nav" onClick={handlePrevMonth}>‹</button>
-                <span className="aip-cal-month">{MONTH_NAMES[calMonth]} {calYear}</span>
-                <button className="aip-cal-nav" onClick={handleNextMonth}>›</button>
+                <button className="aip-cal-nav" onClick={handlePrevMonth}>
+                  ‹
+                </button>
+                <span className="aip-cal-month">
+                  {MONTH_NAMES[calMonth]} {calYear}
+                </span>
+                <button className="aip-cal-nav" onClick={handleNextMonth}>
+                  ›
+                </button>
               </div>
               <div className="aip-cal-divider" />
               <div className="aip-cal-days-header">
-                {DAY_NAMES.map((d, i) => <div key={i} className="aip-cal-day-name">{d}</div>)}
+                {DAY_NAMES.map((d, i) => (
+                  <div key={i} className="aip-cal-day-name">
+                    {d}
+                  </div>
+                ))}
               </div>
-              <div className="aip-cal-grid">
-                {renderCalendar()}
-              </div>
+              <div className="aip-cal-grid">{renderCalendar()}</div>
             </div>
           </>
         )}
 
-        {/* ── STEP 3: Travelers ── */}
         {step === 3 && (
           <>
             <div className="aip-question-header">
-              <button className="aip-back-btn" onClick={handleBack}>←</button>
+              <button className="aip-back-btn" onClick={handleBack}>
+                ←
+              </button>
               <h2 className="aip-question-title">Who's traveling? 👥</h2>
-              <p className="aip-question-sub">Tell us how many people are joining.</p>
+              <p className="aip-question-sub">
+                Tell us how many people are joining.
+              </p>
             </div>
             <div className="aip-travelers-grid">
               {[
                 { label: "Adults", emoji: "👤", val: adults, set: setAdults },
-                { label: "Children", emoji: "👨‍👧", val: children, set: setChildren },
+                {
+                  label: "Children",
+                  emoji: "👨‍👧",
+                  val: children,
+                  set: setChildren,
+                },
                 { label: "Pets", emoji: "🐾", val: pets, set: setPets },
               ].map(({ label, emoji, val, set }) => (
-                <div key={label} className={`aip-traveler-card ${val > 0 ? "aip-traveler-card--active" : ""}`}>
-                  <span className={`aip-traveler-emoji ${val > 0 ? "aip-traveler-emoji--active" : ""}`}>{emoji}</span>
+                <div
+                  key={label}
+                  className={`aip-traveler-card ${val > 0 ? "aip-traveler-card--active" : ""}`}
+                >
+                  <span
+                    className={`aip-traveler-emoji ${val > 0 ? "aip-traveler-emoji--active" : ""}`}
+                  >
+                    {emoji}
+                  </span>
                   <span className="aip-traveler-label">{label}</span>
                   <div className="aip-counter">
-                    <button className="aip-counter-btn" onClick={() => changeCount(set, val, -1)}>−</button>
-                    <span className={`aip-counter-val ${val > 0 ? "aip-counter-val--active" : ""}`}>{val}</span>
-                    <button className="aip-counter-btn" onClick={() => changeCount(set, val, 1)}>+</button>
+                    <button
+                      className="aip-counter-btn"
+                      onClick={() => changeCount(set, val, -1)}
+                    >
+                      −
+                    </button>
+                    <span
+                      className={`aip-counter-val ${val > 0 ? "aip-counter-val--active" : ""}`}
+                    >
+                      {val}
+                    </span>
+                    <button
+                      className="aip-counter-btn"
+                      onClick={() => changeCount(set, val, 1)}
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
               ))}
@@ -317,20 +911,26 @@ const AiPlanner = () => {
           </>
         )}
 
-        {/* ── STEP 4: Budget ── */}
         {step === 4 && (
           <>
             <div className="aip-question-header">
-              <button className="aip-back-btn" onClick={handleBack}>←</button>
+              <button className="aip-back-btn" onClick={handleBack}>
+                ←
+              </button>
               <h2 className="aip-question-title">What's your budget? 💰</h2>
-              <p className="aip-question-sub">This is your budget per person.</p>
+              <p className="aip-question-sub">
+                This is your budget per person.
+              </p>
             </div>
             <div className="aip-budget-grid">
               {budgetOptions.map(({ label, price, emoji }) => (
                 <button
                   key={label}
                   className={`aip-budget-btn ${selectedBudget === label ? "aip-budget-btn--active" : ""}`}
-                  onClick={() => { setSelectedBudget(label); setCustomAmount(""); }}
+                  onClick={() => {
+                    setSelectedBudget(label);
+                    setCustomAmount("");
+                  }}
                 >
                   <span className="aip-budget-emoji">{emoji}</span>
                   <span className="aip-budget-label">{label}</span>
@@ -344,18 +944,24 @@ const AiPlanner = () => {
               type="number"
               placeholder="Enter your custom amount"
               value={customAmount}
-              onChange={e => { setCustomAmount(e.target.value); setSelectedBudget(null); }}
+              onChange={(e) => {
+                setCustomAmount(e.target.value);
+                setSelectedBudget(null);
+              }}
             />
           </>
         )}
 
-        {/* ── STEP 5: Interests ── */}
         {step === 5 && (
           <>
             <div className="aip-question-header">
-              <button className="aip-back-btn" onClick={handleBack}>←</button>
+              <button className="aip-back-btn" onClick={handleBack}>
+                ←
+              </button>
               <h2 className="aip-question-title">What are you into? 🎯</h2>
-              <p className="aip-question-sub">Select what you'd love to do on this trip.</p>
+              <p className="aip-question-sub">
+                Select what you'd love to do on this trip.
+              </p>
             </div>
             <div className="aip-interests-grid">
               {interestOptions.map(({ label, emoji }) => (
@@ -371,7 +977,6 @@ const AiPlanner = () => {
           </>
         )}
 
-        {/* Continue / Generate Button */}
         <button
           className={`aip-continue-btn ${canContinue() ? "aip-continue-btn--active" : ""}`}
           onClick={handleContinue}
@@ -381,7 +986,6 @@ const AiPlanner = () => {
         </button>
       </div>
 
-      {/* Bot bubble */}
       {botMessages[step] && (
         <div className="aip-bot-wrapper">
           <p className="aip-bot-text">{botMessages[step]}</p>

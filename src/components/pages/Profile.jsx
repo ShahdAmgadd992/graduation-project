@@ -269,6 +269,132 @@ const completedTrips = [
   },
 ];
 
+const termsData = [
+  {
+    section: "1. Acceptance of Terms",
+    points: [
+      "Agree to be bound by MindTrip Terms of Service.",
+      "Comply with all applicable laws and regulations.",
+      "Unauthorized access or use of this site is prohibited.",
+    ],
+  },
+  {
+    section: "2. How We Use Your Data",
+    points: [
+      "Personalize travel recommendations based on your preferences.",
+      "Improve AI algorithms for better accuracy.",
+      "Provide dedicated customer support.",
+      "Note:  We do not sell your personal data to third parties.",
+    ],
+    noteIndex: 3,
+  },
+  {
+    section: "3. Data Security",
+    points: [
+      "Industry-standard security measures to protect your information.",
+      "Secure data transmission over the internet.",
+      "Continuous monitoring to prevent unauthorized access.",
+    ],
+  },
+  {
+    section: "4. Cookies & Tracking",
+    points: [
+      "Enhance your browsing experience.",
+      "Analyze site traffic and user behavior.",
+      "Manage cookie preferences through browser settings.",
+    ],
+  },
+  {
+    section: "5. User Responsibility",
+    points: [
+      "You are responsible for verifying all travel details, including dates, prices, and locations.",
+      "MindTrip acts as an AI assistant and is not liable for any external booking errors or travel disruptions.",
+      "You must ensure you have the necessary travel documents (Passports, Visas) before your trip.",
+    ],
+  },
+  {
+    section: "6. Prohibited Use",
+    points: [
+      "You may not use the app to generate harmful, illegal, or misleading content.",
+      "Attempting to hack, decompile, or disrupt the app's AI algorithms is strictly prohibited.",
+      "Automated scraping of trip data for commercial use without permission is not allowed.",
+    ],
+  },
+  {
+    section: "7. Intellectual Property",
+    points: [
+      "All AI-generated designs, logos, and software are the property of MindTrip.",
+      "Users retain ownership of their personal trip photos and reviews uploaded to the platform.",
+    ],
+  },
+  {
+    section: "8. Changes to Terms",
+    points: [
+      "We reserve the right to update these terms at any time to reflect new features or laws.",
+      "Continued use of the app after updates constitutes your acceptance of the new terms.",
+    ],
+  },
+];
+
+const userPolicyData = [
+  {
+    section: "1. Information We Collect",
+    points: [
+      "Basic Identity: We collect information such as your name, email address, and profile picture when you create an account.",
+      "Travel Preferences: To personalize your experience, we store data about your favorite destinations and travel style.",
+      "Device Data: Technical information like IP addresses and browser types are collected for security and analytics.",
+    ],
+  },
+  {
+    section: "2. How We Use Your Data",
+    points: [
+      "AI Personalization: Your data is used to feed our AI engine to generate travel recommendations tailored specifically for you.",
+      "App Functionality: To ensure a smooth experience when saving trips or managing your profile.",
+      "Communication: We use your contact details to send trip updates, security alerts, and support messages.",
+    ],
+  },
+  {
+    section: "3. Location Data",
+    points: [
+      "Nearby Suggestions: We use your real-time location to suggest hidden gems and attractions near you.",
+      "Map Integration: Location data helps us provide accurate directions and local travel options.",
+      "Control: You can enable or disable location services at any time through your device settings.",
+    ],
+  },
+  {
+    section: "4. Data Security",
+    points: [
+      "Encryption: All personal data is encrypted using industry-standard protocols during transmission and storage.",
+      "Monitoring: We perform regular security audits to protect against unauthorized access or data breaches.",
+      "Safe Storage: Your information is securely hosted using Firebase and Cloud Firestore technologies.",
+    ],
+  },
+  {
+    section: "5. Data Sharing",
+    points: [
+      "No Data Selling: We strictly do not sell, rent, or trade your personal data to any third-party marketers.",
+      "Service Providers: Data is only shared with trusted partners (like hotel/flight APIs) necessary to fulfill your travel requests.",
+      "Legal Compliance: We may disclose information if required by law to protect our rights or comply with legal processes.",
+    ],
+  },
+  {
+    section: "6. Your Rights",
+    points: [
+      "Full Access: You have the right to access and download a copy of all the data we store about you.",
+      "Edit & Delete: You can update your information or permanently delete your account and data via the Settings page.",
+      "Privacy Control: You can manage your notification and tracking preferences directly within the app.",
+    ],
+  },
+  {
+    section: "7. Changes to This Policy",
+    points: [
+      "Policy Updates: We may update this policy occasionally to reflect new features or legal requirements.",
+      "Notifications: Users will be notified of significant changes to this policy via in-app or email.",
+      "Acceptance: Continued use of MindTrip after updates constitutes your acceptance of the revised User Policy.",
+    ],
+  },
+];
+
 const faqsData = [
   {
     q: "What is MindTrip?",
@@ -321,6 +447,23 @@ const Profile = () => {
   const [activeSetting, setActiveSetting] = useState(null); // null | "faqs"
   const [faqSearch, setFaqSearch] = useState("");
   const [openFaqId, setOpenFaqId] = useState(null);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showProfileSavedModal, setShowProfileSavedModal] = useState(false);
+  const [editProfileData, setEditProfileData] = useState({
+    fullName: "Zeina Ahmed",
+    email: "zeinaAhmed@gmail.com",
+    username: "@zeina_ahmed",
+    phone: "0128 514 6324",
+    bio: "Chasing sunrises, collecting stories.",
+    interests: [
+      "Nature & Oasis",
+      "Hidden Gems",
+      "Shopping & Nightlife",
+      "Family Friendly",
+      "Relaxation & Wellness",
+      "Local Cuisine",
+    ],
+  });
 
   React.useEffect(() => {
     const handleClick = () => setOpenMenuId(null);
@@ -401,7 +544,12 @@ const Profile = () => {
               </div>
             </div>
             <div className="profile-actions">
-              <button className="edit-profile-btn">Edit Profile</button>
+              <button
+                className="edit-profile-btn"
+                onClick={() => setShowEditProfileModal(true)}
+              >
+                Edit Profile
+              </button>
             </div>
           </div>
 
@@ -1341,7 +1489,147 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* ===== Normal Settings View ===== */}
+              {/* ===== Terms of Service View ===== */}
+              {activeSetting === "terms" && (
+                <div className="overview-section">
+                  <div className="faq-header">
+                    <button
+                      className="faq-back-btn"
+                      onClick={() => setActiveSetting(null)}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                    </button>
+                    <div style={{ flex: 1, textAlign: "center" }}>
+                      <h4 style={{ margin: 0 }}>Terms Of Service</h4>
+                      <p
+                        style={{
+                          margin: "4px 0 0",
+                          fontSize: 13,
+                          color: "#999",
+                        }}
+                      >
+                        Last Updated: May 2026
+                      </p>
+                    </div>
+                    <button className="terms-download-btn">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      Download PDF
+                    </button>
+                  </div>
+
+                  {/* Hello banner */}
+                  <div className="terms-hello-banner">
+                    <p>
+                      <span style={{ fontSize: 16 }}>Hello 👋</span>
+                      <br />
+                      Before you create an account, please read and accept our
+                      Terms and Conditions.
+                    </p>
+                  </div>
+
+                  {/* Sections */}
+                  <div className="terms-content">
+                    {termsData.map((item, idx) => (
+                      <div className="terms-section-row" key={idx}>
+                        <div className="terms-dot" />
+                        <div className="terms-section-body">
+                          <p className="terms-section-title">{item.section}</p>
+                          <ul className="terms-points">
+                            {item.points.map((point, pi) => (
+                              <li
+                                key={pi}
+                                className="terms-point"
+                                style={
+                                  item.noteIndex === pi
+                                    ? { color: "#5596fe", fontWeight: 500 }
+                                    : {}
+                                }
+                              >
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ===== User Policy View ===== */}
+              {activeSetting === "policy" && (
+                <div className="overview-section">
+                  <div className="faq-header">
+                    <button
+                      className="faq-back-btn"
+                      onClick={() => setActiveSetting(null)}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                    </button>
+                    <h4 style={{ margin: 0, flex: 1, textAlign: "center" }}>
+                      User Policy
+                    </h4>
+                    <div style={{ width: 36 }} />
+                  </div>
+                  <p
+                    style={{
+                      textAlign: "center",
+                      fontSize: 13,
+                      color: "#999",
+                      margin: "4px 0 20px",
+                    }}
+                  >
+                    Last Updated: May 2026
+                  </p>
+                  <div className="terms-content">
+                    {userPolicyData.map((item, idx) => (
+                      <div className="terms-section-row" key={idx}>
+                        <div className="terms-dot" />
+                        <div className="terms-section-body">
+                          <p className="terms-section-title">{item.section}</p>
+                          <ul className="terms-points">
+                            {item.points.map((point, pi) => (
+                              <li key={pi} className="terms-point">
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {!activeSetting && (
                 <>
                   {/* Preferences */}
@@ -1582,6 +1870,7 @@ const Profile = () => {
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
+                        onClick={() => setActiveSetting("terms")}
                       >
                         <div className="settings-row-left">
                           <svg
@@ -1624,6 +1913,7 @@ const Profile = () => {
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
+                        onClick={() => setActiveSetting("policy")}
                       >
                         <div className="settings-row-left">
                           <svg
@@ -1801,6 +2091,304 @@ const Profile = () => {
       </div>
 
       <Footer />
+
+      {/* ===== Edit Profile Full Page ===== */}
+      {showEditProfileModal && (
+        <div className="ep-page-overlay">
+          <div className="ep-page">
+            {/* Cover + Avatar */}
+            <div className="ep-cover">
+              <img src={dahab} alt="cover" className="ep-cover-img" />
+            </div>
+            <div className="ep-avatar-row">
+              <div className="ep-avatar-wrap">
+                <img src={clint1} alt="avatar" className="ep-avatar" />
+                <button className="ep-avatar-edit-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div className="ep-form">
+              {/* Fields Grid */}
+              <div className="ep-fields-grid">
+                <div className="ep-field">
+                  <label className="ep-label">Full Name</label>
+                  <div
+                    className="ep-input-wrap"
+                    onClick={(e) =>
+                      e.currentTarget.querySelector("input, textarea")?.focus()
+                    }
+                  >
+                    <input
+                      className="ep-input"
+                      value={editProfileData.fullName}
+                      onChange={(e) =>
+                        setEditProfileData({
+                          ...editProfileData,
+                          fullName: e.target.value,
+                        })
+                      }
+                    />
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#aaa"
+                      strokeWidth="2"
+                    >
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="ep-field">
+                  <label className="ep-label">Email</label>
+                  <div
+                    className="ep-input-wrap"
+                    onClick={(e) =>
+                      e.currentTarget.querySelector("input, textarea")?.focus()
+                    }
+                  >
+                    <input
+                      className="ep-input"
+                      value={editProfileData.email}
+                      onChange={(e) =>
+                        setEditProfileData({
+                          ...editProfileData,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#aaa"
+                      strokeWidth="2"
+                    >
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="ep-field">
+                  <label className="ep-label">Username</label>
+                  <div
+                    className="ep-input-wrap"
+                    onClick={(e) =>
+                      e.currentTarget.querySelector("input, textarea")?.focus()
+                    }
+                  >
+                    <input
+                      className="ep-input"
+                      value={editProfileData.username}
+                      onChange={(e) =>
+                        setEditProfileData({
+                          ...editProfileData,
+                          username: e.target.value,
+                        })
+                      }
+                    />
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#aaa"
+                      strokeWidth="2"
+                    >
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="ep-field">
+                  <label className="ep-label">Phone Number</label>
+                  <div
+                    className="ep-input-wrap"
+                    onClick={(e) =>
+                      e.currentTarget.querySelector("input, textarea")?.focus()
+                    }
+                  >
+                    <input
+                      className="ep-input"
+                      value={editProfileData.phone}
+                      onChange={(e) =>
+                        setEditProfileData({
+                          ...editProfileData,
+                          phone: e.target.value,
+                        })
+                      }
+                    />
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#aaa"
+                      strokeWidth="2"
+                    >
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* BIO */}
+              <div className="ep-field ep-field-full">
+                <label className="ep-label">BIO</label>
+                <div
+                  className="ep-input-wrap ep-textarea-wrap"
+                  onClick={(e) =>
+                    e.currentTarget.querySelector("input, textarea")?.focus()
+                  }
+                >
+                  <textarea
+                    className="ep-input ep-textarea"
+                    value={editProfileData.bio}
+                    onChange={(e) =>
+                      setEditProfileData({
+                        ...editProfileData,
+                        bio: e.target.value,
+                      })
+                    }
+                  />
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#aaa"
+                    strokeWidth="2"
+                    style={{ position: "absolute", top: 14, right: 14 }}
+                  >
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* My Travel Interests */}
+              <div className="ep-field ep-field-full">
+                <div className="ep-interests-header">
+                  <label
+                    className="ep-label"
+                    style={{ fontSize: 16, fontWeight: 700, color: "#1a1a2e" }}
+                  >
+                    My Travel Interests
+                  </label>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#5596fe"
+                    strokeWidth="2"
+                  >
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </div>
+                <div className="interests-wrap" style={{ marginTop: 12 }}>
+                  {interests.map((interest, i) => (
+                    <span
+                      key={i}
+                      className={`interest-tag ${editProfileData.interests.includes(interest.label) ? "active" : ""}`}
+                      onClick={() => {
+                        const current = editProfileData.interests;
+                        const updated = current.includes(interest.label)
+                          ? current.filter((x) => x !== interest.label)
+                          : [...current, interest.label];
+                        setEditProfileData({
+                          ...editProfileData,
+                          interests: updated,
+                        });
+                      }}
+                    >
+                      {interest.emoji} {interest.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="ep-actions">
+                <button
+                  className="ep-save-btn"
+                  onClick={() => {
+                    setShowEditProfileModal(false);
+                    setShowProfileSavedModal(true);
+                  }}
+                >
+                  Save Changes
+                </button>
+                <button
+                  className="ep-cancel-btn"
+                  onClick={() => setShowEditProfileModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Profile Saved Success Modal ===== */}
+      {showProfileSavedModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowProfileSavedModal(false)}
+        >
+          <div
+            className="modal-box"
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: 340 }}
+          >
+            <div style={{ fontSize: 44, color: "#22c55e", marginBottom: 12 }}>
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#22c55e"
+                strokeWidth="2.5"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 className="modal-title">Profile updated successfully!</h3>
+            <div className="modal-actions" style={{ marginTop: 8 }}>
+              <button
+                className="ep-save-btn"
+                style={{ width: "100%" }}
+                onClick={() => setShowProfileSavedModal(false)}
+              >
+                Back to profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {toast && (
         <div className={`toast-notification ${toast.type}`}>
           <svg

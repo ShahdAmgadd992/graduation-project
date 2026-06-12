@@ -617,11 +617,15 @@
 }
 
 @keyframes aip-robot-float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-14px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
 }
 
-/* Spinner */
 .aip-loading-spinner {
   width: 44px;
   height: 44px;
@@ -632,7 +636,9 @@
 }
 
 @keyframes aip-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .aip-loading-title {
@@ -648,4 +654,492 @@
   color: #9ca3af;
   margin: 0;
   text-align: center;
+}
+
+/* ══════════════════════════════
+   RESULT PAGE
+══════════════════════════════ */
+.aip-result-header {
+  text-align: center;
+  padding: 40px 40px 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.aip-result-container {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  width: 100%;
+  padding: 0 40px 40px;
+  align-items: flex-start;
+  justify-content: center; /* ← center بدل flex-start */
+  box-sizing: border-box;
+}
+
+.aip-result-left {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.aip-result-title {
+  font-family:
+    "SF Pro Display",
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 100%;
+  text-align: center;
+  margin: 0 0 8px 0;
+  color: #374151;
+}
+.aip-result-dest {
+  color: #3b82f6;
+}
+
+.aip-result-meta {
+  text-align: center; /* ← غيري من left لـ center */
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0;
+}
+
+.aip-result-days {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-bottom: 32px;
+  width: 700px;
+  overflow: visible;
+}
+
+.aip-result-day-card {
+  display: flex;
+  gap: 22px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 10px 3px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e5e7eb;
+  width: 700px;
+  height: 257px;
+  box-sizing: border-box;
+  text-align: left;
+  overflow: visible;
+}
+
+.aip-result-day-img {
+  width: 344px;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.aip-result-day-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.aip-result-day-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 0;
+  border-radius: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.aip-result-day-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.aip-result-day-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.aip-result-cost {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.aip-result-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.aip-result-tag {
+  height: 23px;
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.aip-result-tag:nth-child(1) {
+  background: #edf9f0;
+  color: #22c55e;
+}
+.aip-result-tag:nth-child(2) {
+  background: #c4e0f9;
+  color: #3b82f6;
+}
+.aip-result-tag:nth-child(3) {
+  background: #fce8d1;
+  color: #f97316;
+}
+.aip-result-tag:nth-child(4) {
+  background: #f2f4fe;
+  color: #6366f1;
+}
+.aip-result-tag:nth-child(5) {
+  background: #d7f1f3;
+  color: #06b6d4;
+}
+.aip-result-tag:nth-child(6) {
+  background: #f1eafd;
+  color: #a855f7;
+}
+
+.aip-result-view-btn {
+  width: 100%;
+  max-width: 341px;
+  height: 48px;
+  border-radius: 25px;
+  border: 1px solid transparent;
+  padding: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(90deg, #5596fe, #97ceff) border-box;
+  color: #5596fe;
+  transition: all 0.2s;
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+}
+
+.aip-result-view-btn:hover {
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+}
+
+.aip-save-btn {
+  width: 488px;
+  height: 56px;
+  padding: 10px;
+  gap: 10px;
+  border-radius: 25px;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  transition: opacity 0.2s;
+  opacity: 1;
+  display: block; /* ← */
+  margin: 0 auto; /* ← بيحطه في النص */
+  align-items: center;
+}
+
+.aip-save-btn:hover {
+  opacity: 0.9;
+}
+
+.aip-result-map {
+  width: 401px;
+  height: 641px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  border-radius: 20px;
+  border: 0.5px solid #e5e7eb;
+  overflow: hidden;
+  /* شيلي الـ margin-left: auto */
+}
+
+.aip-result-map-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 20px;
+}
+
+/* ══════════════════════════════
+   EXPANDED CARD
+══════════════════════════════ */
+.aip-result-day-card--expanded {
+  height: auto;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.aip-result-day-card--expanded .aip-result-day-img {
+  width: 100%;
+  height: 200px;
+  margin-left: 0;
+  border-radius: 14px;
+  flex-shrink: unset;
+}
+
+.aip-result-day-card--expanded .aip-result-day-info {
+  padding: 0;
+  width: 100%;
+}
+
+.aip-result-day-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.aip-edit-ai-btn {
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  color: #5596fe;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aip-edit-ai-btn:hover {
+  opacity: 0.8;
+}
+
+/* ══════════════════════════════
+   DAY DETAILS TIMELINE
+══════════════════════════════ */
+.aip-day-details {
+  margin: 12px 0;
+}
+
+.aip-timeline-dots {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 12px;
+  padding: 0 8px;
+}
+
+.aip-timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d1d5db;
+  flex-shrink: 0;
+}
+
+.aip-timeline-dot--active {
+  background: #5596fe;
+}
+
+.aip-timeline-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+}
+
+.aip-day-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.aip-day-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aip-day-slot-time {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.aip-day-slot-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.aip-day-slot-list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.aip-day-slot-list li {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+/* ══════════════════════════════
+   AI EDIT MODAL
+══════════════════════════════ */
+.aip-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.aip-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 24px 24px;
+  width: 90%;
+  max-width: 420px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.aip-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.aip-modal-close:hover {
+  color: #374151;
+}
+
+.aip-modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.aip-modal-textarea {
+  width: 100%;
+  height: 100px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: #374151;
+  font-family: "Poppins", sans-serif;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.aip-modal-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.aip-modal-textarea:focus {
+  border-color: #5596fe;
+}
+
+.aip-modal-suggestions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.aip-modal-suggestion {
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  transition: opacity 0.2s;
+}
+
+.aip-modal-suggestion:hover {
+  opacity: 0.8;
+}
+
+.aip-modal-update-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 25px;
+  border: none;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  transition: opacity 0.2s;
+}
+
+.aip-modal-update-btn:hover {
+  opacity: 0.9;
+}
+
+.aip-modal-cancel-btn {
+  background: none;
+  border: none;
+  color: #5596fe;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  text-align: center;
+}
+
+.aip-modal-cancel-btn:hover {
+  opacity: 0.7;
+}
+.aip-saved-modal {
+  text-align: center;
+  padding: 36px 24px 28px;
+  max-width: 320px;
+}
+
+.aip-saved-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 20px 0;
 }
