@@ -140,24 +140,36 @@ function App() {
     };
   }, []);
 
-  const pages = {
-    landing: <Landing onNavigate={setCurrentPage} />,
-    home: <Home />,
-    signup: <SignUp />,
-    signin: <SignIn />,
-    forgetPassword: <ForgetPassword />,
-    verifyEmail: <VerifyEmail />,
-    resetPassword: <ResetPassword />,
-    explore: <Explore />,
-    profile: <Profile />,
-    aiplanner: <AiPlanner />,
+  const renderPage = () => {
+    switch (currentPage) {
+      case "landing":
+        return <Landing onNavigate={setCurrentPage} />;
+      case "home":
+        return <Home />;
+      case "signup":
+        return <SignUp />;
+      case "signin":
+        return <SignIn />;
+      case "forgetPassword":
+        return <ForgetPassword />;
+      case "verifyEmail":
+        return <VerifyEmail />;
+      case "resetPassword":
+        return <ResetPassword />;
+      case "explore":
+        return <Explore />;
+      case "profile":
+        return <Profile />;
+      case "aiplanner":
+        return <AiPlanner />;
+      default:
+        return <Landing onNavigate={setCurrentPage} />;
+    }
   };
 
   return (
     <AuthProvider>
-      <div style={{ width: "100%", overflowY: "auto" }}>
-        {pages[currentPage]}
-      </div>
+      <div style={{ width: "100%", overflowY: "auto" }}>{renderPage()}</div>
     </AuthProvider>
   );
 }

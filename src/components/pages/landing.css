@@ -13,12 +13,15 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+  z-index: 0;
 }
 
 .landing-overlay {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* ── Navbar ── */
@@ -31,7 +34,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px 40px;
-  z-index: 10;
+  z-index: 20;
 }
 
 .landing-logo {
@@ -56,18 +59,12 @@
     sans-serif;
   font-weight: 700;
   font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
   text-align: center;
   color: #fff;
   width: 85px;
-  height: 21px;
-  opacity: 1;
 }
+
 .landing-signin-btn {
-  width: 68px;
-  height: 24px;
-  opacity: 1;
   background: none;
   border: none;
   font-family:
@@ -78,17 +75,20 @@
     sans-serif;
   font-weight: 700;
   font-size: 20px;
-  line-height: 100%;
-  letter-spacing: 0%;
   text-align: center;
   color: #fff;
   cursor: pointer;
+  padding: 12px 24px;
+  z-index: 20;
+  position: relative;
+  pointer-events: auto;
   transition: opacity 0.2s;
 }
 
 .landing-signin-btn:hover {
   opacity: 0.8;
 }
+
 /* ── Content ── */
 .landing-content {
   position: absolute;
@@ -100,6 +100,7 @@
   text-align: center;
   padding: 0 24px;
   z-index: 10;
+  pointer-events: none;
 }
 
 .landing-title {
@@ -111,13 +112,9 @@
     sans-serif;
   font-weight: 700;
   font-size: 35px;
-  line-height: 100%;
-  letter-spacing: 0%;
   text-align: center;
   color: #fff;
-  width: 768px;
-  height: 48px;
-  opacity: 1;
+  max-width: 768px;
   margin: 0 0 16px 0;
 }
 
@@ -130,22 +127,17 @@
     sans-serif;
   font-weight: 400;
   font-size: 20px;
-  line-height: 100%;
-  letter-spacing: 0%;
   text-align: center;
   color: rgba(255, 255, 255, 0.85);
-  width: 707px;
-  height: 29px;
-  opacity: 1;
+  max-width: 707px;
   margin: 0 0 36px 0;
 }
+
 .landing-cta-btn {
   width: 244px;
   height: 72px;
   padding: 10px;
-  gap: 10px;
   border-radius: 30px;
-  opacity: 1;
   background: #fff;
   border: none;
   font-family:
@@ -160,6 +152,7 @@
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
 }
 
 .landing-cta-btn:hover {

@@ -3,6 +3,11 @@ import logoImg from "../../assets/general/logo.png";
 import "./Landing.css";
 
 const Landing = ({ onNavigate }) => {
+  const goTo = (path, page) => {
+    window.history.pushState({}, "", path);
+    onNavigate(page);
+  };
+
   return (
     <div className="landing-page">
       <img src={landingImg} alt="Landing" className="landing-bg" />
@@ -16,10 +21,7 @@ const Landing = ({ onNavigate }) => {
         </div>
         <button
           className="landing-signin-btn"
-          onClick={() => {
-            window.history.pushState({}, "", "/signin");
-            onNavigate("signin");
-          }}
+          onClick={() => goTo("/signin", "signin")}
         >
           Sign In
         </button>
@@ -35,10 +37,7 @@ const Landing = ({ onNavigate }) => {
         </p>
         <button
           className="landing-cta-btn"
-          onClick={() => {
-            window.history.pushState({}, "", "/home");
-            onNavigate("home");
-          }}
+          onClick={() => goTo("/signup", "signup")}
         >
           Get Started
         </button>
