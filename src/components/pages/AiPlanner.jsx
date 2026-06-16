@@ -11,6 +11,8 @@ import fileIconImg from "../../assets/ai-planner/file.svg";
 import videoIconImg from "../../assets/ai-planner/video.svg";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
+import aiService from "../../services/aiService";
+import { useAuth } from "../../context/useAuth";
 import "./AiPlanner.css";
 
 const destinations = [
@@ -79,7 +81,7 @@ const MONTH_NAMES = ["January","February","March","April","May","June","July","A
 const DAY_NAMES = ["Mo","Tu","We","Th","Fr","Sa","Su"];
 
 // ── Chatbot component ──
-const ChatBot = ({ userName = "Laila", onClose }) => {
+const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -91,6 +93,8 @@ const ChatBot = ({ userName = "Laila", onClose }) => {
   const [inputVal, setInputVal] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [chatError, setChatError] = useState(null);
+  const [sessionId] = useState(() => `session-${Date.now()}`);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -112,28 +116,67 @@ const ChatBot = ({ userName = "Laila", onClose }) => {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, isTyping, bottomRef]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!inputVal.trim()) return;
     const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const userMsg = { id: Date.now(), from: "user", text: inputVal.trim(), time: now };
     setMessages((prev) => [...prev, userMsg]);
     setInputVal("");
     setIsTyping(true);
+    setChatError(null);
 
-    setTimeout(() => {
-      const reply = aiReplies[replyIndex % aiReplies.length];
+    try {
+      const chatPayload = {
+        userId: userId,
+        sessionId: sessionId,
+        messagePrompt: userMsg.text,
+      };
+      console.log('Sending chat message:', chatPayload);
+      const response = await aiService.chat(chatPayload);
+      console.log('Chat response:', response.data);
+
+      const reply = response.data?.reply || aiReplies[replyIndex % aiReplies.length];
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + 1, from: "ai", text: reply, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+        {
+          id: Date.now() + 1,
+          from: "ai",
+          text: reply,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
       ]);
       setReplyIndex((i) => i + 1);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setChatError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to get response. Please try again."
+      );
+      const fallbackReply = aiReplies[replyIndex % aiReplies.length];
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          from: "ai",
+          text: fallbackReply,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+      setReplyIndex((i) => i + 1);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
-  const handleKey = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
+  const handleKey = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
   return (
     <div className="chatbot-overlay" onClick={onClose}>
@@ -200,6 +243,7 @@ const ChatBot = ({ userName = "Laila", onClose }) => {
         )}
 
         {/* Input */}
+        {chatError && <div className="chatbot-error">{chatError}</div>}
         <div className="chatbot-input-row">
           <button
             className="chatbot-add-btn"
@@ -231,8 +275,10 @@ const ChatBot = ({ userName = "Laila", onClose }) => {
 
 // ── Main Component ──
 const AiPlanner = () => {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [planError, setPlanError] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [tripPlan, setTripPlan] = useState(null);
   const totalSteps = 5;
@@ -380,35 +426,88 @@ const AiPlanner = () => {
     if (step < totalSteps) {
       setStep((s) => s + 1);
     } else {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        const days = getTripDays();
-        setTripPlan({
-          destination: selectedDest,
-          days,
-          nights: days - 1,
-          adults,
-          children,
-          pets,
-          budget: getBudgetAmount(),
-          itinerary: Array.from({ length: days }, (_, i) => {
-            const dayNum = i + 1;
-            const imgs = [
-              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80",
-              "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&q=80",
-              "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=400&q=80",
-              "https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=400&q=80",
-              "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80",
-            ];
-            const descriptions = ["Arrival & Chill in " + selectedDest,"Desert Vibes & Local Life","Adventure & Blue Magic","Hidden Gems & Local Culture","Relaxation & Farewell"];
-            const tagSets = [["Relax","Beach","Culture"],["Culture","Local","Relax"],["Adventure","Snorkling","Nature"],["Culture","History","Food"],["Relax","Nature","Sunset"]];
-            const idx = Math.min(i, imgs.length - 1);
-            return { day: dayNum, description: descriptions[idx], duration: "4 hrs", type: "Full day", cost: 1000, tags: tagSets[idx], img: imgs[idx] };
-          }),
-        });
-        setShowResult(true);
-      }, 3000);
+      handleGeneratePlan();
+    }
+  };
+
+  const handleGeneratePlan = async () => {
+    setIsLoading(true);
+    setPlanError(null);
+
+    try {
+      const days = getTripDays();
+
+      // ── MOCK MODE: Using local data instead of API ──
+      // Simulating API call delay for UX
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Create mock itinerary with dummy data
+      const mockItinerary = Array.from({ length: days }, (_, i) => {
+        const dayNum = i + 1;
+        const imgs = [
+          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80",
+          "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&q=80",
+          "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=400&q=80",
+          "https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=400&q=80",
+          "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80",
+        ];
+        const descriptions = [
+          "Arrival & Chill in " + selectedDest,
+          "Desert Vibes & Local Life",
+          "Adventure & Blue Magic",
+          "Hidden Gems & Local Culture",
+          "Relaxation & Farewell",
+        ];
+        const tagSets = [
+          ["Relax", "Beach", "Culture"],
+          ["Culture", "Local", "Relax"],
+          ["Adventure", "Snorkeling", "Nature"],
+          ["Culture", "History", "Food"],
+          ["Relax", "Nature", "Sunset"],
+        ];
+        const idx = Math.min(i, imgs.length - 1);
+        return {
+          day: dayNum,
+          description: descriptions[idx],
+          duration: "4 hrs",
+          type: "Full day",
+          cost: 1000,
+          tags: tagSets[idx],
+          img: imgs[idx],
+        };
+      });
+
+      // Set trip plan with mock data
+      setTripPlan({
+        destination: selectedDest,
+        days,
+        nights: days - 1,
+        adults,
+        children,
+        pets,
+        budget: getBudgetAmount(),
+        itinerary: mockItinerary,
+      });
+
+      setShowResult(true);
+
+      // ── COMMENTED API CODE (kept for reference) ──
+      // const requestPayload = {
+      //   city: selectedDest,
+      //   days,
+      //   budget: parseFloat(getBudgetAmount()),
+      //   people: totalTravelers,
+      //   interests: selectedInterests.length > 0 ? selectedInterests : undefined,
+      // };
+      // console.log('Generating plan with payload:', requestPayload);
+      // const response = await aiService.generatePlan(requestPayload);
+      // console.log('Plan generated response:', response.data);
+
+    } catch (err) {
+      console.error('Error in plan generation:', err);
+      setPlanError("An error occurred while generating your plan. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -568,14 +667,14 @@ const AiPlanner = () => {
           <img src={chatIconImg} alt="Chat" className="aip-bot-fab-icon" />
         </button>
 
-        {showChatbot && <ChatBot onClose={() => setShowChatbot(false)} />}
+        {showChatbot && <ChatBot userId={user?.userId} onClose={() => setShowChatbot(false)} />}
 
         <Footer />
       </div>
     );
   }
 
-  // ── Main Planner ──
+  // ── Main Component ──
   return (
     <div className="aip-page">
       <Navbar activePage="aiplanner" />
@@ -583,6 +682,11 @@ const AiPlanner = () => {
         <h1 className="aip-title"><span className="aip-title-ai">AI</span> Planner</h1>
         <p className="aip-subtitle">Design your dream trip in seconds. Answer a few quick questions, and let Mindy do the magic!</p>
       </div>
+
+      {/* Show plan error if exists */}
+      {planError && (
+        <div className="plan-error-banner">{planError}</div>
+      )}
 
       <div className="aip-card">
         <div className="aip-progress-bar">
@@ -708,7 +812,7 @@ const AiPlanner = () => {
       )}
 
       {/* Chatbot panel */}
-      {showChatbot && <ChatBot onClose={() => setShowChatbot(false)} />}
+      {showChatbot && <ChatBot userId={user?.userId} onClose={() => setShowChatbot(false)} />}
 
       <Footer />
     </div>

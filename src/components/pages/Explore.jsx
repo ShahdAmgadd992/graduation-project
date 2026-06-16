@@ -27,6 +27,7 @@ import {
   uniqueExperiences,
   aiMagicDestinations,
 } from "../../data/exploreData";
+import locationService from "../../services/locationService";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 
@@ -108,6 +109,27 @@ const momentImages = [
   heritageImg5,
   heritageImg6,
 ];
+
+const defaultLocationImages = [
+  heritageImg1,
+  heritageImg2,
+  heritageImg3,
+  heritageImg4,
+  heritageImg5,
+  heritageImg6,
+];
+
+const mapLocationToTour = (location, idx) => ({
+  id: location.locationId || `${location.nameEn}-${idx}`,
+  title: location.nameEn || location.nameAr || "Egypt Discover",
+  city: location.governorate || "Egypt",
+  duration: "1 day",
+  rating: location.avgRating ? Number(location.avgRating.toFixed(1)) : 4.7,
+  reviews: location.popularityScore ? Math.max(1, Math.round(location.popularityScore * 10)) : 22,
+  price: location.entryFeeEgp || 100,
+  badge: location.isHiddenGem ? "Hidden Gem" : null,
+  image: defaultLocationImages[idx % defaultLocationImages.length],
+});
 
 // ===== Trending Now Data =====
 const trendingDestinations = [
@@ -399,6 +421,22 @@ const Explore = () => {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [showMorePopular, setShowMorePopular] = useState(false);
   const [showMoreTrending, setShowMoreTrending] = useState(false);
+  
+  // Existing state for Recommended
+  const [recommendedTours, setRecommendedTours] = useState([]);
+  const [exploreLoading, setExploreLoading] = useState(false);
+  const [exploreError, setExploreError] = useState(null);
+
+  // ===== NEW STATE VARIABLES FOR HIDDEN GEMS & POPULAR API =====
+  const [hiddenGems, setHiddenGems] = useState([]);
+  const [hiddenGemsLoading, setHiddenGemsLoading] = useState(false);
+  const [hiddenGemsError, setHiddenGemsError] = useState(null);
+
+  const [popularDestAPI, setPopularDestAPI] = useState([]);
+  const [popularAPILoading, setPopularAPILoading] = useState(false);
+  const [popularAPIError, setPopularAPIError] = useState(null);
+
+  const [locationDetailsCache, setLocationDetailsCache] = useState({});
 
   const dropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
@@ -416,6 +454,114 @@ const Explore = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Existing useEffect for Recommended
+  useEffect(() => {
+    const fetchRecommendedLocations = async () => {
+      setExploreLoading(true);
+      setExploreError(null);
+
+      try {
+        const response = await locationService.getRecommended(12);
+        console.log('Backend Data:', response.data);
+        if (Array.isArray(response.data)) {
+          setRecommendedTours(response.data.map(mapLocationToTour));
+        } else {
+          setRecommendedTours([]);
+        }
+      } catch (err) {
+        setExploreError(
+          err.response?.data?.message || err.message ||
+            "Failed to load recommended destinations",
+        );
+      } finally {
+        setExploreLoading(false);
+      }
+    };
+
+    fetchRecommendedLocations();
+  }, []);
+
+  // ===== NEW useEffect FOR HIDDEN GEMS =====
+  useEffect(() => {
+    const fetchHiddenGems = async () => {
+      setHiddenGemsLoading(true);
+      setHiddenGemsError(null);
+
+      try {
+        const response = await locationService.getHiddenGems("Cairo");
+        console.log('Hidden Gems Data:', response.data);
+        if (Array.isArray(response.data)) {
+          setHiddenGems(response.data.map(mapLocationToTour));
+        } else {
+          setHiddenGems([]);
+        }
+      } catch (err) {
+        console.error('Hidden gems fetch error:', err);
+        setHiddenGemsError(
+          err.response?.data?.message || err.message ||
+            "Failed to load hidden gems",
+        );
+      } finally {
+        setHiddenGemsLoading(false);
+      }
+    };
+
+    fetchHiddenGems();
+  }, []);
+
+  // ===== NEW useEffect FOR POPULAR DESTINATIONS API =====
+  useEffect(() => {
+    const fetchPopularDestinations = async () => {
+      setPopularAPILoading(true);
+      setPopularAPIError(null);
+
+      try {
+        const response = await locationService.getPopular("Cairo", 8);
+        console.log('Popular Destinations API Data:', response.data);
+        if (Array.isArray(response.data)) {
+          setPopularDestAPI(response.data.map(mapLocationToTour));
+        } else {
+          setPopularDestAPI([]);
+        }
+      } catch (err) {
+        console.error('Popular destinations fetch error:', err);
+        setPopularAPIError(
+          err.response?.data?.message || err.message ||
+            "Failed to load popular destinations",
+        );
+      } finally {
+        setPopularAPILoading(false);
+      }
+    };
+
+    fetchPopularDestinations();
+  }, []);
+
+  // ===== NEW useEffect FOR LOCATION DETAILS =====
+  useEffect(() => {
+    const cacheLocationDetails = async () => {
+      if (recommendedTours.length === 0) return;
+      const locationIds = recommendedTours.map((t) => t.id).slice(0, 3);
+
+      for (const locId of locationIds) {
+        if (!locationDetailsCache[locId]) {
+          try {
+            const response = await locationService.getLocationById(locId);
+            console.log(`Location details for ${locId}:`, response.data);
+            setLocationDetailsCache((prev) => ({
+              ...prev,
+              [locId]: response.data,
+            }));
+          } catch (err) {
+            console.error(`Failed to fetch details for location ${locId}:`, err);
+          }
+        }
+      }
+    };
+
+    cacheLocationDetails();
+  }, [recommendedTours, locationDetailsCache]);
 
   const handleSearch = () => {
     if (searchQuery.trim())
@@ -452,7 +598,7 @@ const Explore = () => {
   const filteredTours = getFilteredTours();
 
   const getMapCircles = () => {
-    const tours = selectedExperience ? filteredTours : popularDestinations;
+    const tours = selectedExperience ? filteredTours : recommendedTours.length ? recommendedTours : popularDestinations;
     const citiesInTours = [...new Set(tours.map((t) => t.city))];
     return citiesInTours
       .filter((city) => cityCoordinates[city])
@@ -465,10 +611,11 @@ const Explore = () => {
       }));
   };
 
-  const mapCircles = getMapCircles();
+    const mapCircles = getMapCircles();
+  const popularSource = recommendedTours.length ? recommendedTours : popularDestinations;
   const displayedPopular = showMorePopular
-    ? popularDestinations
-    : popularDestinations.slice(0, 6);
+    ? popularSource
+    : popularSource.slice(0, 6);
   const clearFilter = () => {
     setSelectedExperience(null);
     setFilterCity([]);
@@ -722,12 +869,19 @@ const Explore = () => {
                   <span className="text-blue">Popular</span> Destinations
                 </h2>
               </div>
+              {exploreError && (
+                <div className="fetch-error">{exploreError}</div>
+              )}
               <div className="tours-grid">
-                {displayedPopular.map((tour) => (
-                  <TourCard key={tour.id} tour={tour} />
-                ))}
+                {exploreLoading && !displayedPopular.length ? (
+                  <div className="loading-placeholder">Loading recommended destinations...</div>
+                ) : (
+                  displayedPopular.map((tour) => (
+                    <TourCard key={tour.id} tour={tour} />
+                  ))
+                )}
               </div>
-              {!showMorePopular && popularDestinations.length > 6 && (
+              {!showMorePopular && popularSource.length > 6 && (
                 <div className="show-more-wrap">
                   <button
                     className="show-more-btn"
@@ -735,6 +889,44 @@ const Explore = () => {
                   >
                     Show More
                   </button>
+                </div>
+              )}
+
+              {(hiddenGemsLoading || hiddenGemsError || hiddenGems.length > 0) && (
+                <div className="hidden-gems-section">
+                  <div className="cards-header">
+                    <h2>Hidden Gems</h2>
+                  </div>
+                  {hiddenGemsLoading && (
+                    <div className="loading-placeholder">Loading hidden gems...</div>
+                  )}
+                  {hiddenGemsError && (
+                    <div className="fetch-error">{hiddenGemsError}</div>
+                  )}
+                  <div className="tours-grid">
+                    {hiddenGems.map((tour) => (
+                      <TourCard key={tour.id} tour={tour} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(popularAPILoading || popularAPIError || popularDestAPI.length > 0) && (
+                <div className="popular-api-section">
+                  <div className="cards-header">
+                    <h2>Popular Picks</h2>
+                  </div>
+                  {popularAPILoading && (
+                    <div className="loading-placeholder">Loading popular picks...</div>
+                  )}
+                  {popularAPIError && (
+                    <div className="fetch-error">{popularAPIError}</div>
+                  )}
+                  <div className="tours-grid">
+                    {popularDestAPI.map((tour) => (
+                      <TourCard key={tour.id} tour={tour} />
+                    ))}
+                  </div>
                 </div>
               )}
             </>

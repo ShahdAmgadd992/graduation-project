@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "./Profile.css";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
+import userService from "../../services/userService";
+import { useAuth } from "../../context/useAuth";
 import clint1 from "../../assets/general/clint1.jpg";
 import dahab from "../../assets/cities/dahab.jpg";
 import fullHeart from "../../assets/icons/fullHeart.png";
@@ -431,9 +433,14 @@ const tripFilters = ["ALL", "Upcoming", "Drafts", "Completed"];
 
 // ===== Profile Page =====
 const Profile = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("Overview");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState(null);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updateError, setUpdateError] = useState(null);
   const [showAllTrips, setShowAllTrips] = useState(false);
   const [showAllDrafts, setShowAllDrafts] = useState(false);
   const [showAllCompleted, setShowAllCompleted] = useState(false);
@@ -444,7 +451,7 @@ const Profile = () => {
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [toast, setToast] = useState(null);
-  const [activeSetting, setActiveSetting] = useState(null); // null | "faqs"
+  const [activeSetting, setActiveSetting] = useState(null);
   const [faqSearch, setFaqSearch] = useState("");
   const [openFaqId, setOpenFaqId] = useState(null);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
@@ -470,6 +477,65 @@ const Profile = () => {
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
   }, []);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      setProfileLoading(true);
+      setProfileError(null);
+      try {
+        const profileRes = await userService.getMyProfile();
+        console.log('Profile data:', profileRes.data);
+        if (profileRes.data) {
+          setEditProfileData((prev) => ({
+            ...prev,
+            fullName: profileRes.data.displayName || prev.fullName,
+            email: profileRes.data.email || prev.email,
+            phone: profileRes.data.phone || prev.phone,
+            bio: profileRes.data.bio || prev.bio,
+          }));
+        }
+      } catch (err) {
+        console.error('Profile fetch error:', err);
+        setProfileError(
+          err.response?.data?.message ||
+            err.message ||
+            "Failed to load profile"
+        );
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    if (user?.userId) {
+      fetchProfileData();
+    }
+  }, [user?.userId]);
+
+  const handleSaveProfile = async () => {
+    setUpdateLoading(true);
+    setUpdateError(null);
+    try {
+      const updatePayload = {
+        displayName: editProfileData.fullName,
+        email: editProfileData.email,
+        phone: editProfileData.phone,
+        bio: editProfileData.bio,
+      };
+      console.log('Updating profile:', updatePayload);
+      const response = await userService.updateProfile(updatePayload);
+      console.log('Profile update response:', response.data);
+      setShowEditProfileModal(false);
+      setShowProfileSavedModal(true);
+    } catch (err) {
+      console.error('Profile update error:', err);
+      setUpdateError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to update profile"
+      );
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -572,6 +638,18 @@ const Profile = () => {
           {/* ===== OVERVIEW TAB ===== */}
           {activeTab === "Overview" && (
             <div className="overview-tab">
+              {profileError && (
+                <div style={{
+                  backgroundColor: "#fee2e2",
+                  color: "#991b1b",
+                  padding: "12px 16px",
+                  borderRadius: "6px",
+                  marginBottom: "20px",
+                  fontSize: "14px"
+                }}>
+                  {profileError}
+                </div>
+              )}
               <div className="welcome-card">
                 <h3>
                   Welcome back,{" "}
@@ -2331,18 +2409,23 @@ const Profile = () => {
 
               {/* Buttons */}
               <div className="ep-actions">
+                {updateError && (
+                  <div style={{ color: "#e74c3c", fontSize: "13px", marginBottom: "12px" }}>
+                    {updateError}
+                  </div>
+                )}
                 <button
                   className="ep-save-btn"
-                  onClick={() => {
-                    setShowEditProfileModal(false);
-                    setShowProfileSavedModal(true);
-                  }}
+                  onClick={handleSaveProfile}
+                  disabled={updateLoading}
+                  style={{ opacity: updateLoading ? 0.6 : 1 }}
                 >
-                  Save Changes
+                  {updateLoading ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   className="ep-cancel-btn"
                   onClick={() => setShowEditProfileModal(false)}
+                  disabled={updateLoading}
                 >
                   Cancel
                 </button>
