@@ -486,7 +486,10 @@ const Explore = () => {
         style={{ backgroundImage: `url(${exploreBg})` }}
       >
         <div className="overlay" />
-        <Navbar activePage="explore" />
+        <Navbar
+          activePage="explore"
+          style={{ position: "relative", zIndex: 10 }}
+        />{" "}
         <div className="explore-content" style={{ marginLeft: "15%" }}>
           <h1>Discover more</h1>
           <div className="search-container">

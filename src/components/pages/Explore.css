@@ -15,6 +15,7 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
   z-index: 0;
+  pointer-events: none;
 }
 
 .explore-container .navbar {
@@ -76,6 +77,7 @@
   padding: 0 60px;
   text-align: center;
   margin-left: 15%;
+  pointer-events: none;
 }
 
 .explore-content h1 {
@@ -85,6 +87,7 @@
   letter-spacing: -1px;
   align-self: flex-start;
   text-align: left;
+  pointer-events: none;
 }
 
 .search-container {
@@ -97,6 +100,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   align-self: center;
+  pointer-events: auto;
 }
 
 /* ===== Custom Dropdown ===== */
@@ -105,6 +109,7 @@
   flex: 0 0 auto;
   min-width: 160px;
   z-index: 100;
+  pointer-events: auto;
 }
 
 .custom-select-trigger {
@@ -216,6 +221,7 @@
   font-size: 14px;
   color: #333;
   transition: border-color 0.3s ease;
+  pointer-events: auto;
 }
 
 .search-input::placeholder {
@@ -242,6 +248,7 @@
     transform 0.2s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .search-btn:hover {
@@ -1043,7 +1050,9 @@
   margin-bottom: 14px;
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
   pointer-events: none;
 }
 
@@ -1064,7 +1073,10 @@
   border-radius: 30px;
   cursor: pointer;
   backdrop-filter: blur(4px);
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
   white-space: nowrap;
 }
 
@@ -1099,13 +1111,11 @@
   }
 }
 
-
-
 /* ===== Unique Experience Section ===== */
 .unique-exp-section {
   padding: 0 60px 60px;
   background: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .unique-exp-divider {
@@ -1136,12 +1146,12 @@
   overflow-x: auto;
   scroll-behavior: smooth;
   padding: 8px 4px 16px;
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 .unique-exp-carousel::-webkit-scrollbar {
-  display: none;                /* Chrome/Safari */
+  display: none; /* Chrome/Safari */
 }
 
 /* ===== Arrow Buttons ===== */
@@ -1163,7 +1173,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 .unique-exp-arrow:hover {
@@ -1188,7 +1200,9 @@
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .unique-exp-card:hover {
@@ -1287,7 +1301,9 @@
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.2px;
-  transition: opacity 0.2s, transform 0.15s;
+  transition:
+    opacity 0.2s,
+    transform 0.15s;
 }
 
 .unique-exp-btn:hover {
@@ -1298,7 +1314,7 @@
 .ai-magic-section {
   padding: 40px 60px 60px;
   background: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .ai-magic-heading {
@@ -1311,7 +1327,7 @@
 }
 
 .ai-magic-subtitle {
-  font-size: 18px ;
+  font-size: 18px;
   color: #7e7e7e;
   text-align: center;
   margin-bottom: 28px;
@@ -1331,7 +1347,9 @@
   border-radius: 22px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   min-height: 280px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .ai-magic-card:hover {
@@ -1421,7 +1439,9 @@
   font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
   width: fit-content;
 }
 

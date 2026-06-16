@@ -1,20 +1,18 @@
 import React from "react";
 import logo from "../../assets/general/logo.png";
-import profileIcon from "../../assets/icons/profileIcon.png";
-import wishlistIcon from "../../assets/icons/whishListIcon.png";
 import "../pages/Home.css";
 
-const Navbar = ({ activePage = "home" }) => {
+const Navbar = ({ activePage = "home", style = {} }) => {
   const handleNavigation = (page) => {
     if (page === "explore") window.navigateToExplore?.();
     if (page === "home") window.navigateToHome?.();
     if (page === "profile") window.navigateToProfile?.();
     if (page === "aiplanner") window.navigateToAiPlanner?.();
+    if (page === "calendar") window.navigateToCalendar?.();
   };
 
   return (
-    <nav className="navbar">
-      {/* Logo + Brand Name */}
+    <nav className="navbar" style={style}>
       <div
         className="logo"
         onClick={() => handleNavigation("home")}
@@ -23,7 +21,6 @@ const Navbar = ({ activePage = "home" }) => {
         <img src={logo} alt="Mind Trip" style={{ width: "85px" }} />
       </div>
 
-      {/* Nav Links */}
       <ul className="nav-links">
         <li
           className={activePage === "home" ? "active" : ""}
@@ -43,24 +40,26 @@ const Navbar = ({ activePage = "home" }) => {
         >
           Explore
         </li>
-        <li>Calendar</li>
-        <li>About Us</li>
+        <li
+          className={activePage === "calendar" ? "active" : ""}
+          onClick={() => handleNavigation("calendar")}
+        >
+          Calendar
+        </li>
+        <li
+          className={activePage === "aboutus" ? "active" : ""}
+          onClick={() => window.navigateToAboutUs?.()}
+        >
+          About Us
+        </li>
       </ul>
 
-      {/* Right Icons */}
       <div className="nav-right">
-        {/* Wishlist */}
-        <button className="nav-icon-btn" title="Wishlist">
-          <img src={wishlistIcon} alt="wishlist" style={{ width: "24px" }} />
-        </button>
-
-        {/* Profile */}
         <button
-          className="nav-icon-btn"
-          title="Profile"
-          onClick={() => handleNavigation("profile")}
+          className="signin-btn"
+          onClick={() => window.navigateToSignIn?.()}
         >
-          <img src={profileIcon} alt="profile" style={{ width: "24px" }} />
+          Sign In
         </button>
       </div>
     </nav>

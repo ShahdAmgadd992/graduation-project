@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SignUp from "./components/auth/SignUp";
 import SignIn from "./components/auth/SignIn";
 import ForgetPassword from "./components/auth/ForgetPassword";
@@ -10,6 +10,8 @@ import { AuthProvider } from "./context/AuthContext";
 import Profile from "./components/pages/Profile";
 import AiPlanner from "./components/pages/AiPlanner";
 import Landing from "./components/pages/Landing";
+import CalendarPage from "./components/pages/Calendar";
+import AboutUs from "./components/pages/AboutUs.jsx";
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -23,39 +25,30 @@ function App() {
     if (path === "/profile") return "profile";
     if (path === "/ai-planner") return "aiplanner";
     if (path === "/home") return "home";
+    if (path === "/calendar") return "calendar";
+    if (path === "/about-us") return "aboutus";
     return "landing";
   });
 
   useEffect(() => {
     const updatePageFromPath = () => {
       const path = window.location.pathname;
-      if (path === "/signin" || path === "/sign-in") {
-        setCurrentPage("signin");
-      } else if (path === "/signup" || path === "/sign-up") {
+      if (path === "/signin" || path === "/sign-in") setCurrentPage("signin");
+      else if (path === "/signup" || path === "/sign-up")
         setCurrentPage("signup");
-      } else if (path === "/forget-password") {
-        setCurrentPage("forgetPassword");
-      } else if (path === "/verify-email") {
-        setCurrentPage("verifyEmail");
-      } else if (path === "/reset-password") {
-        setCurrentPage("resetPassword");
-      } else if (path === "/explore") {
-        setCurrentPage("explore");
-      } else if (path === "/profile") {
-        setCurrentPage("profile");
-      } else if (path === "/ai-planner") {
-        setCurrentPage("aiplanner");
-      } else if (path === "/home") {
-        setCurrentPage("home");
-      } else if (path === "/" || path === "") {
-        setCurrentPage("landing");
-      } else {
-        setCurrentPage("landing");
-      }
+      else if (path === "/forget-password") setCurrentPage("forgetPassword");
+      else if (path === "/verify-email") setCurrentPage("verifyEmail");
+      else if (path === "/reset-password") setCurrentPage("resetPassword");
+      else if (path === "/explore") setCurrentPage("explore");
+      else if (path === "/profile") setCurrentPage("profile");
+      else if (path === "/ai-planner") setCurrentPage("aiplanner");
+      else if (path === "/home") setCurrentPage("home");
+      else if (path === "/calendar") setCurrentPage("calendar");
+      else if (path === "/about-us") setCurrentPage("aboutus");
+      else setCurrentPage("landing");
     };
 
     updatePageFromPath();
-
     window.addEventListener("popstate", updatePageFromPath);
 
     window.navigateToLanding = () => {
@@ -63,64 +56,64 @@ function App() {
       setCurrentPage("landing");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToHome = () => {
       window.history.pushState({}, "", "/home");
       setCurrentPage("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToDashboard = () => {
       window.history.pushState({}, "", "/home");
       setCurrentPage("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToSignIn = () => {
       window.history.pushState({}, "", "/signin");
       setCurrentPage("signin");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToSignUp = () => {
       window.history.pushState({}, "", "/signup");
       setCurrentPage("signup");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToForgetPassword = () => {
       window.history.pushState({}, "", "/forget-password");
       setCurrentPage("forgetPassword");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToVerify = () => {
       window.history.pushState({}, "", "/verify-email");
       setCurrentPage("verifyEmail");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToResetPassword = () => {
       window.history.pushState({}, "", "/reset-password");
       setCurrentPage("resetPassword");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToExplore = () => {
       window.history.pushState({}, "", "/explore");
       setCurrentPage("explore");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToProfile = () => {
       window.history.pushState({}, "", "/profile");
       setCurrentPage("profile");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     window.navigateToAiPlanner = () => {
       window.history.pushState({}, "", "/ai-planner");
       setCurrentPage("aiplanner");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    window.navigateToCalendar = () => {
+      window.history.pushState({}, "", "/calendar");
+      setCurrentPage("calendar");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    window.navigateToAboutUs = () => {
+      window.history.pushState({}, "", "/about-us");
+      setCurrentPage("aboutus");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -137,6 +130,8 @@ function App() {
       delete window.navigateToExplore;
       delete window.navigateToProfile;
       delete window.navigateToAiPlanner;
+      delete window.navigateToCalendar;
+      delete window.navigateToAboutUs;
     };
   }, []);
 
@@ -162,6 +157,10 @@ function App() {
         return <Profile />;
       case "aiplanner":
         return <AiPlanner />;
+      case "calendar":
+        return <CalendarPage />;
+      case "aboutus":
+        return <AboutUs />;
       default:
         return <Landing onNavigate={setCurrentPage} />;
     }

@@ -37,7 +37,7 @@ const Landing = ({ onNavigate }) => {
         </p>
         <button
           className="landing-cta-btn"
-          onClick={() => goTo("/signup", "signup")}
+          onClick={() => goTo("/home", "home")}
         >
           Get Started
         </button>

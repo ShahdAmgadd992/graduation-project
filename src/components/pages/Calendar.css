@@ -1,0 +1,263 @@
+.calendar-page {
+  min-height: 100vh;
+  background: #f8f9fb;
+  padding: 40px 60px 60px;
+  font-family: "Poppins", sans-serif;
+}
+
+.calendar-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.calendar-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.blue-text {
+  color: #5596fe;
+}
+
+.calendar-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  max-width: 420px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.calendar-body {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Calendar Grid ── */
+.calendar-grid-wrap {
+  background: #fff;
+  border-radius: 28px;
+  padding: 32px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.07);
+  width: 611px;
+  min-width: 611px;
+  height: 591px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cal-month-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.cal-arrow {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+}
+
+.cal-arrow:hover {
+  border-color: #5596fe;
+  color: #5596fe;
+}
+
+.cal-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+}
+
+.cal-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, 68px) !important;
+  grid-template-rows: auto repeat(6, 68px);
+  gap: 0;
+  justify-content: center;
+}
+
+.cal-day-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-align: center;
+  width: 68px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-day {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  text-align: center;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  cursor: default;
+  box-sizing: border-box;
+}
+
+.cal-day-other {
+  color: #d1d5db;
+}
+
+.cal-today {
+  background: #5596fe !important;
+  color: #fff !important;
+  font-weight: 700;
+  border-radius: 50% !important;
+}
+
+.cal-trip-start {
+  border-radius: 50% 0 0 50% !important;
+}
+
+.cal-trip-end {
+  border-radius: 0 50% 50% 0 !important;
+}
+
+.cal-trip-mid {
+  border-radius: 0 !important;
+}
+
+.cal-trip-single {
+  border-radius: 50% !important;
+}
+
+/* ── Trip Cards ── */
+.calendar-trips {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 33px;
+}
+
+.trip-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  position: relative;
+  width: 520px;
+  height: 178px;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.trip-bookmark {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  width: 20px;
+  height: 28px;
+}
+
+.trip-bookmark-inner {
+  width: 20px;
+  height: 28px;
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+}
+
+.trip-card-img {
+  width: 120px;
+  height: 138px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.trip-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trip-card-info {
+  flex: 1;
+}
+
+.trip-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 10px;
+  align-items: left;
+  text-align: left;
+}
+
+.trip-card-location,
+.trip-card-dates {
+  font-size: 18px;
+  color: #6b7280;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: left;
+  gap: 6px;
+}
+
+.trip-card-location svg,
+.trip-card-dates svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+@media (max-width: 900px) {
+  .calendar-page {
+    padding: 24px 16px;
+  }
+  .calendar-body {
+    flex-direction: column;
+    align-items: center;
+    size: 100%;
+  }
+  .calendar-grid-wrap {
+    min-width: unset;
+    width: 100%;
+    height: auto;
+  }
+  .cal-grid {
+    grid-template-columns: repeat(7, 1fr) !important;
+  }
+  .cal-day,
+  .cal-day-name {
+    width: auto;
+    height: 44px;
+  }
+  .trip-card {
+    width: 100%;
+    height: auto;
+  }
+}
