@@ -33,8 +33,8 @@ const Interests = () => {
   const handleContinue = () => {
     // Save interests and navigate to next page
     localStorage.setItem("userInterests", JSON.stringify(selected));
-    // Navigate to home temporarily until next page is ready
-    window.navigateToHome?.();
+    // Navigate to user home page
+    window.navigateToUserHome?.();
   };
 
   return (

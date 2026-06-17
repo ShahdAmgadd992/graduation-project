@@ -13,6 +13,7 @@ import Landing from "./components/pages/Landing";
 import CalendarPage from "./components/pages/Calendar";
 import AboutUs from "./components/pages/AboutUs.jsx";
 import Interests from "./components/pages/Interests";
+import UserHome from "./components/pages/UserHome";
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -29,6 +30,7 @@ function App() {
     if (path === "/calendar") return "calendar";
     if (path === "/about-us") return "aboutus";
     if (path === "/interests") return "interests";
+    if (path === "/user-home") return "userhome";
     return "landing";
   });
 
@@ -48,6 +50,7 @@ function App() {
       else if (path === "/calendar") setCurrentPage("calendar");
       else if (path === "/about-us") setCurrentPage("aboutus");
       else if (path === "/interests") setCurrentPage("interests");
+      else if (path === "/user-home") setCurrentPage("userhome");
       else setCurrentPage("landing");
     };
 
@@ -124,6 +127,11 @@ function App() {
       setCurrentPage("interests");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+    window.navigateToUserHome = () => {
+      window.history.pushState({}, "", "/user-home");
+      setCurrentPage("userhome");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
     return () => {
       window.removeEventListener("popstate", updatePageFromPath);
@@ -141,6 +149,7 @@ function App() {
       delete window.navigateToCalendar;
       delete window.navigateToAboutUs;
       delete window.navigateToInterests;
+      delete window.navigateToUserHome;
     };
   }, []);
 
@@ -172,6 +181,8 @@ function App() {
         return <AboutUs />;
       case "interests":
         return <Interests />;
+      case "userhome":
+        return <UserHome />;
       default:
         return <Landing onNavigate={setCurrentPage} />;
     }
