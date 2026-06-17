@@ -1,0 +1,332 @@
+/* ===== Page Layout ===== */
+.sp-page {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family:
+    "SF Pro Display",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+/* ===== Header ===== */
+.sp-header {
+  text-align: center;
+  padding: 48px 24px 32px;
+}
+
+.sp-main-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.sp-blue {
+  color: #5596fe;
+}
+
+.sp-blue-dark {
+  color: #374151;
+}
+
+.sp-main-subtitle {
+  font-size: 15px;
+  color: #888;
+  margin-bottom: 28px;
+}
+
+/* ===== Filter Tabs ===== */
+.sp-filters {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sp-filter-btn {
+  padding: 8px 20px;
+  border-radius: 50px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  color: #555;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sp-filter-btn:hover {
+  border-color: #5596fe;
+  color: #5596fe;
+}
+
+.sp-filter-btn.active {
+  background: #5596fe;
+  color: #fff;
+  border-color: #5596fe;
+}
+
+/* ===== Content ===== */
+.sp-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px 40px;
+}
+
+/* ===== Section ===== */
+.sp-section {
+  margin-bottom: 48px;
+}
+
+.sp-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sp-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #374151;
+  padding-left: 0;
+}
+
+.sp-see-more {
+  font-size: 13px;
+  color: #5596fe;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sp-see-more:hover {
+  text-decoration: underline;
+}
+
+/* ===== See More Button (bottom) ===== */
+.sp-see-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.sp-see-more-btn {
+  border: 1.5px solid #5596fe;
+  border-radius: 20px;
+  background: white;
+  padding: 8px 32px;
+  font-size: 14px;
+  color: #5596fe;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sp-see-more-btn:hover {
+  background: #5596fe;
+  color: white;
+}
+
+/* ===== Cards Grid ===== */
+.sp-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ===== Card ===== */
+.sp-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.sp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(85, 150, 254, 0.15);
+}
+
+.sp-card-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 170px;
+}
+
+.sp-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sp-heart-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.sp-heart-btn:hover {
+  transform: scale(1.15);
+}
+
+/* ===== Card Body ===== */
+.sp-card-body {
+  padding: 14px 16px 16px;
+}
+
+.sp-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 6px;
+  text-align: left;
+}
+
+.sp-card-desc {
+  font-size: 12px;
+  color: #888;
+  margin: 0 0 8px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.sp-card-location {
+  font-size: 12px;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+/* ===== Stars ===== */
+.sp-stars {
+  color: #f5a623;
+  font-size: 13px;
+  text-align: left;
+}
+
+.sp-rating-num {
+  color: #555;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.sp-reviews {
+  font-size: 11px;
+  color: #aaa;
+  margin-left: 2px;
+}
+
+/* ===== Trip Meta ===== */
+.sp-trip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sp-trip-meta span {
+  font-size: 11px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ===== Card Footer ===== */
+.sp-card-footer {
+  margin-top: 10px;
+}
+
+.sp-price-tag {
+  display: inline-block;
+  background: #e6f9e6;
+  color: #0bab05;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 50px;
+}
+
+.sp-price-moderate {
+  display: inline-block;
+  background: #e8f0fe;
+  color: #5596fe;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 50px;
+}
+
+/* ===== Transport Section ===== */
+.sp-transport {
+  background: #f8faff;
+  padding: 56px 24px;
+  text-align: center;
+}
+
+.sp-transport-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 36px;
+}
+
+.sp-transport-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.sp-transport-logo {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 28px;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s;
+}
+
+.sp-transport-logo:hover {
+  box-shadow: 0 4px 16px rgba(85, 150, 254, 0.15);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sp-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .sp-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .sp-transport-logos {
+    gap: 16px;
+  }
+}

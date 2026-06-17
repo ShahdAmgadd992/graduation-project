@@ -14,6 +14,7 @@ import CalendarPage from "./components/pages/Calendar";
 import AboutUs from "./components/pages/AboutUs.jsx";
 import Interests from "./components/pages/Interests";
 import UserHome from "./components/pages/UserHome";
+import SavedPlaces from "./components/pages/SavedPlaces";
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -130,6 +131,11 @@ function App() {
       setCurrentPage("interests");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+    window.navigateToSavedPlaces = () => {
+      window.history.pushState({}, "", "/saved-places");
+      setCurrentPage("savedplaces");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
     window.navigateToUserHome = () => {
       const hasSeenInterests = localStorage.getItem("hasSeenInterests");
       if (!hasSeenInterests) {
@@ -191,6 +197,8 @@ function App() {
         return <Interests />;
       case "userhome":
         return <UserHome />;
+      case "savedplaces":
+        return <SavedPlaces />;
       default:
         return <Landing onNavigate={setCurrentPage} />;
     }

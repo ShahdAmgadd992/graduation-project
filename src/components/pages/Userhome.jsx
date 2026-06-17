@@ -168,7 +168,11 @@ const UserHome = () => {
           </ul>
 
           <div className="nav-right">
-            <button className="nav-heart-btn" aria-label="Favorites">
+            <button
+              className="nav-heart-btn"
+              aria-label="Favorites"
+              onClick={() => window.navigateToSavedPlaces?.()}
+            >
               <img src={heartIcon} alt="heart" className="heart-icon" />
             </button>
 
