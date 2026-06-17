@@ -47,8 +47,9 @@ function SignIn() {
         // Login successful, redirect to dashboard or home
         console.log("Login successful");
         // You can redirect here or emit an event
-        if (typeof window.navigateToDashboard === "function") {
-          window.navigateToDashboard();
+        localStorage.setItem("hasSeenInterests", "true");
+        if (typeof window.navigateToUserHome === "function") {
+          window.navigateToUserHome();
         }
       }
     } catch (err) {
@@ -74,8 +75,8 @@ function SignIn() {
       await verifyLoginOtp(email, twoFaCode);
       console.log("2FA verification successful");
       // Redirect to dashboard
-      if (typeof window.navigateToDashboard === "function") {
-        window.navigateToDashboard();
+      if (typeof window.navigateToUserHome === "function") {
+        window.navigateToUserHome();
       }
     } catch (err) {
       const errorMsg =
@@ -106,7 +107,13 @@ function SignIn() {
     window.history.pushState({}, "", "/signup");
     window.dispatchEvent(new PopStateEvent("popstate"));
   };
-
+  // بعد ما الـ login ينجح
+  // const hasSeenInterests = localStorage.getItem("hasSeenInterests");
+  // if (!hasSeenInterests) {
+  //   window.navigateToInterests?.();
+  // } else {
+  //   window.navigateToUserHome?.();
+  // }
   return (
     <div className="signin-wrapper">
       <div className="signin-container">

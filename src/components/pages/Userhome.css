@@ -382,3 +382,12 @@
   align-items: center;
   justify-content: center;
 }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  height: 100%;
+  overflow-x: hidden;
+}

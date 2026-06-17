@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Profile.css";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
@@ -434,6 +434,7 @@ const tripFilters = ["ALL", "Upcoming", "Drafts", "Completed"];
 // ===== Profile Page =====
 const Profile = () => {
   const { user } = useAuth();
+  const displayName = user?.displayName || "Traveler";
   const [activeTab, setActiveTab] = useState("Overview");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -457,8 +458,8 @@ const Profile = () => {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showProfileSavedModal, setShowProfileSavedModal] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
-    fullName: "Zeina Ahmed",
-    email: "zeinaAhmed@gmail.com",
+    fullName: user?.displayName || "",
+    email: user?.email || "",
     username: "@zeina_ahmed",
     phone: "0128 514 6324",
     bio: "Chasing sunrises, collecting stories.",
@@ -484,7 +485,7 @@ const Profile = () => {
       setProfileError(null);
       try {
         const profileRes = await userService.getMyProfile();
-        console.log('Profile data:', profileRes.data);
+        console.log("Profile data:", profileRes.data);
         if (profileRes.data) {
           setEditProfileData((prev) => ({
             ...prev,
@@ -495,11 +496,11 @@ const Profile = () => {
           }));
         }
       } catch (err) {
-        console.error('Profile fetch error:', err);
+        console.error("Profile fetch error:", err);
         setProfileError(
           err.response?.data?.message ||
             err.message ||
-            "Failed to load profile"
+            "Failed to load profile",
         );
       } finally {
         setProfileLoading(false);
@@ -520,17 +521,17 @@ const Profile = () => {
         phone: editProfileData.phone,
         bio: editProfileData.bio,
       };
-      console.log('Updating profile:', updatePayload);
+      console.log("Updating profile:", updatePayload);
       const response = await userService.updateProfile(updatePayload);
-      console.log('Profile update response:', response.data);
+      console.log("Profile update response:", response.data);
       setShowEditProfileModal(false);
       setShowProfileSavedModal(true);
     } catch (err) {
-      console.error('Profile update error:', err);
+      console.error("Profile update error:", err);
       setUpdateError(
         err.response?.data?.message ||
           err.message ||
-          "Failed to update profile"
+          "Failed to update profile",
       );
     } finally {
       setUpdateLoading(false);
@@ -591,7 +592,7 @@ const Profile = () => {
                 </button>
               </div>
               <div className="profile-info">
-                <h2 className="profile-name">{userData.name}</h2>
+                <h2 className="profile-name">{displayName}</h2>
                 <p className="profile-bio">{userData.bio}</p>
                 <p className="profile-location">
                   <svg
@@ -639,24 +640,25 @@ const Profile = () => {
           {activeTab === "Overview" && (
             <div className="overview-tab">
               {profileError && (
-                <div style={{
-                  backgroundColor: "#fee2e2",
-                  color: "#991b1b",
-                  padding: "12px 16px",
-                  borderRadius: "6px",
-                  marginBottom: "20px",
-                  fontSize: "14px"
-                }}>
+                <div
+                  style={{
+                    backgroundColor: "#fee2e2",
+                    color: "#991b1b",
+                    padding: "12px 16px",
+                    borderRadius: "6px",
+                    marginBottom: "20px",
+                    fontSize: "14px",
+                  }}
+                >
                   {profileError}
                 </div>
               )}
               <div className="welcome-card">
                 <h3>
                   Welcome back,{" "}
-                  <span className="blue-name">
-                    {userData.name.split(" ")[0]}
-                  </span>
+                  <span className="blue-name">{displayName.split(" ")[0]}</span>
                 </h3>
+
                 <p>Ready for your next Trip?</p>
               </div>
 
@@ -2410,7 +2412,13 @@ const Profile = () => {
               {/* Buttons */}
               <div className="ep-actions">
                 {updateError && (
-                  <div style={{ color: "#e74c3c", fontSize: "13px", marginBottom: "12px" }}>
+                  <div
+                    style={{
+                      color: "#e74c3c",
+                      fontSize: "13px",
+                      marginBottom: "12px",
+                    }}
+                  >
                     {updateError}
                   </div>
                 )}

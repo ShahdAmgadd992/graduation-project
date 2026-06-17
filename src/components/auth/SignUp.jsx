@@ -286,12 +286,9 @@ function SignUp() {
                 </button>
               </div>
 
-              {/* Password Error Message */}
               {passwordError && (
                 <p className="password-error-msg">{passwordError}</p>
               )}
-
-              {/* Server Error Message */}
               {serverError && (
                 <p className="password-error-msg">{serverError}</p>
               )}

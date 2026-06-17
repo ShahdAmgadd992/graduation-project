@@ -67,6 +67,22 @@ const Home = () => {
     testimonials[(currentTestimonial + 1) % testimonials.length],
   ];
 
+  // Intercept nav clicks for guest users
+  useEffect(() => {
+    const handleNavClick = (e) => {
+      const target = e.target.closest("li");
+      if (!target) return;
+      const text = target.textContent.trim();
+      if (["AI Planner", "Explore", "Calendar", "About Us"].includes(text)) {
+        e.stopPropagation();
+        setShowSignUpModal(true);
+      }
+    };
+    const nav = document.querySelector(".nav-links");
+    nav?.addEventListener("click", handleNavClick, true);
+    return () => nav?.removeEventListener("click", handleNavClick, true);
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       const scrolled = window.scrollY;
@@ -515,7 +531,6 @@ const Home = () => {
               </div>
             </div>
           </div>
-          {/* ✅ Create Your Own Trip → يفتح Sign Up Modal */}
           <button
             className="more-packages-btn"
             onClick={() => setShowSignUpModal(true)}

@@ -37,6 +37,8 @@ function App() {
   useEffect(() => {
     const updatePageFromPath = () => {
       const path = window.location.pathname;
+      const isLoggedIn = !!localStorage.getItem("accessToken");
+
       if (path === "/signin" || path === "/sign-in") setCurrentPage("signin");
       else if (path === "/signup" || path === "/sign-up")
         setCurrentPage("signup");
@@ -46,14 +48,15 @@ function App() {
       else if (path === "/explore") setCurrentPage("explore");
       else if (path === "/profile") setCurrentPage("profile");
       else if (path === "/ai-planner") setCurrentPage("aiplanner");
-      else if (path === "/home") setCurrentPage("home");
+      else if (path === "/home") {
+        if (isLoggedIn) setCurrentPage("userhome");
+        else setCurrentPage("home");
+      } else if (path === "/user-home") setCurrentPage("userhome");
       else if (path === "/calendar") setCurrentPage("calendar");
       else if (path === "/about-us") setCurrentPage("aboutus");
       else if (path === "/interests") setCurrentPage("interests");
-      else if (path === "/user-home") setCurrentPage("userhome");
       else setCurrentPage("landing");
     };
-
     updatePageFromPath();
     window.addEventListener("popstate", updatePageFromPath);
 
@@ -64,13 +67,13 @@ function App() {
     };
     window.navigateToHome = () => {
       window.history.pushState({}, "", "/home");
-      setCurrentPage("home");
+      const isLoggedIn = !!localStorage.getItem("accessToken");
+      setCurrentPage(isLoggedIn ? "userhome" : "home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
     window.navigateToDashboard = () => {
       window.history.pushState({}, "", "/interests");
       setCurrentPage("interests");
-      window.scrollTo({ top: 0, behavior: "smooth" });
     };
     window.navigateToSignIn = () => {
       window.history.pushState({}, "", "/signin");
@@ -128,11 +131,16 @@ function App() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
     window.navigateToUserHome = () => {
-      window.history.pushState({}, "", "/user-home");
-      setCurrentPage("userhome");
+      const hasSeenInterests = localStorage.getItem("hasSeenInterests");
+      if (!hasSeenInterests) {
+        window.history.pushState({}, "", "/interests");
+        setCurrentPage("interests");
+      } else {
+        window.history.pushState({}, "", "/home");
+        setCurrentPage("userhome");
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
     return () => {
       window.removeEventListener("popstate", updatePageFromPath);
       delete window.navigateToLanding;

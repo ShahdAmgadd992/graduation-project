@@ -74,12 +74,11 @@ const UserHome = () => {
 
   const handleNavigation = (page) => {
     if (page === "explore") window.navigateToExplore?.();
-    if (page === "home") window.navigateToHome?.();
+    if (page === "home") window.navigateToUserHome?.();
     if (page === "profile") window.navigateToProfile?.();
     if (page === "aiplanner") window.navigateToAiPlanner?.();
     if (page === "calendar") window.navigateToCalendar?.();
   };
-
   const visibleTestimonials = [
     testimonials[currentTestimonial % testimonials.length],
     testimonials[(currentTestimonial + 1) % testimonials.length],
@@ -175,7 +174,7 @@ const UserHome = () => {
 
             <div
               className="nav-profile-icon"
-              onClick={() => handleNavigation("profile")}
+              onClick={() => window.navigateToProfile?.()}
             >
               {user?.photoURL ? (
                 <img src={user.photoURL} alt="Profile" />
