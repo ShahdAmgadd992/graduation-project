@@ -1,133 +1,291 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import ChatBot from "./ChatBot";
 import "./AiPlanner.css";
 
-const defaultDayDetails = {
-  1: [
-    { time: "Morning", title: "Arrival & Check-in", activities: ["Check in", "Relax", "Promenade walk"] },
-    { time: "Afternoon", title: "Beach Time", activities: ["Beach time", "Seaside lunch", "Light activities"] },
-    { time: "Evening", title: "Sunset & Vibes", activities: ["Sunset", "Café time", "Dinner"] },
-  ],
-  2: [
-    { time: "Morning", title: "Desert Start", activities: ["Early breakfast", "Desert tour", "Camel ride"] },
-    { time: "Afternoon", title: "Local Life", activities: ["Local market", "Street food", "Cultural visit"] },
-    { time: "Evening", title: "Night Out", activities: ["Local restaurant", "Music", "Night walk"] },
-  ],
-  3: [
-    { time: "Morning", title: "Snorkeling", activities: ["Early dive", "Coral reef", "Underwater photos"] },
-    { time: "Afternoon", title: "Blue Waters", activities: ["Boat trip", "Swimming", "Beach lunch"] },
-    { time: "Evening", title: "Farewell", activities: ["Sunset view", "Dinner", "Pack & rest"] },
-  ],
-  4: [
-    { time: "Morning", title: "Hidden Gems", activities: ["Old town walk", "Local guide", "Photo spots"] },
-    { time: "Afternoon", title: "Culture & Food", activities: ["Cultural site", "Local lunch", "Souvenir shopping"] },
-    { time: "Evening", title: "Night Life", activities: ["Rooftop dinner", "Night market", "Live music"] },
-  ],
-  5: [
-    { time: "Morning", title: "Last Explore", activities: ["Final sightseeing", "Breakfast cafe", "Packing"] },
-    { time: "Afternoon", title: "Relaxation", activities: ["Spa", "Pool time", "Light lunch"] },
-    { time: "Evening", title: "Farewell", activities: ["Sunset view", "Farewell dinner", "Check out"] },
-  ],
+// ─── Edit caller — uses aiService.edit ───────────────────────────────────────
+const callEdit = async (payload) => {
+  const mod = await import("../../services/aiService");
+  const svc = mod.default ?? mod;
+  if (typeof svc.edit !== "function") {
+    throw new Error("aiService.edit is not exported from aiService.");
+  }
+  return svc.edit(payload);
 };
 
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+const IconEdit = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const IconTrash = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+  </svg>
+);
+
+const IconDots = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="5"  r="1.5" />
+    <circle cx="12" cy="12" r="1.5" />
+    <circle cx="12" cy="19" r="1.5" />
+  </svg>
+);
+
+// ─── Per-card 3-dot menu ──────────────────────────────────────────────────────
+const DayMenu = ({ day, onEdit, onRemove }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+
+  return (
+    <div className="aip-day-menu-wrap" ref={ref}>
+      <button
+        className="aip-day-menu-btn"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Day options"
+      >
+        <IconDots />
+      </button>
+
+      {open && (
+        <div className="aip-day-menu-dropdown">
+          <button
+            className="aip-day-menu-item"
+            onClick={() => { setOpen(false); onEdit(day); }}
+          >
+            <span className="aip-day-menu-icon"><IconEdit /></span>
+            <span>Edit With AI</span>
+          </button>
+
+          <button
+            className="aip-day-menu-item"
+            onClick={() => { setOpen(false); onRemove(day); }}
+          >
+            <span className="aip-day-menu-icon"><IconTrash /></span>
+            <span>Remove Day</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 const TripResult = ({ tripPlan, user }) => {
-  const [dayDetails, setDayDetails] = useState(defaultDayDetails);
+  const navigate = useNavigate();
+
+  const [itinerary,   setItinerary]   = useState(tripPlan?.itinerary  ?? []);
+  const [dayDetails,  setDayDetails]  = useState(tripPlan?.dayDetails  ?? {});
   const [expandedDay, setExpandedDay] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingDay, setEditingDay] = useState(null);
-  const [editText, setEditText] = useState("");
-  const [isEditLoading, setIsEditLoading] = useState(false);
-  const [editError, setEditError] = useState("");
-  const [showSavedModal, setShowSavedModal] = useState(false);
+
+  // edit modal
+  const [showEditModal,  setShowEditModal]  = useState(false);
+  const [editingDay,     setEditingDay]     = useState(null);
+  const [editText,       setEditText]       = useState("");
+  const [isEditLoading,  setIsEditLoading]  = useState(false);
+  const [editError,      setEditError]      = useState("");
+
+  // remove day popup
+  const [showRemoveDayPopup, setShowRemoveDayPopup] = useState(false);
+  const [removingDay,        setRemovingDay]        = useState(null);
+
+  // save / manage
+  const [isSaved,        setIsSaved]        = useState(false);
+  const [showSavedPopup, setShowSavedPopup] = useState(false);
+
+  // chatbot
   const [showChatbot, setShowChatbot] = useState(false);
 
-  const editSuggestions = ["Water Sports","Relaxation","More Activity","Budget-Friendly"];
-  const suggestionColors = ["#C4E0F9","#EDF9F0","#FCE8D1","#D7F1F3"];
-  const suggestionTextColors = ["#3b82f6","#22c55e","#f97316","#06b6d4"];
+  const editSuggestions      = ["Water Sports", "Relaxation", "More Activity", "Budget-Friendly"];
+  const suggestionColors     = ["#C4E0F9", "#EDF9F0", "#FCE8D1", "#D7F1F3"];
+  const suggestionTextColors = ["#3b82f6", "#22c55e", "#f97316", "#06b6d4"];
 
+  // ── helpers ───────────────────────────────────────────────────────────────
+  const openEdit = (day) => {
+    setEditingDay(day);
+    setEditText("");
+    setEditError("");
+    setShowEditModal(true);
+  };
+
+  const openRemoveDay = (day) => {
+    setRemovingDay(day);
+    setShowRemoveDayPopup(true);
+  };
+
+  const confirmRemoveDay = () => {
+    setItinerary((prev) => prev.filter((item) => item.day !== removingDay));
+    setDayDetails((prev) => {
+      const next = { ...prev };
+      delete next[removingDay];
+      return next;
+    });
+    if (expandedDay === removingDay) setExpandedDay(null);
+    setShowRemoveDayPopup(false);
+    setRemovingDay(null);
+  };
+
+  const toggleExpand = (day) =>
+    setExpandedDay((prev) => (prev === day ? null : day));
+
+  // ── edit API ──────────────────────────────────────────────────────────────
   const handleUpdateItinerary = async () => {
     if (!editText.trim()) return;
     setIsEditLoading(true);
     setEditError("");
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const mockUpdates = {
-      "Water Sports": [
-        { time: "Morning", title: "Water Sports", activities: ["Jet skiing", "Wakeboarding", "Speed boat"] },
-        { time: "Afternoon", title: "Diving & Snorkeling", activities: ["Coral reef dive", "Underwater photos", "Fish feeding"] },
-        { time: "Evening", title: "Beach Bonfire", activities: ["Sunset swim", "BBQ dinner", "Beach games"] },
-      ],
-      Relaxation: [
-        { time: "Morning", title: "Spa Morning", activities: ["Full body massage", "Steam room", "Healthy breakfast"] },
-        { time: "Afternoon", title: "Pool & Chill", activities: ["Pool lounging", "Light reading", "Juice bar"] },
-        { time: "Evening", title: "Quiet Dinner", activities: ["Sunset view", "Fine dining", "Early rest"] },
-      ],
-      "More Activity": [
-        { time: "Morning", title: "Adventure Start", activities: ["Hiking trail", "Rock climbing", "Zip line"] },
-        { time: "Afternoon", title: "Extreme Sports", activities: ["ATV riding", "Paragliding", "Kayaking"] },
-        { time: "Evening", title: "Night Adventure", activities: ["Night safari", "Campfire", "Stargazing"] },
-      ],
-      "Budget-Friendly": [
-        { time: "Morning", title: "Free Beach", activities: ["Public beach", "Packed breakfast", "Morning walk"] },
-        { time: "Afternoon", title: "Local Spots", activities: ["Street food lunch", "Local market", "Free museum"] },
-        { time: "Evening", title: "Local Eats", activities: ["Local restaurant", "Night market", "Tea & sweets"] },
-      ],
-    };
-    const matched = mockUpdates[editText] || [
-      { time: "Morning", title: "Custom Morning", activities: [`${editText} activity`, "Breakfast", "Explore"] },
-      { time: "Afternoon", title: "Custom Afternoon", activities: ["Local lunch", "Sightseeing", `${editText} tour`] },
-      { time: "Evening", title: "Custom Evening", activities: ["Dinner", "Relax", `${editText} wrap-up`] },
-    ];
-    setDayDetails((prev) => ({ ...prev, [editingDay]: matched }));
-    setShowEditModal(false);
-    setEditText("");
-    setIsEditLoading(false);
-    setShowSavedModal(true);
+
+    try {
+      const existingPlanFlat = Object.values(dayDetails)
+        .flat()
+        .flatMap((slot) => slot.rawItems ?? []);
+
+      const editPayload = {
+        targetChange: editText,
+        destination:  tripPlan.destination,
+        days:         tripPlan.days,
+        budget:       tripPlan.budget,
+        people:       Math.max(1, (tripPlan.adults ?? 1) + (tripPlan.children ?? 0)),
+        interests:    tripPlan.requestPayload?.interests ?? [],
+        existingPlan: existingPlanFlat,
+      };
+
+      const response = await callEdit(editPayload);
+      const data = response.data;
+      const mode = data?.mode;
+
+      if (mode === "surgical" || mode === "add") {
+        const updatedRaw = data.plan;
+        if (updatedRaw) {
+          const newDayDetails = { ...dayDetails };
+          for (let d = 1; d <= tripPlan.days; d++) {
+            const dayKey = `day${d}`;
+            const dayData = updatedRaw[dayKey];
+            if (!dayData) continue;
+            newDayDetails[d] = ["morning", "afternoon", "evening"].map((slot) => {
+              const items  = dayData[slot] ?? [];
+              const titles = items.map((p) => p?.name ?? p?.title ?? "").filter(Boolean);
+              return {
+                time:       slot.charAt(0).toUpperCase() + slot.slice(1),
+                title:      titles[0] ?? `${slot} activities`,
+                activities: titles.length ? titles : ["Explore the area"],
+                rawItems:   items,
+              };
+            });
+          }
+          setDayDetails(newDayDetails);
+        }
+        setShowEditModal(false);
+        setEditText("");
+
+      } else if (mode === "remove") {
+        const name = data?.removed_item?.name ?? "the item";
+        setEditError(`"${name}" was removed. Please describe a replacement.`);
+
+      } else if (mode === "replan") {
+        setShowEditModal(false);
+
+      } else {
+        setEditError(data?.message ?? "No changes were made.");
+      }
+    } catch (err) {
+      setEditError(
+        err.response?.data?.message ?? err.message ?? "Failed to update. Please try again."
+      );
+    } finally {
+      setIsEditLoading(false);
+    }
   };
 
+  // ── save trip ─────────────────────────────────────────────────────────────
+  const handleSaveTrip = () => {
+    setIsSaved(true);
+    setShowSavedPopup(true);
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="aip-page">
       <Navbar activePage="aiplanner" />
+
+      {/* ── Header ── */}
       <div className="aip-result-header">
-        <h1 className="aip-result-title">Your <span className="aip-result-dest">{tripPlan.destination}</span> Getaway</h1>
+        <h1 className="aip-result-title">
+          <span className="aip-result-dest">Your</span>{" "}
+          <span className="aip-result-dest-name">{tripPlan.destination}</span>{" "}
+          <span className="aip-result-dest">Getaway</span>
+        </h1>
         <p className="aip-result-meta">
           {tripPlan.days} Days, {tripPlan.nights} Nights &nbsp;|&nbsp;
           {tripPlan.adults} Adults
-          {tripPlan.children > 0 ? `, ${tripPlan.children} Kid` : ""}
-          {tripPlan.pets > 0 ? `, ${tripPlan.pets} Pet` : ""}
+          {tripPlan.children > 0 ? `, ${tripPlan.children} Kid`  : ""}
+          {tripPlan.pets    > 0 ? `, ${tripPlan.pets} Pet`       : ""}
           &nbsp;|&nbsp; Est. {tripPlan.budget} EGP / person
         </p>
       </div>
 
+      {/* ── Body ── */}
       <div className="aip-result-container">
         <div className="aip-result-left">
           <div className="aip-result-days">
-            {tripPlan.itinerary.map((item) => {
+            {itinerary.map((item) => {
               const isExpanded = expandedDay === item.day;
-              const details = dayDetails[item.day] || [];
+              const details    = dayDetails[item.day] ?? [];
+
+              // stops count: from data or count activities
+              const stopsCount = item.stops != null
+                ? item.stops
+                : details.reduce((acc, slot) => acc + (slot.activities?.length ?? 0), 0) || null;
+
               return (
-                <div key={item.day} className={`aip-result-day-card ${isExpanded ? "aip-result-day-card--expanded" : ""}`}>
+                <div
+                  key={item.day}
+                  className={`aip-result-day-card ${isExpanded ? "aip-result-day-card--expanded" : ""}`}
+                >
                   <img src={item.img} alt={item.description} className="aip-result-day-img" />
+
                   <div className="aip-result-day-info">
                     <div className="aip-result-day-header-row">
                       <p className="aip-result-day-label">Day {item.day}</p>
-                      {isExpanded && (
-                        <button className="aip-edit-ai-btn" onClick={() => { setEditingDay(item.day); setShowEditModal(true); setEditText(""); setEditError(""); }}>
-                          ✏️ Edit with AI
-                        </button>
-                      )}
+                      <DayMenu
+                        day={item.day}
+                        onEdit={openEdit}
+                        onRemove={openRemoveDay}
+                      />
                     </div>
+
                     <h3 className="aip-result-day-title">{item.description}</h3>
+
                     <div className="aip-result-day-meta">
-                      <span>🕐 {item.duration}</span>
-                      <span>⏱ {item.type}</span>
+                      {stopsCount && <span>📍 {stopsCount} stops</span>}
+                      <span>🕐 {item.type || item.duration || "Full day"}</span>
                       <span className="aip-result-cost">~{item.cost} EGP</span>
                     </div>
+
                     <div className="aip-result-tags">
-                      {item.tags.map((tag) => <span key={tag} className="aip-result-tag">{tag}</span>)}
+                      {item.tags.map((tag) => (
+                        <span key={tag} className="aip-result-tag">{tag}</span>
+                      ))}
                     </div>
+
                     {isExpanded && (
                       <div className="aip-day-details">
                         <div className="aip-timeline-dots">
@@ -144,15 +302,21 @@ const TripResult = ({ tripPlan, user }) => {
                               <p className="aip-day-slot-time">{slot.time} —</p>
                               <p className="aip-day-slot-title">{slot.title}</p>
                               <ul className="aip-day-slot-list">
-                                {slot.activities.map((act, j) => <li key={j}>• {act}</li>)}
+                                {slot.activities.map((act, j) => (
+                                  <li key={j}>• {act}</li>
+                                ))}
                               </ul>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
-                    <button className="aip-result-view-btn" onClick={() => setExpandedDay(isExpanded ? null : item.day)}>
-                      {isExpanded ? "View less" : "View >"}
+
+                    <button
+                      className="aip-result-view-btn"
+                      onClick={() => toggleExpand(item.day)}
+                    >
+                      {isExpanded ? "View less ›" : "View ›"}
                     </button>
                   </div>
                 </div>
@@ -160,52 +324,136 @@ const TripResult = ({ tripPlan, user }) => {
             })}
           </div>
         </div>
+
+        {/* ── Map ── */}
         <div className="aip-result-map">
-          <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80" alt="Map" className="aip-result-map-img" />
+          <img
+            src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80"
+            alt="Map"
+            className="aip-result-map-img"
+          />
         </div>
       </div>
 
+      {/* ── Save / Manage button ── */}
       <div style={{ display: "flex", justifyContent: "center", padding: "0 0 40px" }}>
-        <button className="aip-save-btn">Save Trip</button>
+        {!isSaved ? (
+          <button className="aip-save-btn" onClick={handleSaveTrip}>
+            Save Trip
+          </button>
+        ) : (
+          <button
+            className="aip-save-btn aip-manage-btn"
+            onClick={() => setShowSavedPopup(true)}
+          >
+            Manage Trip
+          </button>
+        )}
       </div>
 
-      {/* AI Edit Modal */}
+      {/* ══════════════════════════════
+          POPUP — Trip saved
+      ══════════════════════════════ */}
+      {showSavedPopup && (
+        <div className="aip-modal-overlay" onClick={() => setShowSavedPopup(false)}>
+          <div className="aip-popup aip-saved-popup" onClick={(e) => e.stopPropagation()}>
+            <button className="aip-popup-close" onClick={() => setShowSavedPopup(false)}>✕</button>
+            <p className="aip-popup-title">Trip saved to My Trip</p>
+            <button
+              className="aip-popup-primary-btn"
+              onClick={() => { setShowSavedPopup(false); navigate("/profile"); }}
+            >
+              View in My Trips
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════
+          POPUP — Remove Day
+      ══════════════════════════════ */}
+      {showRemoveDayPopup && (
+        <div className="aip-modal-overlay" onClick={() => setShowRemoveDayPopup(false)}>
+          <div className="aip-popup aip-remove-popup" onClick={(e) => e.stopPropagation()}>
+            <button className="aip-popup-close" onClick={() => setShowRemoveDayPopup(false)}>✕</button>
+            <p className="aip-popup-title">Remove Day {removingDay} from your trip?</p>
+            <button className="aip-popup-outline-btn" onClick={() => setShowRemoveDayPopup(false)}>
+              Cancel
+            </button>
+            <button className="aip-popup-danger-btn" onClick={confirmRemoveDay}>
+              Remove
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════
+          AI EDIT MODAL
+      ══════════════════════════════ */}
       {showEditModal && (
-        <div className="aip-modal-overlay" onClick={() => !isEditLoading && setShowEditModal(false)}>
+        <div
+          className="aip-modal-overlay"
+          onClick={() => !isEditLoading && setShowEditModal(false)}
+        >
           <div className="aip-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="aip-modal-close" onClick={() => !isEditLoading && setShowEditModal(false)} disabled={isEditLoading}>✕</button>
+            <button
+              className="aip-modal-close"
+              onClick={() => !isEditLoading && setShowEditModal(false)}
+              disabled={isEditLoading}
+            >
+              ✕
+            </button>
             <h3 className="aip-modal-title">Customize Day {editingDay}</h3>
-            <textarea className="aip-modal-textarea" placeholder="What would you like to change?" value={editText} onChange={(e) => { setEditText(e.target.value); setEditError(""); }} disabled={isEditLoading} />
+            <textarea
+              className="aip-modal-textarea"
+              placeholder="What would you like to change?"
+              value={editText}
+              onChange={(e) => { setEditText(e.target.value); setEditError(""); }}
+              disabled={isEditLoading}
+            />
             <div className="aip-modal-suggestions">
               {editSuggestions.map((s, i) => (
-                <button key={s} className="aip-modal-suggestion" style={{ background: suggestionColors[i], color: suggestionTextColors[i] }} onClick={() => { setEditText(s); setEditError(""); }} disabled={isEditLoading}>{s}</button>
+                <button
+                  key={s}
+                  className="aip-modal-suggestion"
+                  style={{ background: suggestionColors[i], color: suggestionTextColors[i] }}
+                  onClick={() => { setEditText(s); setEditError(""); }}
+                  disabled={isEditLoading}
+                >
+                  {s}
+                </button>
               ))}
             </div>
             {editError && <p className="aip-modal-error">{editError}</p>}
-            <button className="aip-modal-update-btn" onClick={handleUpdateItinerary} disabled={isEditLoading || !editText.trim()} style={{ opacity: isEditLoading || !editText.trim() ? 0.6 : 1 }}>
-              {isEditLoading ? <span className="aip-modal-loading"><span className="aip-modal-spinner" /> Updating...</span> : "Update Itinerary"}
+            <button
+              className="aip-modal-update-btn"
+              onClick={handleUpdateItinerary}
+              disabled={isEditLoading || !editText.trim()}
+              style={{ opacity: isEditLoading || !editText.trim() ? 0.6 : 1 }}
+            >
+              {isEditLoading
+                ? <span className="aip-modal-loading"><span className="aip-modal-spinner" /> Updating...</span>
+                : "Update Itinerary"
+              }
             </button>
-            <button className="aip-modal-cancel-btn" onClick={() => !isEditLoading && setShowEditModal(false)} disabled={isEditLoading}>Cancel</button>
+            <button
+              className="aip-modal-cancel-btn"
+              onClick={() => !isEditLoading && setShowEditModal(false)}
+              disabled={isEditLoading}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
 
-      {showSavedModal && (
-        <div className="aip-modal-overlay" onClick={() => setShowSavedModal(false)}>
-          <div className="aip-modal aip-saved-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="aip-modal-close" onClick={() => setShowSavedModal(false)}>✕</button>
-            <p className="aip-saved-text">Trip saved to My Trip</p>
-            <button className="aip-modal-update-btn" onClick={() => setShowSavedModal(false)}>View</button>
-          </div>
-        </div>
-      )}
-
-      {/* Chatbot floating button on result page too */}
+      {/* ── Chatbot FAB ── */}
       <button className="aip-bot-fab" onClick={() => setShowChatbot(true)}>
         <img src={chatIconImg} alt="Chat" className="aip-bot-fab-icon" />
       </button>
-
-      {showChatbot && <ChatBot userId={user?.userId} onClose={() => setShowChatbot(false)} />}
+      {showChatbot && (
+        <ChatBot userId={user?.userId} onClose={() => setShowChatbot(false)} />
+      )}
 
       <Footer />
     </div>

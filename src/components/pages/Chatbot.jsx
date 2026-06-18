@@ -58,16 +58,20 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
     setChatError(null);
 
     try {
+      // POST /api/v1/ai/chat  — schema: { sessionId, message }
       const chatPayload = {
-        userId: userId,
-        sessionId: sessionId,
-        messagePrompt: userMsg.text,
+        sessionId,
+        message: userMsg.text,
       };
-      console.log('Sending chat message:', chatPayload);
       const response = await aiService.chat(chatPayload);
-      console.log('Chat response:', response.data);
 
-      const reply = response.data?.reply || aiReplies[replyIndex % aiReplies.length];
+      // Response shape: { reply } or a text block; fall back to cycling prompts
+      const data = response.data;
+      const reply =
+        data?.reply ??
+        data?.message ??
+        data?.content?.[0]?.text ??
+        aiReplies[replyIndex % aiReplies.length];
       setMessages((prev) => [
         ...prev,
         {
@@ -79,11 +83,8 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
       ]);
       setReplyIndex((i) => i + 1);
     } catch (err) {
-      console.error('Chat error:', err);
       setChatError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to get response. Please try again."
+        err.response?.data?.message ?? err.message ?? "Failed to get response. Please try again."
       );
       const fallbackReply = aiReplies[replyIndex % aiReplies.length];
       setMessages((prev) => [

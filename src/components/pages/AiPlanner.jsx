@@ -159,48 +159,79 @@ const AiPlanner = () => {
 
     try {
       const days = getTripDays();
+      const budgetAmount = parseFloat(getBudgetAmount()) || 0;
+      const people = Math.max(1, adults + children);
 
-      // ── MOCK MODE: Using local data instead of API ──
-      // Simulating API call delay for UX
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const requestPayload = {
+        city: selectedDest,
+        days: Math.min(days, 7), // API max is 7
+        budget: budgetAmount,
+        people,
+        interests: selectedInterests.length > 0 ? selectedInterests : ["Cafés"],
+      };
 
-      // Create mock itinerary with dummy data
-      const mockItinerary = Array.from({ length: days }, (_, i) => {
-        const dayNum = i + 1;
-        const imgs = [
-          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80",
-          "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&q=80",
-          "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=400&q=80",
-          "https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=400&q=80",
-          "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80",
-        ];
-        const descriptions = [
-          "Arrival & Chill in " + selectedDest,
-          "Desert Vibes & Local Life",
-          "Adventure & Blue Magic",
-          "Hidden Gems & Local Culture",
-          "Relaxation & Farewell",
-        ];
-        const tagSets = [
-          ["Relax", "Beach", "Culture"],
-          ["Culture", "Local", "Relax"],
-          ["Adventure", "Snorkeling", "Nature"],
-          ["Culture", "History", "Food"],
-          ["Relax", "Nature", "Sunset"],
-        ];
-        const idx = Math.min(i, imgs.length - 1);
-        return {
-          day: dayNum,
-          description: descriptions[idx],
-          duration: "4 hrs",
+      // POST /api/v1/ai/generate-plan  (takes 20-35s — loading screen handles this)
+      const { default: aiService } = await import("../../services/aiService");
+      const response = await aiService.generatePlan(requestPayload);
+
+      // Response shape: Array → [0].plan → { accommodation, day1, day2, … }
+      const rawData = Array.isArray(response.data) ? response.data[0] : response.data;
+      const rawPlan = rawData?.plan ?? rawData;
+
+      // ── Map nested plan into flat itinerary for TripResult ──
+      // Each dayKey is "day1", "day2", … ; accommodation is separate
+      const itinerary = [];
+      const dayDetails = {}; // { dayNumber: [{ time, title, activities[] }] }
+
+      const FALLBACK_IMG = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80";
+
+      for (let d = 1; d <= days; d++) {
+        const dayKey = `day${d}`;
+        const dayData = rawPlan?.[dayKey]; // { morning: [...], afternoon: [...], evening: [...] }
+
+        // Build the time-slot detail rows for TripResult's expanded view
+        const slots = ["morning", "afternoon", "evening"].map((slot) => {
+          const items = dayData?.[slot] ?? [];
+          const titles = items.map((p) => p?.name ?? p?.title ?? "").filter(Boolean);
+          return {
+            time: slot.charAt(0).toUpperCase() + slot.slice(1),
+            title: titles[0] ?? `${slot} activities`,
+            activities: titles.length ? titles : ["Explore the area"],
+            rawItems: items, // keep full objects for edit API
+          };
+        });
+
+        dayDetails[d] = slots;
+
+        // Pick a representative image: first item with a photo_url across all slots
+        const firstImg =
+          ["morning", "afternoon", "evening"]
+            .flatMap((s) => dayData?.[s] ?? [])
+            .find((p) => p?.photo_url)?.photo_url ?? FALLBACK_IMG;
+
+        // Build tags from categories / interests across all items
+        const allItems = ["morning", "afternoon", "evening"].flatMap((s) => dayData?.[s] ?? []);
+        const tags = [...new Set(
+          allItems.map((p) => p?.category ?? p?.type).filter(Boolean)
+        )].slice(0, 3);
+
+        // Cost = sum of all item costs for this day
+        const dayCost = allItems.reduce((sum, p) => sum + (p?.cost ?? p?.price ?? 0), 0);
+
+        itinerary.push({
+          day: d,
+          description: dayData?.title ?? `Day ${d} in ${selectedDest}`,
+          duration: `${allItems.length} stops`,
           type: "Full day",
-          cost: 1000,
-          tags: tagSets[idx],
-          img: imgs[idx],
-        };
-      });
+          cost: dayCost,
+          tags: tags.length ? tags : ["Explore"],
+          img: firstImg,
+        });
+      }
 
-      // Set trip plan with mock data
+      // Accommodation from plan (day 0)
+      const accommodation = rawPlan?.accommodation ?? null;
+
       setTripPlan({
         destination: selectedDest,
         days,
@@ -208,27 +239,22 @@ const AiPlanner = () => {
         adults,
         children,
         pets,
-        budget: getBudgetAmount(),
-        itinerary: mockItinerary,
+        budget: budgetAmount,
+        itinerary,
+        dayDetails,   // passed to TripResult for expanded view
+        accommodation,
+        rawPlan,      // kept for the edit API
+        requestPayload, // kept for the edit API
       });
 
       setShowResult(true);
 
-      // ── COMMENTED API CODE (kept for reference) ──
-      // const requestPayload = {
-      //   city: selectedDest,
-      //   days,
-      //   budget: parseFloat(getBudgetAmount()),
-      //   people: totalTravelers,
-      //   interests: selectedInterests.length > 0 ? selectedInterests : undefined,
-      // };
-      // console.log('Generating plan with payload:', requestPayload);
-      // const response = await aiService.generatePlan(requestPayload);
-      // console.log('Plan generated response:', response.data);
-
     } catch (err) {
-      console.error('Error in plan generation:', err);
-      setPlanError("An error occurred while generating your plan. Please try again.");
+      console.error("Error generating plan:", err);
+      setPlanError(
+        err.response?.data?.message ||
+          "An error occurred while generating your plan. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
