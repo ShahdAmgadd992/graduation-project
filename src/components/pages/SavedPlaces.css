@@ -92,6 +92,11 @@
   color: #374151;
   padding-left: 0;
 }
+.sp-header-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
 
 .sp-see-more {
   font-size: 13px;

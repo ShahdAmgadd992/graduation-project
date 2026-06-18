@@ -238,24 +238,25 @@ const TourCard = ({ tour }) => {
           </span>
           <span className="tour-card-rating">
             <img src={starRate} alt="rating" className="star-icon" />
-            {tour.rating} ({tour.reviews} reviews)
+            <strong>{tour.rating}</strong> ({tour.reviews} reviews)
           </span>
         </div>
         <div className="tour-card-duration">
           <img src={timeIcon} alt="duration" className="time-icon" />
           {tour.duration}
         </div>
-        <div className="tour-card-footer">
-          <span className="tour-card-price">
-            Start from :{" "}
-            <strong style={{ color: "#5596fe" }}>{tour.price}$</strong>
-          </span>
-        </div>
+        <button
+          className="tour-card-view-btn"
+          onClick={() =>
+            window.navigateToTripDetails && window.navigateToTripDetails(tour)
+          }
+        >
+          View Details
+        </button>{" "}
       </div>
     </div>
   );
 };
-
 const TrendingCard = ({ item }) => (
   <div
     className="trending-card"

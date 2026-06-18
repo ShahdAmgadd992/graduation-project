@@ -808,25 +808,28 @@
   object-fit: contain;
 }
 
-.tour-card-footer {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 10px;
-}
-
-.tour-card-price {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: #f4f4f4;
-  border-radius: 14px;
-  padding: 10px 14px;
-  width: fit-content;
-  font-size: 13px;
-  color: #444;
+.tour-card-view-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  background: #5596fe;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+  font-family: "Inter", sans-serif;
 }
 
+.tour-card-view-btn:hover {
+  background: #4a85d4;
+  transform: translateY(-1px);
+}
 .tour-card-price strong {
   color: #5596fe;
 }

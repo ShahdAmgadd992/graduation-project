@@ -15,6 +15,7 @@ import AboutUs from "./components/pages/AboutUs.jsx";
 import Interests from "./components/pages/Interests";
 import UserHome from "./components/pages/UserHome";
 import SavedPlaces from "./components/pages/SavedPlaces";
+import TripDetails from "./components/pages/TripDetails";
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -56,6 +57,7 @@ function App() {
       else if (path === "/calendar") setCurrentPage("calendar");
       else if (path === "/about-us") setCurrentPage("aboutus");
       else if (path === "/interests") setCurrentPage("interests");
+      else if (path === "/trip-details") setCurrentPage("tripdetails");
       else setCurrentPage("landing");
     };
     updatePageFromPath();
@@ -147,6 +149,13 @@ function App() {
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+    window.navigateToTripDetails = (placeData) => {
+      window.__tripDetailsData = placeData;
+      window.history.pushState({}, "", "/trip-details");
+      setCurrentPage("tripdetails");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+    };
+
     return () => {
       window.removeEventListener("popstate", updatePageFromPath);
       delete window.navigateToLanding;
@@ -164,6 +173,7 @@ function App() {
       delete window.navigateToAboutUs;
       delete window.navigateToInterests;
       delete window.navigateToUserHome;
+      delete window.navigateToTripDetails;
     };
   }, []);
 
@@ -199,6 +209,8 @@ function App() {
         return <UserHome />;
       case "savedplaces":
         return <SavedPlaces />;
+      case "tripdetails":
+        return <TripDetails place={window.__tripDetailsData} />;
       default:
         return <Landing onNavigate={setCurrentPage} />;
     }
