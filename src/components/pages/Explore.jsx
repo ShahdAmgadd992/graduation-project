@@ -109,7 +109,6 @@ const momentImages = [
   heritageImg5,
   heritageImg6,
 ];
-
 const defaultLocationImages = [
   heritageImg1,
   heritageImg2,
@@ -125,13 +124,14 @@ const mapLocationToTour = (location, idx) => ({
   city: location.governorate || "Egypt",
   duration: "1 day",
   rating: location.avgRating ? Number(location.avgRating.toFixed(1)) : 4.7,
-  reviews: location.popularityScore ? Math.max(1, Math.round(location.popularityScore * 10)) : 22,
+  reviews: location.popularityScore
+    ? Math.max(1, Math.round(location.popularityScore * 10))
+    : 22,
   price: location.entryFeeEgp || 100,
   badge: location.isHiddenGem ? "Hidden Gem" : null,
   image: defaultLocationImages[idx % defaultLocationImages.length],
 });
 
-// ===== Trending Now Data =====
 const trendingDestinations = [
   {
     id: 201,
@@ -199,7 +199,6 @@ const trendingDestinations = [
   },
 ];
 
-// ===== Tour Card =====
 const TourCard = ({ tour }) => {
   const [liked, setLiked] = useState(false);
   return (
@@ -257,92 +256,81 @@ const TourCard = ({ tour }) => {
   );
 };
 
-// ===== Trending Card =====
-const TrendingCard = ({ item }) => {
-  return (
-    <div
-      className="trending-card"
-      style={{ backgroundImage: `url(${item.image})` }}
-    >
-      <div className="trending-card-overlay" />
-      <div className="trending-card-content">
-        <h3 className="trending-card-title">{item.title}</h3>
-        <p className="trending-card-city">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          {item.city}
-        </p>
-        <p className="trending-card-description">{item.description}</p>
-        <button className="trending-visit-btn">Visit Now</button>
+const TrendingCard = ({ item }) => (
+  <div
+    className="trending-card"
+    style={{ backgroundImage: `url(${item.image})` }}
+  >
+    <div className="trending-card-overlay" />
+    <div className="trending-card-content">
+      <h3 className="trending-card-title">{item.title}</h3>
+      <p className="trending-card-city">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        {item.city}
+      </p>
+      <p className="trending-card-description">{item.description}</p>
+      <button className="trending-visit-btn">Visit Now</button>
+    </div>
+  </div>
+);
+
+const AIMagicCard = ({ item }) => (
+  <div className={`ai-magic-card ${item.large ? "ai-magic-card-large" : ""}`}>
+    <div className="ai-magic-img-wrap">
+      <img src={item.image} alt={item.title} className="ai-magic-img" />
+      <div className="ai-magic-img-overlay" />
+      <div className="ai-magic-card-content">
+        <h3 className="ai-magic-title">{item.title}</h3>
+        <button className="ai-magic-action-btn">View Now</button>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
-const AIMagicCard = ({ item }) => {
-  return (
-    <div className={`ai-magic-card ${item.large ? "ai-magic-card-large" : ""}`}>
-      <div className="ai-magic-img-wrap">
-        <img src={item.image} alt={item.title} className="ai-magic-img" />
-        <div className="ai-magic-img-overlay" />
-        <div className="ai-magic-card-content">
-          <h3 className="ai-magic-title">{item.title}</h3>
-          <button className="ai-magic-action-btn">View Now</button>
-        </div>
+const AIMagicSection = () => (
+  <div className="ai-magic-section">
+    <hr className="unique-exp-divider" />
+    <h2 className="ai-magic-heading">
+      <span className="text-blue">AI</span> Magic
+    </h2>
+    <p className="ai-magic-subtitle">Smartly curated just for your taste</p>
+    <div className="ai-magic-grid">
+      {aiMagicDestinations.map((item) => (
+        <AIMagicCard key={item.id} item={item} />
+      ))}
+    </div>
+    <hr className="unique-exp-divider" />
+  </div>
+);
+
+const UniqueExperienceCard = ({ item }) => (
+  <div className="unique-exp-card">
+    <div className="unique-exp-img-wrap">
+      <img src={item.image} alt={item.title} className="unique-exp-img" />
+      <div className="unique-exp-rating">
+        <img src={starRate} alt="star" className="unique-exp-star" />
+        <span>{item.rating}</span>
       </div>
     </div>
-  );
-};
-
-const AIMagicSection = () => {
-  return (
-    <div className="ai-magic-section">
-      <hr className="unique-exp-divider" />
-      <h2 className="ai-magic-heading">
-        <span className="text-blue">AI</span> Magic
-      </h2>
-      <p className="ai-magic-subtitle">Smartly curated just for your taste</p>
-      <div className="ai-magic-grid">
-        {aiMagicDestinations.map((item) => (
-          <AIMagicCard key={item.id} item={item} />
-        ))}
-      </div>
-      <hr className="unique-exp-divider" />
+    <div className="unique-exp-body">
+      <h3 className="unique-exp-title">{item.title}</h3>
+      <p className="unique-exp-vibe">Vibe: {item.vibe}</p>
+      <p className="unique-exp-reviews">({item.reviews} reviews)</p>
+      <button className="unique-exp-btn">More Details</button>
     </div>
-  );
-};
+  </div>
+);
 
-// ===== Unique Experience Card =====
-const UniqueExperienceCard = ({ item }) => {
-  return (
-    <div className="unique-exp-card">
-      <div className="unique-exp-img-wrap">
-        <img src={item.image} alt={item.title} className="unique-exp-img" />
-        <div className="unique-exp-rating">
-          <img src={starRate} alt="star" className="unique-exp-star" />
-          <span>{item.rating}</span>
-        </div>
-      </div>
-      <div className="unique-exp-body">
-        <h3 className="unique-exp-title">{item.title}</h3>
-        <p className="unique-exp-vibe">Vibe: {item.vibe}</p>
-        <p className="unique-exp-reviews">({item.reviews} reviews)</p>
-        <button className="unique-exp-btn">More Details</button>
-      </div>
-    </div>
-  );
-};
-
-// ===== Unique Experience Carousel =====
 const UniqueExperienceSection = () => {
   const carouselRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -407,7 +395,6 @@ const UniqueExperienceSection = () => {
   );
 };
 
-// ===== Explore Page =====
 const Explore = () => {
   const [selectedCity, setSelectedCity] = useState("Cairo");
   const [searchQuery, setSearchQuery] = useState("");
@@ -421,13 +408,13 @@ const Explore = () => {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [showMorePopular, setShowMorePopular] = useState(false);
   const [showMoreTrending, setShowMoreTrending] = useState(false);
-  
-  // Existing state for Recommended
+  const [showHiddenGems, setShowHiddenGems] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
   const [recommendedTours, setRecommendedTours] = useState([]);
   const [exploreLoading, setExploreLoading] = useState(false);
   const [exploreError, setExploreError] = useState(null);
 
-  // ===== NEW STATE VARIABLES FOR HIDDEN GEMS & POPULAR API =====
   const [hiddenGems, setHiddenGems] = useState([]);
   const [hiddenGemsLoading, setHiddenGemsLoading] = useState(false);
   const [hiddenGemsError, setHiddenGemsError] = useState(null);
@@ -455,15 +442,13 @@ const Explore = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Existing useEffect for Recommended
   useEffect(() => {
     const fetchRecommendedLocations = async () => {
       setExploreLoading(true);
       setExploreError(null);
-
       try {
         const response = await locationService.getRecommended(12);
-        console.log('Backend Data:', response.data);
+        console.log("Backend Data:", response.data);
         if (Array.isArray(response.data)) {
           setRecommendedTours(response.data.map(mapLocationToTour));
         } else {
@@ -471,79 +456,73 @@ const Explore = () => {
         }
       } catch (err) {
         setExploreError(
-          err.response?.data?.message || err.message ||
+          err.response?.data?.message ||
+            err.message ||
             "Failed to load recommended destinations",
         );
       } finally {
         setExploreLoading(false);
       }
     };
-
     fetchRecommendedLocations();
   }, []);
 
-  // ===== NEW useEffect FOR HIDDEN GEMS =====
   useEffect(() => {
     const fetchHiddenGems = async () => {
       setHiddenGemsLoading(true);
       setHiddenGemsError(null);
-
       try {
         const response = await locationService.getHiddenGems("Cairo");
-        console.log('Hidden Gems Data:', response.data);
+        console.log("Hidden Gems Data:", response.data);
         if (Array.isArray(response.data)) {
           setHiddenGems(response.data.map(mapLocationToTour));
         } else {
           setHiddenGems([]);
         }
       } catch (err) {
-        console.error('Hidden gems fetch error:', err);
+        console.error("Hidden gems fetch error:", err);
         setHiddenGemsError(
-          err.response?.data?.message || err.message ||
+          err.response?.data?.message ||
+            err.message ||
             "Failed to load hidden gems",
         );
       } finally {
         setHiddenGemsLoading(false);
       }
     };
-
     fetchHiddenGems();
   }, []);
 
-  // ===== NEW useEffect FOR POPULAR DESTINATIONS API =====
   useEffect(() => {
     const fetchPopularDestinations = async () => {
       setPopularAPILoading(true);
       setPopularAPIError(null);
-
       try {
         const response = await locationService.getPopular("Cairo", 8);
-        console.log('Popular Destinations API Data:', response.data);
+        console.log("Popular Destinations API Data:", response.data);
         if (Array.isArray(response.data)) {
           setPopularDestAPI(response.data.map(mapLocationToTour));
         } else {
           setPopularDestAPI([]);
         }
       } catch (err) {
-        console.error('Popular destinations fetch error:', err);
+        console.error("Popular destinations fetch error:", err);
         setPopularAPIError(
-          err.response?.data?.message || err.message ||
+          err.response?.data?.message ||
+            err.message ||
             "Failed to load popular destinations",
         );
       } finally {
         setPopularAPILoading(false);
       }
     };
-
     fetchPopularDestinations();
   }, []);
 
-  // ===== NEW useEffect FOR LOCATION DETAILS =====
   useEffect(() => {
     const cacheLocationDetails = async () => {
       if (recommendedTours.length === 0) return;
       const locationIds = recommendedTours.map((t) => t.id).slice(0, 3);
-
       for (const locId of locationIds) {
         if (!locationDetailsCache[locId]) {
           try {
@@ -554,12 +533,14 @@ const Explore = () => {
               [locId]: response.data,
             }));
           } catch (err) {
-            console.error(`Failed to fetch details for location ${locId}:`, err);
+            console.error(
+              `Failed to fetch details for location ${locId}:`,
+              err,
+            );
           }
         }
       }
     };
-
     cacheLocationDetails();
   }, [recommendedTours, locationDetailsCache]);
 
@@ -578,27 +559,50 @@ const Explore = () => {
   };
 
   const getFilteredTours = () => {
-    let source = selectedExperience ? toursData[selectedExperience] || [] : [];
+    let source = selectedExperience
+      ? toursData[selectedExperience] || []
+      : recommendedTours.length
+        ? recommendedTours
+        : popularDestinations;
+
     if (filterCity.length > 0)
       source = source.filter((t) => filterCity.includes(t.city));
+
     if (tourNameSearch)
       source = source.filter((t) =>
         t.title.toLowerCase().includes(tourNameSearch.toLowerCase()),
       );
+
     source = source.filter((t) => t.price <= priceRange);
+
+    if (showHiddenGems) source = source.filter((t) => t.badge === "Hidden Gem");
+
     if (sortBy === "Price: Low to High")
       source = [...source].sort((a, b) => a.price - b.price);
     else if (sortBy === "Price: High to Low")
       source = [...source].sort((a, b) => b.price - a.price);
     else if (sortBy === "Rating")
       source = [...source].sort((a, b) => b.rating - a.rating);
+
     return source;
   };
 
   const filteredTours = getFilteredTours();
 
+  const hasActiveFilter =
+    selectedExperience ||
+    filterCity.length > 0 ||
+    tourNameSearch ||
+    showHiddenGems ||
+    selectedCategories.length > 0 ||
+    priceRange < 2500;
+
   const getMapCircles = () => {
-    const tours = selectedExperience ? filteredTours : recommendedTours.length ? recommendedTours : popularDestinations;
+    const tours = selectedExperience
+      ? filteredTours
+      : recommendedTours.length
+        ? recommendedTours
+        : popularDestinations;
     const citiesInTours = [...new Set(tours.map((t) => t.city))];
     return citiesInTours
       .filter((city) => cityCoordinates[city])
@@ -611,8 +615,10 @@ const Explore = () => {
       }));
   };
 
-    const mapCircles = getMapCircles();
-  const popularSource = recommendedTours.length ? recommendedTours : popularDestinations;
+  const mapCircles = getMapCircles();
+  const popularSource = recommendedTours.length
+    ? recommendedTours
+    : popularDestinations;
   const displayedPopular = showMorePopular
     ? popularSource
     : popularSource.slice(0, 6);
@@ -620,14 +626,12 @@ const Explore = () => {
     setSelectedExperience(null);
     setFilterCity([]);
   };
-
   const displayedTrending = showMoreTrending
     ? trendingDestinations
     : trendingDestinations.slice(0, 4);
 
   return (
     <>
-      {/* ===== Hero Section ===== */}
       <div
         className="explore-container"
         style={{ backgroundImage: `url(${exploreBg})` }}
@@ -699,7 +703,6 @@ const Explore = () => {
         </div>
       </div>
 
-      {/* ===== Categories Bar ===== */}
       <div className="categories-bar">
         <div className="categories-list">
           {categories.map((cat, index) => (
@@ -715,7 +718,6 @@ const Explore = () => {
         </div>
       </div>
 
-      {/* ===== Main Content ===== */}
       <div className="explore-main">
         <aside className="explore-sidebar">
           <div className="sidebar-section">
@@ -755,6 +757,40 @@ const Explore = () => {
                 </label>
               ))}
             </div>
+          </div>
+
+          <div className="sidebar-section">
+            <h4>Special Filter</h4>
+            <label className="sidebar-checkbox">
+              <input
+                type="checkbox"
+                checked={showHiddenGems}
+                onChange={() => setShowHiddenGems(!showHiddenGems)}
+              />
+              <span>Show hidden gems only</span>
+            </label>
+          </div>
+
+          <div className="sidebar-section">
+            <h4>Select Category</h4>
+            {["Trips & Tours", "Hotels & Stays", "Restaurants & Cafes"].map(
+              (cat) => (
+                <label key={cat} className="sidebar-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat)}
+                    onChange={() =>
+                      setSelectedCategories((prev) =>
+                        prev.includes(cat)
+                          ? prev.filter((c) => c !== cat)
+                          : [...prev, cat],
+                      )
+                    }
+                  />
+                  <span>{cat}</span>
+                </label>
+              ),
+            )}
           </div>
 
           <div className="sidebar-section">
@@ -802,12 +838,10 @@ const Explore = () => {
         </aside>
 
         <div className="explore-cards-section">
-          {selectedExperience ? (
+          {hasActiveFilter ? (
             <>
               <div className="cards-header">
-                <h2>
-                  {filteredTours.length} {selectedExperience} Tours
-                </h2>
+                <h2>{filteredTours.length} Results</h2>
                 <div className="sort-wrapper" ref={sortDropdownRef}>
                   <span className="sort-label">Sort by :</span>
                   <div
@@ -846,17 +880,62 @@ const Explore = () => {
                 </div>
               </div>
               <div className="active-filters">
-                <span className="filter-tag">
-                  {selectedExperience} <button onClick={clearFilter}>✕</button>
-                </span>
-                <button className="clear-all-btn" onClick={clearFilter}>
+                {selectedExperience && (
+                  <span className="filter-tag">
+                    {selectedExperience}{" "}
+                    <button onClick={() => setSelectedExperience(null)}>
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {showHiddenGems && (
+                  <span className="filter-tag">
+                    Hidden Gems{" "}
+                    <button onClick={() => setShowHiddenGems(false)}>✕</button>
+                  </span>
+                )}
+                {selectedCategories.map((cat) => (
+                  <span key={cat} className="filter-tag">
+                    {cat}{" "}
+                    <button
+                      onClick={() =>
+                        setSelectedCategories((prev) =>
+                          prev.filter((c) => c !== cat),
+                        )
+                      }
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+                {filterCity.map((city) => (
+                  <span key={city} className="filter-tag">
+                    {city}{" "}
+                    <button onClick={() => toggleFilterCity(city)}>✕</button>
+                  </span>
+                ))}
+                <button
+                  className="clear-all-btn"
+                  onClick={() => {
+                    setSelectedExperience(null);
+                    setFilterCity([]);
+                    setShowHiddenGems(false);
+                    setSelectedCategories([]);
+                    setTourNameSearch("");
+                    setPriceRange(2500);
+                  }}
+                >
                   Clear all
                 </button>
               </div>
               <div className="tours-grid">
-                {filteredTours.map((tour) => (
-                  <TourCard key={tour.id} tour={tour} />
-                ))}
+                {filteredTours.length > 0 ? (
+                  filteredTours.map((tour) => (
+                    <TourCard key={tour.id} tour={tour} />
+                  ))
+                ) : (
+                  <div className="loading-placeholder">No results found.</div>
+                )}
               </div>
             </>
           ) : (
@@ -871,7 +950,9 @@ const Explore = () => {
               )}
               <div className="tours-grid">
                 {exploreLoading && !displayedPopular.length ? (
-                  <div className="loading-placeholder">Loading recommended destinations...</div>
+                  <div className="loading-placeholder">
+                    Loading recommended destinations...
+                  </div>
                 ) : (
                   displayedPopular.map((tour) => (
                     <TourCard key={tour.id} tour={tour} />
@@ -888,14 +969,17 @@ const Explore = () => {
                   </button>
                 </div>
               )}
-
-              {(hiddenGemsLoading || hiddenGemsError || hiddenGems.length > 0) && (
+              {(hiddenGemsLoading ||
+                hiddenGemsError ||
+                hiddenGems.length > 0) && (
                 <div className="hidden-gems-section">
                   <div className="cards-header">
                     <h2>Hidden Gems</h2>
                   </div>
                   {hiddenGemsLoading && (
-                    <div className="loading-placeholder">Loading hidden gems...</div>
+                    <div className="loading-placeholder">
+                      Loading hidden gems...
+                    </div>
                   )}
                   {hiddenGemsError && (
                     <div className="fetch-error">{hiddenGemsError}</div>
@@ -907,14 +991,17 @@ const Explore = () => {
                   </div>
                 </div>
               )}
-
-              {(popularAPILoading || popularAPIError || popularDestAPI.length > 0) && (
+              {(popularAPILoading ||
+                popularAPIError ||
+                popularDestAPI.length > 0) && (
                 <div className="popular-api-section">
                   <div className="cards-header">
                     <h2>Popular Picks</h2>
                   </div>
                   {popularAPILoading && (
-                    <div className="loading-placeholder">Loading popular picks...</div>
+                    <div className="loading-placeholder">
+                      Loading popular picks...
+                    </div>
                   )}
                   {popularAPIError && (
                     <div className="fetch-error">{popularAPIError}</div>
@@ -931,7 +1018,6 @@ const Explore = () => {
         </div>
       </div>
 
-      {/* ===== Egypt Map ===== */}
       <div className="map-section">
         <h2 className="map-title">
           <span className="text-blue">Egypt</span> Map
@@ -973,19 +1059,16 @@ const Explore = () => {
         </div>
       </div>
 
-      {/* ===== Trending Now ===== */}
       <div className="trending-section">
         <h2 className="trending-title">
           <span className="text-blue">Trending</span> Now
         </h2>
         <p className="trending-subtitle">Warm winter escapes.</p>
-
         <div className="trending-grid">
           {displayedTrending.map((item) => (
             <TrendingCard key={item.id} item={item} />
           ))}
         </div>
-
         {!showMoreTrending && trendingDestinations.length > 4 && (
           <div className="show-more-wrap">
             <button
@@ -998,13 +1081,8 @@ const Explore = () => {
         )}
       </div>
 
-      {/* ===== Unique Experience ===== */}
       <UniqueExperienceSection />
-
-      {/* ===== AI Magic ===== */}
       <AIMagicSection />
-
-      {/* ===== Footer ===== */}
       <Footer />
     </>
   );
