@@ -1860,3 +1860,34 @@
 .ep-cancel-btn:hover {
   border-color: #999;
 }
+
+/* ══════════════════════════════════════
+   WRITE A REVIEW btn on completed cards
+══════════════════════════════════════ */
+.write-review-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 0;
+  border: none;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  transition: opacity 0.2s;
+}
+.write-review-btn:hover { opacity: 0.88; }
+
+/* ══════════════════════════════════════
+   LOGOUT row in settings (red tint)
+══════════════════════════════════════ */
+.settings-row-item.logout-row .settings-item-title { color: #f97316; }
+
+/* ══════════════════════════════════════
+   INTERESTS MODAL tags (reuse existing
+   interest-tag but inside modal)
+══════════════════════════════════════ */
+.modal-box .interests-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
