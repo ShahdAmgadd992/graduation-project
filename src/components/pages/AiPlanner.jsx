@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import robotImg from "../../assets/ai-planner/Robot - Modern cute chatbot 1.svg";
 import ellipseImg from "../../assets/ai-planner/Ellipse 21.svg";
 import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
-// import aiService from "../../services/aiService";
 import { useAuth } from "../../context/useAuth";
 import ChatBot from "./ChatBot";
 import TripResult from "./TripResult";
@@ -16,30 +15,25 @@ const destinations = [
   "Red Sea","Sinai","Hurghada","Sharm Elsheikh",
 ];
 
-const budgetOptions = [
-  { label: "Basic", price: "$300", emoji: "🧳" },
-  { label: "Standard", price: "$500", emoji: "🙂" },
-  { label: "Comfort", price: "$1000", emoji: "💸" },
-  { label: "Premium", price: "$2000", emoji: "💎" },
-];
-
 const interestOptions = [
-  { label: "Cafés", emoji: "☕" },
-  { label: "Bakeries", emoji: "🥐" },
+  { label: "Arts & Crafts", emoji: "🎨" },
+  { label: "Bakery", emoji: "🥐" },
+  { label: "Beaches & Water", emoji: "🏖️" },
+  { label: "Cafe", emoji: "☕" },
+  { label: "Entertainment", emoji: "🎭" },
+  { label: "History & Antiquities", emoji: "🏛️" },
+  { label: "Mosques & Churches", emoji: "🕌" },
   { label: "Music", emoji: "🎵" },
-  { label: "Street Food Spots", emoji: "🥙" },
+  { label: "Nature", emoji: "🌿" },
+  { label: "Nightlife", emoji: "🌃" },
+  { label: "Outdoor", emoji: "🏕️" },
+  { label: "Park", emoji: "🌸" },
   { label: "Restaurants", emoji: "🍽️" },
-  { label: "Fine Dining", emoji: "❤️" },
-  { label: "Bowling", emoji: "🎳" },
-  { label: "Food Trucks", emoji: "🚚" },
-  { label: "Escape Rooms", emoji: "🏠" },
-  { label: "Corniche", emoji: "🏖️" },
-  { label: "Healthy Spots", emoji: "🌿" },
-  { label: "Picnic Spots", emoji: "🌸" },
-  { label: "Rooftop Views", emoji: "🏙️" },
-  { label: "Theaters", emoji: "🎭" },
-  { label: "Art Workshops", emoji: "🎨" },
-  { label: "Handmade Crafts", emoji: "📦" },
+  { label: "Seafood", emoji: "🦐" },
+  { label: "Shopping", emoji: "🛍️" },
+  { label: "Street Food", emoji: "🥙" },
+  { label: "Tourism", emoji: "🗺️" },
+  { label: "Waterfront", emoji: "🌊" },
 ];
 
 function getDaysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
@@ -47,11 +41,11 @@ function getFirstDayOfMonth(year, month) { let day = new Date(year, month, 1).ge
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DAY_NAMES = ["Mo","Tu","We","Th","Fr","Sa","Su"];
 
-// ── Main Component ──
 const AiPlanner = () => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState("Mindy is working his magic...");
   const [planError, setPlanError] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [tripPlan, setTripPlan] = useState(null);
@@ -69,11 +63,13 @@ const AiPlanner = () => {
   const [adults, setAdults] = useState(0);
   const [children, setChildren] = useState(0);
   const [pets, setPets] = useState(0);
+  
+  const [selectedInterests, setSelectedInterests] = useState([]);
+  
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
-  const [selectedInterests, setSelectedInterests] = useState([]);
+  const [apiMinBudget, setApiMinBudget] = useState(300);
 
-  // ── Chatbot state ──
   const [showChatbot, setShowChatbot] = useState(false);
 
   const progressPercent = (step / totalSteps) * 100;
@@ -124,32 +120,101 @@ const AiPlanner = () => {
   };
 
   const changeCount = (setter, val, delta) => setter(Math.max(0, val + delta));
-  const totalTravelers = adults + children + pets;
   const hasBudget = selectedBudget !== null || customAmount.trim() !== "";
   const toggleInterest = (label) => setSelectedInterests((prev) => prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label]);
-
-  const getBudgetAmount = () => {
-    if (customAmount) return customAmount;
-    if (selectedBudget === "Basic") return 300;
-    if (selectedBudget === "Standard") return 500;
-    if (selectedBudget === "Comfort") return 1000;
-    if (selectedBudget === "Premium") return 2000;
-    return 0;
-  };
 
   const getTripDays = () => {
     if (!startDate || !endDate) return 3;
     const s = new Date(startDate.year, startDate.month, startDate.day);
     const e = new Date(endDate.year, endDate.month, endDate.day);
     const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 1;
+    return diff >= 0 ? diff + 1 : 1;
+  };
+
+  const basicPrice = apiMinBudget;
+  const standardPrice = Math.ceil(basicPrice * 1.5);
+  const comfortPrice = Math.ceil(standardPrice * 1.5);
+  const premiumPrice = Math.ceil(comfortPrice * 1.5);
+
+  const dynamicBudgetOptions = [
+    { label: "Basic", price: basicPrice, emoji: "🧳" },
+    { label: "Standard", price: standardPrice, emoji: "🙂" },
+    { label: "Comfort", price: comfortPrice, emoji: "💸" },
+    { label: "Premium", price: premiumPrice, emoji: "💎" },
+  ];
+
+  const getBudgetAmount = () => {
+    if (customAmount) return parseFloat(customAmount);
+    if (selectedBudget === "Basic") return basicPrice;
+    if (selectedBudget === "Standard") return standardPrice;
+    if (selectedBudget === "Comfort") return comfortPrice;
+    if (selectedBudget === "Premium") return premiumPrice;
+    return 0;
+  };
+
+  const extractBudgetFloor = (data, peopleCount) => {
+    if (!data) return null;
+    const errorMsg = data?.budget_validation?.message || data?.message || "";
+    if (data?.status === "budget_unfeasible" || data?.budget_validation?.status === "budget_unfeasible" || errorMsg.includes("floor")) {
+      const match = errorMsg.match(/use at least ([\d,.]+)/);
+      if (match) {
+        const totalMin = parseFloat(match[1].replace(/,/g, ''));
+        return Math.ceil(totalMin / peopleCount);
+      }
+    }
+    return null;
   };
 
   const handleContinue = () => {
-    if (step < totalSteps) {
+    if (step < 4) {
       setStep((s) => s + 1);
-    } else {
-      handleGeneratePlan();
+    } else if (step === 4) {
+      fetchMinimumBudget(); 
+    } else if (step === 5) {
+      handleGeneratePlan(); 
+    }
+  };
+
+  const fetchMinimumBudget = async () => {
+    setIsLoading(true);
+    setLoadingText("Calculating best prices...");
+    setPlanError(null);
+
+    try {
+      const days = getTripDays();
+      const peopleCount = Math.max(1, adults + children);
+
+      const requestPayload = {
+        city: selectedDest,
+        days: Math.min(days, 7),
+        budget: 1,
+        people: peopleCount,
+        interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"], 
+      };
+
+      const { default: aiService } = await import("../../services/aiService");
+      const response = await aiService.generatePlan(requestPayload);
+      
+      const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
+      
+      if (floorPerPerson) {
+        setApiMinBudget(floorPerPerson);
+      } else {
+        setApiMinBudget(300);
+      }
+    } catch (err) {
+      const peopleCount = Math.max(1, adults + children);
+      const floorPerPerson = extractBudgetFloor(err.response?.data, peopleCount);
+      
+      if (floorPerPerson) {
+        setApiMinBudget(floorPerPerson);
+      } else {
+        setApiMinBudget(300);
+      }
+    } finally {
+      setStep(5);
+      setIsLoading(false);
+      setLoadingText("Mindy is working his magic...");
     }
   };
 
@@ -159,37 +224,43 @@ const AiPlanner = () => {
 
     try {
       const days = getTripDays();
-      const budgetAmount = parseFloat(getBudgetAmount()) || 0;
-      const people = Math.max(1, adults + children);
+      const peopleCount = Math.max(1, adults + children);
+      const perPersonBudget = parseFloat(getBudgetAmount()) || 0;
+      
+      const totalBudget = perPersonBudget * peopleCount;
 
       const requestPayload = {
         city: selectedDest,
-        days: Math.min(days, 7), // API max is 7
-        budget: budgetAmount,
-        people,
-        interests: selectedInterests.length > 0 ? selectedInterests : ["Cafés"],
+        days: Math.min(days, 7),
+        budget: totalBudget, 
+        people: peopleCount,
+        interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"], 
       };
 
-      // POST /api/v1/ai/generate-plan  (takes 20-35s — loading screen handles this)
       const { default: aiService } = await import("../../services/aiService");
       const response = await aiService.generatePlan(requestPayload);
 
-      // Response shape: Array → [0].plan → { accommodation, day1, day2, … }
+      const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
+      if (floorPerPerson) {
+        setApiMinBudget(floorPerPerson);
+        setSelectedBudget(null);
+        setCustomAmount("");
+        setPlanError(`The AI calculated a new minimum floor: ${floorPerPerson} EGP per person. Please adjust.`);
+        setIsLoading(false);
+        return;
+      }
+
       const rawData = Array.isArray(response.data) ? response.data[0] : response.data;
       const rawPlan = rawData?.plan ?? rawData;
 
-      // ── Map nested plan into flat itinerary for TripResult ──
-      // Each dayKey is "day1", "day2", … ; accommodation is separate
       const itinerary = [];
-      const dayDetails = {}; // { dayNumber: [{ time, title, activities[] }] }
-
+      const dayDetails = {};
       const FALLBACK_IMG = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80";
 
       for (let d = 1; d <= days; d++) {
         const dayKey = `day${d}`;
-        const dayData = rawPlan?.[dayKey]; // { morning: [...], afternoon: [...], evening: [...] }
+        const dayData = rawPlan?.[dayKey];
 
-        // Build the time-slot detail rows for TripResult's expanded view
         const slots = ["morning", "afternoon", "evening"].map((slot) => {
           const items = dayData?.[slot] ?? [];
           const titles = items.map((p) => p?.name ?? p?.title ?? "").filter(Boolean);
@@ -197,25 +268,22 @@ const AiPlanner = () => {
             time: slot.charAt(0).toUpperCase() + slot.slice(1),
             title: titles[0] ?? `${slot} activities`,
             activities: titles.length ? titles : ["Explore the area"],
-            rawItems: items, // keep full objects for edit API
+            rawItems: items,
           };
         });
 
         dayDetails[d] = slots;
 
-        // Pick a representative image: first item with a photo_url across all slots
         const firstImg =
           ["morning", "afternoon", "evening"]
             .flatMap((s) => dayData?.[s] ?? [])
             .find((p) => p?.photo_url)?.photo_url ?? FALLBACK_IMG;
 
-        // Build tags from categories / interests across all items
         const allItems = ["morning", "afternoon", "evening"].flatMap((s) => dayData?.[s] ?? []);
         const tags = [...new Set(
           allItems.map((p) => p?.category ?? p?.type).filter(Boolean)
         )].slice(0, 3);
 
-        // Cost = sum of all item costs for this day
         const dayCost = allItems.reduce((sum, p) => sum + (p?.cost ?? p?.price ?? 0), 0);
 
         itinerary.push({
@@ -229,7 +297,6 @@ const AiPlanner = () => {
         });
       }
 
-      // Accommodation from plan (day 0)
       const accommodation = rawPlan?.accommodation ?? null;
 
       setTripPlan({
@@ -239,35 +306,52 @@ const AiPlanner = () => {
         adults,
         children,
         pets,
-        budget: budgetAmount,
+        budget: perPersonBudget,
         itinerary,
-        dayDetails,   // passed to TripResult for expanded view
+        dayDetails,
         accommodation,
-        rawPlan,      // kept for the edit API
-        requestPayload, // kept for the edit API
+        rawPlan,
+        requestPayload,
       });
 
       setShowResult(true);
 
     } catch (err) {
       console.error("Error generating plan:", err);
-      setPlanError(
-        err.response?.data?.message ||
-          "An error occurred while generating your plan. Please try again."
-      );
+      const status = err.response?.status;
+      const data = err.response?.data;
+      const errorMsg = data?.budget_validation?.message || data?.message || "";
+
+      const userMsg =
+        status === 503
+          ? "Our AI service is temporarily busy. Please wait a moment and try again."
+          : status === 401 || status === 403
+          ? "Session expired. Please log in and try again."
+          : status === 400
+          ? (errorMsg || "Some trip details are invalid. Please check your selections.")
+          : "Something went wrong generating your plan. Please try again.";
+      setPlanError(userMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleBack = () => setStep((s) => s - 1);
+  const totalTravelers = adults + children + pets;
 
   const canContinue = () => {
     if (step === 1) return selectedDest !== null;
     if (step === 2) return startDate !== null && endDate !== null;
     if (step === 3) return totalTravelers > 0;
-    if (step === 4) return hasBudget;
-    if (step === 5) return selectedInterests.length > 0;
+    if (step === 4) return selectedInterests.length > 0;
+    if (step === 5) {
+      if (!hasBudget) return false;
+      if (customAmount) {
+        const val = parseFloat(customAmount);
+        if (apiMinBudget && val < basicPrice) return false;
+      }
+      return true;
+    }
     return false;
   };
 
@@ -277,11 +361,10 @@ const AiPlanner = () => {
     1: "Tap the bot if you need some inspiration.",
     2: "Not sure about the dates? Ask AI",
     3: "Skip the clicks! Tell AI who's joining.",
-    4: "Need help estimating your budget? Ask AI",
-    5: null,
+    4: "Select what you'd love to do on this trip.",
+    5: "Need help estimating your budget? Ask AI",
   };
 
-  // ── Loading Screen ──
   if (isLoading) {
     return (
       <div className="aip-loading-screen">
@@ -290,18 +373,16 @@ const AiPlanner = () => {
           <img src={robotImg} alt="Mindy" className="aip-loading-robot" />
         </div>
         <div className="aip-loading-spinner" />
-        <h2 className="aip-loading-title">Mindy is working his magic...</h2>
-        <p className="aip-loading-sub">Analyzing best spots and matching your budget...</p>
+        <h2 className="aip-loading-title">{loadingText}</h2>
+        <p className="aip-loading-sub">Analyzing best spots and matching your trip...</p>
       </div>
     );
   }
 
-  // ── Result Screen ──
   if (showResult && tripPlan) {
     return <TripResult tripPlan={tripPlan} user={user} />;
   }
 
-  // ── Main Component ──
   return (
     <div className="aip-page">
       <Navbar activePage="aiplanner" />
@@ -310,9 +391,14 @@ const AiPlanner = () => {
         <p className="aip-subtitle">Design your dream trip in seconds. Answer a few quick questions, and let Mindy do the magic!</p>
       </div>
 
-      {/* Show plan error if exists */}
       {planError && (
-        <div className="plan-error-banner">{planError}</div>
+        <div className="plan-error-banner">
+          <span className="plan-error-icon">⚠️</span>
+          <span className="plan-error-msg">{planError}</span>
+          <button className="plan-error-retry" onClick={() => setPlanError(null)}>
+            Got it
+          </button>
+        </div>
       )}
 
       <div className="aip-card">
@@ -389,27 +475,6 @@ const AiPlanner = () => {
           <>
             <div className="aip-question-header">
               <button className="aip-back-btn" onClick={handleBack}>←</button>
-              <h2 className="aip-question-title">What's your budget? 💰</h2>
-              <p className="aip-question-sub">This is your budget per person.</p>
-            </div>
-            <div className="aip-budget-grid">
-              {budgetOptions.map(({ label, price, emoji }) => (
-                <button key={label} className={`aip-budget-btn ${selectedBudget === label ? "aip-budget-btn--active" : ""}`} onClick={() => { setSelectedBudget(label); setCustomAmount(""); }}>
-                  <span className="aip-budget-emoji">{emoji}</span>
-                  <span className="aip-budget-label">{label}</span>
-                  <span className="aip-budget-price">{price}</span>
-                </button>
-              ))}
-            </div>
-            <div className="aip-or-divider">OR</div>
-            <input className="aip-custom-input" type="number" placeholder="Enter your custom amount" value={customAmount} onChange={(e) => { setCustomAmount(e.target.value); setSelectedBudget(null); }} />
-          </>
-        )}
-
-        {step === 5 && (
-          <>
-            <div className="aip-question-header">
-              <button className="aip-back-btn" onClick={handleBack}>←</button>
               <h2 className="aip-question-title">What are you into? 🎯</h2>
               <p className="aip-question-sub">Select what you'd love to do on this trip.</p>
             </div>
@@ -423,12 +488,43 @@ const AiPlanner = () => {
           </>
         )}
 
+        {step === 5 && (
+          <>
+            <div className="aip-question-header">
+              <button className="aip-back-btn" onClick={handleBack}>←</button>
+              <h2 className="aip-question-title">What's your budget? 💰</h2>
+              <p className="aip-question-sub">This is your budget per person.</p>
+            </div>
+            <div className="aip-budget-grid">
+              {dynamicBudgetOptions.map(({ label, price, emoji }) => (
+                <button key={label} className={`aip-budget-btn ${selectedBudget === label ? "aip-budget-btn--active" : ""}`} onClick={() => { setSelectedBudget(label); setCustomAmount(""); }}>
+                  <span className="aip-budget-emoji">{emoji}</span>
+                  <span className="aip-budget-label">{label}</span>
+                  <span className="aip-budget-price">{price} EGP</span>
+                </button>
+              ))}
+            </div>
+            <div className="aip-or-divider">OR</div>
+            <input 
+              className="aip-custom-input" 
+              type="number" 
+              placeholder="Enter your custom amount" 
+              value={customAmount} 
+              onChange={(e) => { setCustomAmount(e.target.value); setSelectedBudget(null); }} 
+            />
+            {customAmount && parseFloat(customAmount) < basicPrice && (
+              <p style={{ color: "#e53935", fontSize: "13px", marginTop: "8px", textAlign: "left", width: "100%" }}>
+                 * Minimum practical budget is {basicPrice} EGP per person.
+              </p>
+            )}
+          </>
+        )}
+
         <button className={`aip-continue-btn ${canContinue() ? "aip-continue-btn--active" : ""}`} onClick={handleContinue} disabled={!canContinue()}>
           {step === 5 ? "Generate your plan" : "Continue"}
         </button>
       </div>
 
-      {/* Bot bubble */}
       {botMessages[step] && (
         <div className="aip-bot-wrapper">
           <p className="aip-bot-text">{botMessages[step]}</p>
@@ -438,7 +534,6 @@ const AiPlanner = () => {
         </div>
       )}
 
-      {/* Chatbot panel */}
       {showChatbot && <ChatBot userId={user?.userId} onClose={() => setShowChatbot(false)} />}
 
       <Footer />

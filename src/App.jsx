@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { BrowserRouter } from "react-router-dom";
 import SignUp from "./components/auth/SignUp";
 import SignIn from "./components/auth/SignIn";
 import ForgetPassword from "./components/auth/ForgetPassword";
@@ -221,11 +222,12 @@ function App() {
         return <Landing onNavigate={setCurrentPage} />;
     }
   };
-
   return (
-    <AuthProvider>
-      <div style={{ width: "100%" }}>{renderPage()}</div>{" "}
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <div style={{ width: "100%", overflowY: "auto" }}>{renderPage()}</div>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
@@ -91,7 +90,6 @@ const DayMenu = ({ day, onEdit, onRemove }) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const TripResult = ({ tripPlan, user }) => {
-  const navigate = useNavigate();
 
   const [itinerary,   setItinerary]   = useState(tripPlan?.itinerary  ?? []);
   const [dayDetails,  setDayDetails]  = useState(tripPlan?.dayDetails  ?? {});
@@ -302,9 +300,34 @@ const TripResult = ({ tripPlan, user }) => {
                               <p className="aip-day-slot-time">{slot.time} —</p>
                               <p className="aip-day-slot-title">{slot.title}</p>
                               <ul className="aip-day-slot-list">
-                                {slot.activities.map((act, j) => (
-                                  <li key={j}>• {act}</li>
-                                ))}
+                                {(slot.rawItems && slot.rawItems.length > 0
+                                  ? slot.rawItems
+                                  : (slot.activities || []).map((act) => ({ name: act }))
+                                ).map((place, j) => {
+                                  const isStringOnly = typeof place === "string";
+                                  const placeName = isStringOnly
+                                    ? place
+                                    : (place.name ?? place.title ?? "Activity");
+                                  const placeCost = isStringOnly
+                                    ? null
+                                    : (place.cost ?? place.price ?? null);
+                                  const isHiddenGem = !isStringOnly && !!place.is_hidden_gem;
+
+                                  return (
+                                    <li key={j} className="aip-day-slot-item">
+                                      <span className="aip-day-slot-bullet">•</span>
+                                      <span className="aip-day-slot-name">{placeName}</span>
+                                      {isHiddenGem && (
+                                        <span className="aip-hidden-gem-badge" title="Hidden Gem">
+                                          💎 Hidden gem
+                                        </span>
+                                      )}
+                                      {placeCost != null && (
+                                        <span className="aip-day-slot-cost">~{placeCost} EGP</span>
+                                      )}
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             </div>
                           ))}
@@ -361,7 +384,11 @@ const TripResult = ({ tripPlan, user }) => {
             <p className="aip-popup-title">Trip saved to My Trip</p>
             <button
               className="aip-popup-primary-btn"
-              onClick={() => { setShowSavedPopup(false); navigate("/profile"); }}
+              onClick={() => { 
+                setShowSavedPopup(false); 
+           
+                if(window.navigateToProfile) window.navigateToProfile(); 
+              }}
             >
               View in My Trips
             </button>

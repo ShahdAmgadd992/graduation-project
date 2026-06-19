@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import userService from "../../services/userService";
+import authService from "../../services/authService";
+import tripService from "../../services/tripService";
 import { useAuth } from "../../context/useAuth";
 import clint1 from "../../assets/general/clint1.jpg";
 import dahab from "../../assets/cities/dahab.jpg";
@@ -14,7 +17,25 @@ import searchIcon from "../../assets/icons/searchIcon.png";
 import luxor from "../../assets/cities/luxor.jpg";
 import siwa from "../../assets/cities/siwa.jpg";
 
-// ===== Static Data =====
+// ════════════════════════════════════════════════════════════════════
+// ⚠️ DUMMY DATA SECTION — TEMPORARY, NOT CONNECTED TO BACKEND YET ⚠️
+// ════════════════════════════════════════════════════════════════════
+// كل البيانات من هنا لحد آخر السكشن دي (لحد ما تلاقي ينتهي بـ
+// "END DUMMY DATA SECTION") هي بيانات وهمية بس، مش جايه من الـ API.
+//
+// السبب: الـ backend لسه مش مظبط فيه save/get لرحلات اليوزر بشكل كامل.
+// لحد ما نتأكد إن الـ API بتاع التروبس شغال 100% (create/get/delete trip)
+// هنسيب البيانات دي زي ما هي عشان نقدر نكمل تصميم وعرض الصفحة.
+//
+// ✅ لما الباك يخلص ويتأكد إن الـ API شغال:
+//   1. امسحي كل الـ const اللي تحت دي (userData, interests, upcomingTrips,
+//      allTrips, draftTrips, completedTrips, reviews)
+//   2. اربطي البيانات دي بالـ apiTrips / dashboardData / apiInterests
+//      اللي بترجع من tripService و userService بدل الداتا الوهمية
+//   3. دوري في الـ JSX على كل مكان بيستخدم upcomingTrips / allTrips /
+//      draftTrips / completedTrips / reviews / userData.stats
+//      واستبدليه بالبيانات الحقيقية
+// ════════════════════════════════════════════════════════════════════
 const userData = {
   name: "Zeina Ahmed",
   bio: "Chasing sunrises, collecting stories.",
@@ -428,14 +449,77 @@ const faqsData = [
   },
 ];
 
+// ── Adapter: يحوّل الـ dummy trips لنفس شكل بيانات الـ API ──────────
+// (tripId, destinationGovernorate, startDate, endDate, durationDays,
+//  totalBudgetEgp, days[].locations, status) عشان كروت العرض تشتغل
+// بنفس الكود بالظبط سواء الداتا حقيقية أو وهمية.
+// مجموعة الصور المتاحة عشان نلف عليها لكل كارت dummy (نفس الصور اللي
+// كانت مستخدمة في النسخة الأصلية)
+const dummyTripImages = [dahab, luxor, siwa];
+
+const buildDummyApiTrip = (t, statusLabel, idx) => ({
+  tripId: `dummy-${statusLabel}-${t.id}`,
+  destinationGovernorate: t.title,
+  startDate: "2026-05-16T00:00:00Z",
+  endDate: "2026-05-21T00:00:00Z",
+  durationDays: t.days || 5,
+  totalBudgetEgp: 8000,
+  status: statusLabel,
+  image: t.image || dummyTripImages[idx % dummyTripImages.length], // ← الصورة
+  lastUpdated: t.lastUpdated || "11/5/2026 at 5:00pm",
+  days: [
+    {
+      locations: (t.highlights || [])
+        .filter((h) => !h.startsWith("+"))
+        .map((h) => ({ nameEn: h })),
+    },
+  ],
+});
+
+const dummyApiTrips = [
+  ...allTrips.map((t, i) => buildDummyApiTrip(t, "Upcoming", i)),
+  ...draftTrips.map((t, i) => buildDummyApiTrip(t, "Planning", i)),
+  ...completedTrips.map((t, i) => buildDummyApiTrip(t, "Completed", i)),
+];
+
+// ════════════════════════════════════════════════════════════════════
+// END DUMMY DATA SECTION
+// ════════════════════════════════════════════════════════════════════
+
 const tabs = ["Overview", "My Trips", "Reviews", "Settings"];
 const tripFilters = ["ALL", "Upcoming", "Drafts", "Completed"];
 
 // ===== Profile Page =====
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const displayName = user?.displayName || "Traveler";
   const [activeTab, setActiveTab] = useState("Overview");
+  // ── real API data ──
+  const [profileData, setProfileData] = useState(null);
+  const [dashboardData, setDashboardData] = useState({ totalTrips: 0, totalReviews: 0, totalSaved: 0 });
+  const [apiTrips, setApiTrips] = useState([]);
+  const [tripsLoading, setTripsLoading] = useState(false);
+  const [apiInterests, setApiInterests] = useState([]);
+  // ── interests edit modal ──
+  const [showInterestsModal, setShowInterestsModal] = useState(false);
+  const [tempInterests, setTempInterests] = useState([]);
+  const [interestsSaving, setInterestsSaving] = useState(false);
+  // ── write-a-review modal ──
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewSaving, setReviewSaving] = useState(false);
+  // ── logout ──
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  // ── change-password state ──
+  const [cpCurrent, setCpCurrent] = useState("");
+  const [cpNew, setCpNew] = useState("");
+  const [cpConfirm, setCpConfirm] = useState("");
+  const [cpLoading, setCpLoading] = useState(false);
+  const [cpError, setCpError] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [profileLoading, setProfileLoading] = useState(false);
@@ -480,61 +564,157 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchAll = async () => {
       setProfileLoading(true);
       setProfileError(null);
       try {
+        // GET /api/v1/users/me
         const profileRes = await userService.getMyProfile();
-        console.log("Profile data:", profileRes.data);
-        if (profileRes.data) {
+        const p = profileRes.data;
+        if (p) {
+          setProfileData(p);
+          setApiInterests(p.interests ?? []);
           setEditProfileData((prev) => ({
             ...prev,
-            fullName: profileRes.data.displayName || prev.fullName,
-            email: profileRes.data.email || prev.email,
-            phone: profileRes.data.phone || prev.phone,
-            bio: profileRes.data.bio || prev.bio,
+            fullName: p.displayName || prev.fullName,
+            email: p.email || prev.email,
+            username: p.username ? `@${p.username}` : prev.username,
+            phone: p.phoneNumber || prev.phone,
+            bio: p.bio || prev.bio,
+            interests: p.interests ?? prev.interests,
           }));
         }
+        // GET /api/v1/users/me/dashboard
+        const dashRes = await userService.getDashboard();
+        if (dashRes.data) setDashboardData(dashRes.data);
+
+        // GET /api/v1/trips
+        setTripsLoading(true);
+        const tripsRes = await tripService.getTrips({ Page: 1, PageSize: 50 });
+        const items = tripsRes.data?.items ?? tripsRes.data ?? [];
+        setApiTrips(items);
       } catch (err) {
         console.error("Profile fetch error:", err);
-        setProfileError(
-          err.response?.data?.message ||
-            err.message ||
-            "Failed to load profile",
-        );
+        setProfileError(err.response?.data?.message || err.message || "Failed to load profile");
       } finally {
         setProfileLoading(false);
+        setTripsLoading(false);
       }
     };
-    if (user?.userId) {
-      fetchProfileData();
-    }
+    if (user?.userId) fetchAll();
   }, [user?.userId]);
 
   const handleSaveProfile = async () => {
     setUpdateLoading(true);
     setUpdateError(null);
     try {
-      const updatePayload = {
+      // PATCH /api/v1/users/me
+      await userService.updateProfile({
         displayName: editProfileData.fullName,
-        email: editProfileData.email,
-        phone: editProfileData.phone,
-        bio: editProfileData.bio,
-      };
-      console.log("Updating profile:", updatePayload);
-      const response = await userService.updateProfile(updatePayload);
-      console.log("Profile update response:", response.data);
+        username: editProfileData.username?.replace(/^@/, "") || undefined,
+        phoneNumber: editProfileData.phone || undefined,
+        bio: editProfileData.bio || undefined,
+      });
+      // PUT /api/v1/users/me/interests
+      if (editProfileData.interests?.length) {
+        await userService.updateInterests(editProfileData.interests);
+        setApiInterests(editProfileData.interests);
+      }
       setShowEditProfileModal(false);
       setShowProfileSavedModal(true);
     } catch (err) {
       console.error("Profile update error:", err);
-      setUpdateError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to update profile",
-      );
+      setUpdateError(err.response?.data?.message || err.message || "Failed to update profile");
     } finally {
       setUpdateLoading(false);
+    }
+  };
+
+  // ── Save interests from Overview edit ──────────────────────────────────────
+  const handleSaveInterests = async () => {
+    setInterestsSaving(true);
+    try {
+      await userService.updateInterests(tempInterests);
+      setApiInterests(tempInterests);
+      setEditProfileData((prev) => ({ ...prev, interests: tempInterests }));
+      setShowInterestsModal(false);
+      showToast("Interests updated!");
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to save interests", "error");
+    } finally {
+      setInterestsSaving(false);
+    }
+  };
+
+  // ── Logout ─────────────────────────────────────────────────────────────────
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) await authService.logout(refreshToken);
+    } catch (_) { /* ignore */ } finally {
+      authService.clearTokens();
+      if (window.navigateToSignIn) {
+        window.navigateToSignIn();
+      } else {
+        navigate("/signin");
+      }
+    }
+  };
+
+  // ── Change Password ────────────────────────────────────────────────────────
+  const handleChangePassword = async () => {
+    if (!cpCurrent || !cpNew || !cpConfirm) { setCpError("All fields are required."); return; }
+    if (cpNew !== cpConfirm) { setCpError("New passwords do not match."); return; }
+    if (cpNew.length < 8) { setCpError("Password must be at least 8 characters."); return; }
+    setCpLoading(true); setCpError("");
+    try {
+      await authService.changePassword(cpCurrent, cpNew, cpConfirm);
+      setShowChangePasswordModal(false);
+      setCpCurrent(""); setCpNew(""); setCpConfirm("");
+      showToast("Password updated successfully!");
+    } catch (err) {
+      setCpError(err.response?.data?.message || "Failed to change password.");
+    } finally {
+      setCpLoading(false);
+    }
+  };
+
+  // ── Submit Review ──────────────────────────────────────────────────────────
+  const handleSubmitReview = async () => {
+    if (!reviewTarget?.locationId) { showToast("No location to review", "error"); return; }
+    setReviewSaving(true);
+    try {
+      // POST /api/v1/reviews — locationId comes from the trip's first location
+      const { default: apiClient } = await import("../../services/apiClient");
+      await apiClient.post("/reviews", {
+        locationId: reviewTarget.locationId,
+        rating: reviewRating,
+        reviewText: reviewText || undefined,
+      });
+      setShowReviewModal(false);
+      setReviewText(""); setReviewRating(5);
+      showToast("Review submitted!");
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to submit review.", "error");
+    } finally {
+      setReviewSaving(false);
+    }
+  };
+
+  // ── Delete Account ─────────────────────────────────────────────────────────
+  const handleDeleteAccount = async () => {
+    try {
+      // DELETE /api/v1/users/me
+      const { default: apiClient } = await import("../../services/apiClient");
+      await apiClient.delete("/users/me");
+    } catch (_) { /* ignore */ } finally {
+      authService.clearTokens();
+      if (window.navigateToSignIn) {
+        window.navigateToSignIn();
+      } else {
+        navigate("/signin");
+      }
     }
   };
 
@@ -543,20 +723,29 @@ const Profile = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const upcomingFiltered = allTrips.filter(
-    (t) =>
-      t.status === "Upcoming" &&
-      t.image !== null &&
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // ── Map API trips to sections ────────────────────────────────────────────────
+  // TripStatus enum: 0=Planning/Draft, 1=Upcoming, 2=Active, 3=Completed, 4=Cancelled
 
-  const draftsFiltered = draftTrips.filter((t) =>
-    t.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // ⚠️ DUMMY FALLBACK — TEMPORARY: لو الـ API رجع مفيش trips حقيقية (array فاضية)
+  // وخلصنا التحميل، بنستخدم الـ dummyApiTrips بدالها عشان نقدر نشوف شكل الصفحة.
+  // ✅ لما الباك يخلص ويتأكد إن كل اليوزرز عندهم trips حقيقية، امسحي السطر اللي
+  // فيه "effectiveTrips" واستبدليه بـ: const effectiveTrips = apiTrips;
+  const effectiveTrips = (!tripsLoading && apiTrips.length === 0) ? dummyApiTrips : apiTrips;
 
-  const completedFiltered = completedTrips.filter((t) =>
-    t.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const upcomingFiltered = effectiveTrips
+    .filter((t) => t.status === "Upcoming" || t.status === "1" || t.status === 1)
+    .filter((t) => (t.destinationGovernorate ?? t.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const draftsFiltered = effectiveTrips
+    .filter((t) => t.status === "Planning" || t.status === "0" || t.status === 0)
+    .filter((t) => (t.destinationGovernorate ?? "").toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const completedFiltered = effectiveTrips
+    .filter((t) => t.status === "Completed" || t.status === "3" || t.status === 3)
+    .filter((t) => (t.destinationGovernorate ?? "").toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // helper: format API trip date
+  const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }) : "";
 
   return (
     <>
@@ -573,8 +762,8 @@ const Profile = () => {
             <div className="avatar-section">
               <div className="avatar-wrap">
                 <img
-                  src={userData.avatar}
-                  alt={userData.name}
+                  src={profileData?.profilePhotoUrl || userData.avatar}
+                  alt={profileData?.displayName || userData.name}
                   className="profile-avatar"
                 />
                 <button className="avatar-edit-btn" title="Change photo">
@@ -592,21 +781,14 @@ const Profile = () => {
                 </button>
               </div>
               <div className="profile-info">
-                <h2 className="profile-name">{displayName}</h2>
-                <p className="profile-bio">{userData.bio}</p>
+                <h2 className="profile-name">{profileData?.displayName || displayName}</h2>
+                <p className="profile-bio">{profileData?.bio || "Chasing sunrises, collecting stories."}</p>
                 <p className="profile-location">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#5596fe"
-                    strokeWidth="2"
-                  >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  {userData.location}
+                  {profileData?.homeGovernorate || "Egypt"}
                 </p>
               </div>
             </div>
@@ -663,10 +845,15 @@ const Profile = () => {
               </div>
 
               <div className="stats-grid">
-                {userData.stats.map((stat, i) => (
+                {[
+                  { value: dashboardData.totalTrips,   label: "Trips Completed",  icon: <img src={tripsIcon}    alt="trips"    width="24" height="24" /> },
+                  { value: dashboardData.totalSaved,   label: "Saved Places",     icon: <img src={fullHeart}    alt="saved"    width="24" height="24" /> },
+                  { value: upcomingFiltered.length,    label: "Upcoming Trips",   icon: <img src={uisCalender} alt="upcoming" width="24" height="24" /> },
+                  { value: dashboardData.totalReviews, label: "Reviews Written",  icon: <img src={pin}          alt="reviews"  width="24" height="24" /> },
+                ].map((stat, i) => (
                   <div className="stat-card" key={i}>
                     <div className="stat-icon-circle">{stat.icon}</div>
-                    <h3 className="stat-value">{stat.value}</h3>
+                    <h3 className="stat-value">{profileLoading ? "—" : stat.value}</h3>
                     <p className="stat-label">{stat.label}</p>
                   </div>
                 ))}
@@ -675,29 +862,27 @@ const Profile = () => {
               <div className="overview-section">
                 <div className="section-card-header">
                   <h4>My Travel Interests</h4>
-                  <button className="edit-icon-btn">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#5596fe"
-                      strokeWidth="2"
-                    >
+                  <button className="edit-icon-btn" onClick={() => { setTempInterests([...apiInterests]); setShowInterestsModal(true); }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
                       <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </button>
                 </div>
                 <div className="interests-wrap">
-                  {interests.map((interest, i) => (
-                    <span
-                      key={i}
-                      className={`interest-tag ${interest.active ? "active" : ""}`}
-                    >
-                      {interest.emoji} {interest.label}
-                    </span>
-                  ))}
+                  {(apiInterests.length ? apiInterests : interests.filter(i=>i.active).map(i=>i.label)).map((label, i) => {
+                    const found = interests.find(x => x.label === label);
+                    return (
+                      <span key={i} className="interest-tag active">
+                        {found?.emoji} {label}
+                      </span>
+                    );
+                  })}
+                  {apiInterests.length === 0 && !profileLoading && (
+                    <button className="edit-icon-btn" style={{fontSize:13,color:"#5596fe",border:"none",background:"none",cursor:"pointer",padding:0}} onClick={() => { setTempInterests([]); setShowInterestsModal(true); }}>
+                      + Add interests
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -785,8 +970,14 @@ const Profile = () => {
                 </div>
               </div>
 
+              {tripsLoading && (
+                <div style={{ textAlign:"center", padding:"40px", color:"#999", fontSize:14 }}>
+                  Loading your trips...
+                </div>
+              )}
+
               {/* ===== Upcoming Trips Section ===== */}
-              {(activeFilter === "ALL" || activeFilter === "Upcoming") && (
+              {!tripsLoading && (activeFilter === "ALL" || activeFilter === "Upcoming") && (
                 <div className="overview-section">
                   <div className="section-card-header">
                     <h4>Upcoming Trips</h4>
@@ -901,61 +1092,27 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="my-trip-info">
-                            <h5 className="my-trip-title">{trip.title}</h5>
+                            <h5 className="my-trip-title">{trip.destinationGovernorate ?? trip.title ?? "Trip"}</h5>
                             <p className="my-trip-meta">
-                              <svg
-                                width="13"
-                                height="13"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#999"
-                                strokeWidth="2"
-                              >
-                                <rect
-                                  x="3"
-                                  y="4"
-                                  width="18"
-                                  height="18"
-                                  rx="2"
-                                />
-                                <line x1="16" y1="2" x2="16" y2="6" />
-                                <line x1="8" y1="2" x2="8" y2="6" />
-                                <line x1="3" y1="10" x2="21" y2="10" />
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                               </svg>
-                              {trip.date}
+                              {fmtDate(trip.startDate)} – {fmtDate(trip.endDate)}
                             </p>
                             <p className="my-trip-meta">
-                              <svg
-                                width="13"
-                                height="13"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#999"
-                                strokeWidth="2"
-                              >
-                                <rect
-                                  x="3"
-                                  y="4"
-                                  width="18"
-                                  height="18"
-                                  rx="2"
-                                />
-                                <line x1="3" y1="10" x2="21" y2="10" />
-                                <line x1="9" y1="4" x2="9" y2="20" />
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="20"/>
                               </svg>
-                              {trip.places} places
+                              {trip.durationDays ?? "—"} days · {trip.totalBudgetEgp?.toLocaleString() ?? "—"} EGP
                             </p>
                             <div className="my-trip-highlights">
-                              {trip.highlights.map((h, i) => (
-                                <p
-                                  key={i}
-                                  className={`my-trip-highlight-item ${h.startsWith("+") ? "more" : ""}`}
-                                >
-                                  • {h}
-                                </p>
+                              {(trip.days?.[0]?.locations ?? []).slice(0, 2).map((loc, i) => (
+                                <p key={i} className="my-trip-highlight-item">• {loc.nameEn ?? loc.nameAr ?? "Place"}</p>
                               ))}
                             </div>
-                            <button className="view-itinerary-btn">
+                            <button className="view-itinerary-btn" onClick={() => navigate(`/trips/${trip.tripId}`)}>
                               View Itinerary
                             </button>
                           </div>
@@ -976,7 +1133,7 @@ const Profile = () => {
               )}
 
               {/* ===== Drafts Section ===== */}
-              {(activeFilter === "ALL" || activeFilter === "Drafts") && (
+              {!tripsLoading && (activeFilter === "ALL" || activeFilter === "Drafts") && (
                 <div className="overview-section">
                   <div className="section-card-header">
                     <h4>Drafts</h4>
@@ -1100,7 +1257,7 @@ const Profile = () => {
               )}
 
               {/* ===== Completed Trips Section ===== */}
-              {(activeFilter === "ALL" || activeFilter === "Completed") && (
+              {!tripsLoading && (activeFilter === "ALL" || activeFilter === "Completed") && (
                 <div className="overview-section">
                   <div className="section-card-header">
                     <h4>Completed Trips</h4>
@@ -1123,79 +1280,49 @@ const Profile = () => {
                             <button className="trip-more-btn">⋮</button>
                           </div>
                           <div className="my-trip-info">
-                            <h5 className="my-trip-title">{trip.title}</h5>
+                            <h5 className="my-trip-title">{trip.destinationGovernorate ?? trip.title ?? "Trip"}</h5>
                             <div className="completed-meta-row">
                               <p className="my-trip-meta">
-                                <svg
-                                  width="13"
-                                  height="13"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="#999"
-                                  strokeWidth="2"
-                                >
-                                  <rect
-                                    x="3"
-                                    y="4"
-                                    width="18"
-                                    height="18"
-                                    rx="2"
-                                  />
-                                  <line x1="16" y1="2" x2="16" y2="6" />
-                                  <line x1="8" y1="2" x2="8" y2="6" />
-                                  <line x1="3" y1="10" x2="21" y2="10" />
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+                                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                                 </svg>
-                                {trip.days} Days
+                                {trip.durationDays ?? "—"} Days
                               </p>
                               <p className="my-trip-meta">
-                                <svg
-                                  width="13"
-                                  height="13"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="#999"
-                                  strokeWidth="2"
-                                >
-                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                  <circle cx="12" cy="10" r="3" />
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
                                 </svg>
-                                {trip.location}
+                                {trip.destinationGovernorate ?? "Egypt"}
                               </p>
                             </div>
                             <p className="my-trip-meta">
-                              <svg
-                                width="13"
-                                height="13"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#999"
-                                strokeWidth="2"
-                              >
-                                <rect
-                                  x="3"
-                                  y="4"
-                                  width="18"
-                                  height="18"
-                                  rx="2"
-                                />
-                                <line x1="3" y1="10" x2="21" y2="10" />
-                                <line x1="9" y1="4" x2="9" y2="20" />
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="20"/>
                               </svg>
-                              {trip.places} places
+                              {(trip.days?.[0]?.locations?.length ?? 0)} places
                             </p>
                             <div className="my-trip-highlights">
-                              {trip.highlights.map((h, i) => (
-                                <p
-                                  key={i}
-                                  className={`my-trip-highlight-item ${h.startsWith("+") ? "more" : ""}`}
-                                >
-                                  • {h}
-                                </p>
+                              {(trip.days?.[0]?.locations ?? []).slice(0,2).map((loc, i) => (
+                                <p key={i} className="my-trip-highlight-item">• {loc.nameEn ?? loc.nameAr ?? "Place"}</p>
                               ))}
                             </div>
                             <p className="completed-last-updated">
-                              Last Updated : {trip.lastUpdated}
+                              Last Updated : {trip.lastUpdated ?? fmtDate(trip.endDate)}
                             </p>
+                            <button
+                              className="view-itinerary-btn"
+                              style={{ marginTop: 10, background: "linear-gradient(90deg,#5596fe,#97ceff)", color:"#fff", border:"none" }}
+                              onClick={() => {
+                                const locId = trip.days?.[0]?.locations?.[0]?.locationId ?? null;
+                                setReviewTarget({ locationId: locId, tripTitle: trip.title ?? trip.destinationGovernorate });
+                                setReviewRating(5); setReviewText("");
+                                setShowReviewModal(true);
+                              }}
+                            >
+                              Write a Review
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -1856,6 +1983,30 @@ const Profile = () => {
 
                       <div className="settings-divider" />
 
+                      {/* Logout */}
+                      <div
+                        className="settings-row-item"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setShowLogoutModal(true)}
+                      >
+                        <div className="settings-row-left">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                          </svg>
+                          <div>
+                            <p className="settings-item-title">Log Out</p>
+                            <p className="settings-item-desc">Sign out of your account</p>
+                          </div>
+                        </div>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </div>
+
+                      <div className="settings-divider" />
+
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
@@ -2033,32 +2184,32 @@ const Profile = () => {
 
               {/* Delete Account Modal */}
               {showDeleteAccountModal && (
-                <div
-                  className="modal-overlay"
-                  onClick={() => setShowDeleteAccountModal(false)}
-                >
-                  <div
-                    className="modal-box"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                <div className="modal-overlay" onClick={() => setShowDeleteAccountModal(false)}>
+                  <div className="modal-box" onClick={(e) => e.stopPropagation()}>
                     <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
                     <h3 className="modal-title">Delete Account?</h3>
-                    <p className="modal-desc">
-                      Are you sure you want to permanently delete your account?
-                      This action cannot be undone.
-                    </p>
+                    <p className="modal-desc">Are you sure you want to permanently delete your account? This action cannot be undone.</p>
                     <div className="modal-actions">
-                      <button
-                        className="modal-cancel-btn"
-                        onClick={() => setShowDeleteAccountModal(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="modal-delete-btn"
-                        onClick={() => setShowDeleteAccountModal(false)}
-                      >
-                        Delete
+                      <button className="modal-cancel-btn" onClick={() => setShowDeleteAccountModal(false)}>Cancel</button>
+                      <button className="modal-delete-btn" onClick={handleDeleteAccount}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Logout Confirmation Modal */}
+              {showLogoutModal && (
+                <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
+                  <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>👋</div>
+                    <h3 className="modal-title">Log Out?</h3>
+                    <p className="modal-desc">Are you sure you want to log out of your account?</p>
+                    <div className="modal-actions">
+                      <button className="modal-cancel-btn" onClick={() => setShowLogoutModal(false)}>Cancel</button>
+                      <button className="modal-delete-btn"
+                        style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: logoutLoading ? 0.6 : 1 }}
+                        onClick={handleLogout} disabled={logoutLoading}>
+                        {logoutLoading ? "Logging out..." : "Log Out"}
                       </button>
                     </div>
                   </div>
@@ -2067,99 +2218,34 @@ const Profile = () => {
 
               {/* Change Password Modal */}
               {showChangePasswordModal && (
-                <div
-                  className="modal-overlay"
-                  onClick={() => setShowChangePasswordModal(false)}
-                >
-                  <div
-                    className="modal-box"
-                    style={{ width: 420 }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                <div className="modal-overlay" onClick={() => { setShowChangePasswordModal(false); setCpError(""); }}>
+                  <div className="modal-box" style={{ width: 420 }} onClick={(e) => e.stopPropagation()}>
                     <h3 className="modal-title">Change Password</h3>
-                    <p className="modal-desc">
-                      Enter your current password to confirm your identity and
-                      choose a new password.
-                    </p>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 12,
-                        marginBottom: 24,
-                      }}
-                    >
+                    <p className="modal-desc">Enter your current password and choose a new one.</p>
+                    <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:16 }}>
                       {[
-                        "Current Password",
-                        "New Password",
-                        "Confirm Password",
-                      ].map((placeholder) => (
-                        <div key={placeholder} style={{ position: "relative" }}>
-                          <svg
-                            style={{
-                              position: "absolute",
-                              left: 14,
-                              top: "50%",
-                              transform: "translateY(-50%)",
-                            }}
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#aaa"
-                            strokeWidth="2"
-                          >
-                            <rect x="3" y="11" width="18" height="11" rx="2" />
-                            <path d="M7 11V7a5 5 0 0110 0v4" />
+                        { ph:"Current Password", val:cpCurrent, set:setCpCurrent },
+                        { ph:"New Password",      val:cpNew,     set:setCpNew     },
+                        { ph:"Confirm Password",  val:cpConfirm, set:setCpConfirm },
+                      ].map(({ ph, val, set }) => (
+                        <div key={ph} style={{ position:"relative" }}>
+                          <svg style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)" }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
                           </svg>
-                          <input
-                            type="password"
-                            placeholder={placeholder}
-                            style={{
-                              width: "100%",
-                              padding: "12px 14px 12px 40px",
-                              border: "1.5px solid #e8e8e8",
-                              borderRadius: 10,
-                              fontSize: 14,
-                              outline: "none",
-                              boxSizing: "border-box",
-                              color: "#374151",
-                              background: "#fff",
-                            }}
-                          />
+                          <input type="password" placeholder={ph} value={val} onChange={(e)=>set(e.target.value)}
+                            style={{ width:"100%", padding:"12px 14px 12px 40px", border:"1.5px solid #e8e8e8", borderRadius:10, fontSize:14, outline:"none", boxSizing:"border-box", color:"#374151", background:"#fff" }} />
                         </div>
                       ))}
-                      <p
-                        style={{
-                          fontSize: 12,
-                          color: "#999",
-                          textAlign: "left",
-                          margin: 0,
-                        }}
-                      >
-                        • At least 8 characters long
-                        <br />• Include at least one number or special character
+                      {cpError && <p style={{ color:"#e53935", fontSize:13, margin:0 }}>{cpError}</p>}
+                      <p style={{ fontSize:12, color:"#999", textAlign:"left", margin:0 }}>
+                        • At least 8 characters long<br/>• Include at least one number or special character
                       </p>
                     </div>
                     <div className="modal-actions">
-                      <button
-                        className="modal-cancel-btn"
-                        onClick={() => setShowChangePasswordModal(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="modal-delete-btn"
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #5596fe, #97ceff)",
-                        }}
-                        onClick={() => {
-                          setShowChangePasswordModal(false);
-                          showToast("Password updated successfully");
-                        }}
-                      >
-                        Save Changes
+                      <button className="modal-cancel-btn" onClick={() => { setShowChangePasswordModal(false); setCpError(""); setCpCurrent(""); setCpNew(""); setCpConfirm(""); }}>Cancel</button>
+                      <button className="modal-delete-btn" style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: cpLoading ? 0.6 : 1 }}
+                        onClick={handleChangePassword} disabled={cpLoading}>
+                        {cpLoading ? "Saving..." : "Save Changes"}
                       </button>
                     </div>
                   </div>
@@ -2482,17 +2568,84 @@ const Profile = () => {
 
       {toast && (
         <div className={`toast-notification ${toast.type}`}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="20 6 9 17 4 12" />
           </svg>
           {toast.message}
+        </div>
+      )}
+
+      {/* ═══ INTERESTS EDIT MODAL ═══ */}
+      {showInterestsModal && (
+        <div className="modal-overlay" onClick={() => setShowInterestsModal(false)}>
+          <div className="modal-box" style={{ width: 520, maxHeight:"80vh", overflowY:"auto" }} onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title" style={{ marginBottom:6 }}>Edit Travel Interests</h3>
+            <p className="modal-desc" style={{ marginBottom:16 }}>Select the interests that best match your travel style.</p>
+            <div className="interests-wrap" style={{ marginBottom:20 }}>
+              {interests.map((item, i) => (
+                <span
+                  key={i}
+                  className={`interest-tag ${tempInterests.includes(item.label) ? "active" : ""}`}
+                  style={{ cursor:"pointer" }}
+                  onClick={() => {
+                    setTempInterests((prev) =>
+                      prev.includes(item.label) ? prev.filter((x) => x !== item.label) : [...prev, item.label]
+                    );
+                  }}
+                >
+                  {item.emoji} {item.label}
+                </span>
+              ))}
+            </div>
+            <div className="modal-actions">
+              <button className="modal-cancel-btn" onClick={() => setShowInterestsModal(false)}>Cancel</button>
+              <button className="modal-delete-btn"
+                style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: interestsSaving ? 0.6 : 1 }}
+                onClick={handleSaveInterests} disabled={interestsSaving}>
+                {interestsSaving ? "Saving..." : "Save Interests"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ WRITE A REVIEW MODAL ═══ */}
+      {showReviewModal && (
+        <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
+          <div className="modal-box" style={{ width: 440 }} onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Write a Review</h3>
+            {reviewTarget?.tripTitle && (
+              <p className="modal-desc" style={{ marginBottom: 12 }}>
+                Trip: <strong>{reviewTarget.tripTitle}</strong>
+              </p>
+            )}
+            {!reviewTarget?.locationId && (
+              <p style={{ color:"#e53935", fontSize:13, marginBottom:12 }}>
+                ⚠️ This trip has no location data attached — review cannot be linked to a specific place.
+              </p>
+            )}
+            {/* Star rating */}
+            <div style={{ display:"flex", gap:6, marginBottom:14 }}>
+              {[1,2,3,4,5].map((s) => (
+                <span key={s} style={{ fontSize:28, cursor:"pointer", color: s <= reviewRating ? "#f5a623" : "#ddd" }}
+                  onClick={() => setReviewRating(s)}>★</span>
+              ))}
+            </div>
+            <textarea
+              placeholder="Share your experience..."
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              style={{ width:"100%", minHeight:110, border:"1.5px solid #e8e8e8", borderRadius:10, padding:"12px", fontSize:14, color:"#374151", resize:"vertical", outline:"none", fontFamily:"inherit", boxSizing:"border-box" }}
+            />
+            <div className="modal-actions" style={{ marginTop:16 }}>
+              <button className="modal-cancel-btn" onClick={() => setShowReviewModal(false)}>Cancel</button>
+              <button className="modal-delete-btn"
+                style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: reviewSaving || !reviewTarget?.locationId ? 0.6 : 1 }}
+                onClick={handleSubmitReview} disabled={reviewSaving || !reviewTarget?.locationId}>
+                {reviewSaving ? "Submitting..." : "Submit Review"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>
