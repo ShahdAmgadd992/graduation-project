@@ -9,6 +9,12 @@ const aiService = {
     return apiClient.post('/ai/chat', data);
   },
 
+  // alias "edit" so TripResult.jsx can call aiService.edit(...)
+  edit: (data) => {
+    return apiClient.post('/ai/edit', data);
+  },
+
+  // keep original name too so nothing else breaks
   editPlan: (data) => {
     return apiClient.post('/ai/edit', data);
   },
@@ -31,6 +37,10 @@ const aiService = {
 
   getPlaceById: (placeId) => {
     return apiClient.get(`/ai/places/${placeId}`);
+  },
+
+  homePlaces: (data) => {
+    return apiClient.post('/ai/places/home', data);
   },
 };
 

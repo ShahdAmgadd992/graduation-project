@@ -551,8 +551,26 @@
 .aip-day-column { display: flex; flex-direction: column; gap: 4px; }
 .aip-day-slot-time { font-size: 0.75rem; font-weight: 600; color: #9ca3af; margin: 0; }
 .aip-day-slot-title { font-size: 0.82rem; font-weight: 700; color: #1a1a2e; margin: 0; }
-.aip-day-slot-list { list-style: none; padding: 0; margin: 4px 0 0 0; display: flex; flex-direction: column; gap: 2px; }
+.aip-day-slot-list { list-style: none; padding: 0; margin: 4px 0 0 0; display: flex; flex-direction: column; gap: 4px; }
 .aip-day-slot-list li { font-size: 0.75rem; color: #6b7280; }
+
+.aip-day-slot-item { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 0.75rem; color: #6b7280; line-height: 1.4; }
+.aip-day-slot-bullet { color: #9ca3af; }
+.aip-day-slot-name { color: #374151; }
+.aip-day-slot-cost { color: #16a34a; font-weight: 600; font-size: 0.72rem; }
+
+.aip-hidden-gem-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
 
 /* ══════════════════════════════
    AI EDIT MODAL
