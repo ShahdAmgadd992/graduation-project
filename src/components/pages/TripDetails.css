@@ -357,11 +357,10 @@
 .td-visit-card {
   background: #ffffff;
   border-radius: 30px;
-  border: 0.2px solid#727272;
+  border: 0.2px solid #727272;
   padding: 20px;
   color: #fff;
   width: 478px;
-  /* height: 882px; */
   min-height: 800px;
   display: flex;
   flex-direction: column;
@@ -417,7 +416,6 @@
 
 .td-visit-value {
   font-size: 14px;
-  /* font-weight: 600; */
   color: #374151;
   font-family:
     "SF Pro",
@@ -506,11 +504,9 @@
   .td-content {
     grid-template-columns: 1fr;
   }
-
   .td-right {
     position: static;
   }
-
   .td-images {
     height: 280px;
   }
@@ -520,35 +516,30 @@
   .td-page {
     padding: 20px 16px 40px;
   }
-
   .td-images {
     grid-template-columns: 1fr;
     height: auto;
   }
-
   .td-main-img {
     height: 220px;
   }
-
   .td-side-imgs {
     flex-direction: row;
     height: 140px;
   }
-
   .td-meta {
     flex-wrap: wrap;
     gap: 16px;
     justify-content: flex-start;
   }
-
   .td-nearby-grid {
     flex-direction: column;
   }
-
   .td-reviews-grid {
     grid-template-columns: 1fr;
   }
 }
+
 /* ===== Place Title ===== */
 .td-place-title {
   font-family:
@@ -563,4 +554,1081 @@
   text-align: center;
   color: #000000;
   margin-bottom: 20px;
+}
+
+/* ===== Modals ===== */
+.td-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.td-modal-map {
+  position: relative;
+  width: 600px;
+  height: 500px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.td-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
+  z-index: 10;
+  font-weight: 600;
+}
+
+.td-modal-review {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 40px;
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.td-review-modal-title {
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #000;
+  margin: 0;
+}
+
+.td-review-modal-sub {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+}
+
+.td-review-modal-stars {
+  display: flex;
+  gap: 12px;
+}
+
+.td-modal-star {
+  font-size: 40px;
+  cursor: pointer;
+  color: #ddd;
+  transition: color 0.2s;
+}
+
+.td-modal-star.active {
+  color: #f5a623;
+}
+
+.td-review-modal-textarea {
+  width: 100%;
+  height: 140px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  color: #555;
+  resize: none;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.td-review-modal-submit {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+.td-review-modal-cancel {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 15px;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+/* ===== Add to Trip Modal ===== */
+.td-modal-add-trip {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 28px 24px;
+  width: 460px;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.td-add-trip-modal-title {
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #000;
+  margin: 0 0 4px 0;
+  text-align: left;
+}
+
+.td-add-trip-modal-sub {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 20px 0;
+  text-align: left;
+}
+
+.td-add-trip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 400px;
+  flex: 1;
+  padding-right: 4px;
+  margin-bottom: 16px;
+}
+
+.td-add-trip-list::-webkit-scrollbar {
+  width: 4px;
+}
+.td-add-trip-list::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 4px;
+}
+
+.td-trip-option {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  position: relative;
+}
+
+.td-trip-option.selected {
+  border-color: #5596fe;
+}
+
+.td-trip-radio {
+  width: 18px;
+  height: 18px;
+  accent-color: #5596fe;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.td-trip-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.td-trip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.td-trip-name {
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #111;
+}
+
+.td-trip-meta {
+  font-size: 13px;
+  color: #888;
+}
+
+.td-day-select-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 42px;
+}
+
+.td-day-select-label {
+  font-size: 14px;
+  color: #444;
+  white-space: nowrap;
+}
+
+.td-day-select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.td-create-new {
+  border: 1.5px dashed #5596fe;
+  background: #f8fbff;
+}
+
+.td-create-plus {
+  width: 50px;
+  height: 50px;
+  background: #e8f0fe;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #5596fe;
+  font-weight: 300;
+  flex-shrink: 0;
+}
+
+.td-confirm-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  flex-shrink: 0;
+}
+
+/* ===== Toast ===== */
+.td-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  min-width: 400px;
+  max-width: 666px;
+  height: 54px;
+  border-radius: 30px;
+  border: 1px solid #0bab05;
+  background-color: #f2fff4;
+  padding: 20px 30px;
+  gap: 41px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #0bab05;
+  font-weight: 700;
+  font-size: 14px;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  z-index: 9999;
+  box-sizing: border-box;
+  white-space: nowrap;
+  animation:
+    td-toast-in 0.3s ease,
+    td-toast-out 0.3s ease 3.7s forwards;
+}
+
+.td-toast-view {
+  background: none;
+  border: none;
+  color: #5596fe;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+@keyframes td-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes td-toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}
+
+/* ===== Manage Trip Button ===== */
+.td-manage-trip-btn {
+  display: block;
+  width: 438px;
+  padding: 14px;
+  background: transparent;
+  color: #5596fe;
+  border: 1.5px solid #5596fe;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-sizing: border-box;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  transition: background 0.2s;
+  text-align: center;
+}
+
+.td-manage-trip-btn:hover {
+  background: rgba(85, 150, 254, 0.08);
+}
+
+/* ===== Quick AI Trip Planning Modal ===== */
+.td-modal-quick-ai {
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px 36px 28px;
+  width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  box-sizing: border-box;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+.td-qai-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+}
+
+.td-qai-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: #374151;
+}
+
+.td-qai-back-top {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+}
+
+.td-qai-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+}
+
+.td-qai-subtitle {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.td-qai-link {
+  color: #5596fe;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.td-qai-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.td-qai-section-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  text-align: left;
+}
+
+/* Dates */
+.td-qai-dates-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.td-qai-date-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.td-qai-date-label {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 550;
+  text-align: left;
+}
+
+.td-qai-date-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.td-qai-date-input:hover {
+  background: #e9eaf0;
+}
+
+/* Budget */
+.td-qai-budget-row {
+  display: flex;
+  gap: 12px;
+}
+
+.td-qai-budget-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 30px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+.td-qai-budget-btn.active {
+  background: #c4e0f9;
+  border-color: #c4e0f9;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* People */
+.td-qai-people-input {
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.td-qai-people-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: #fff;
+  color: #5596fe;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.td-qai-people-btn:hover {
+  background: #e8f0fe;
+}
+
+.td-qai-people-field {
+  flex: 1;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  outline: none;
+  /* -moz-appearance: textfield; */
+}
+
+.td-qai-people-field::-webkit-outer-spin-button,
+.td-qai-people-field::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Generate button */
+.td-qai-generate-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  transition: opacity 0.2s;
+  margin-top: 4px;
+}
+
+.td-qai-generate-btn:hover {
+  opacity: 0.9;
+}
+
+/* ===== Calendar ===== */
+.td-calendar {
+  margin: 24px auto 12px; /* كانت 60px auto 20px */
+  width: 380px; /* كانت 420px */
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 16px; /* كانت 24px */
+  box-sizing: border-box;
+}
+
+.td-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.td-calendar-month-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.td-calendar-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.td-cal-nav-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.td-cal-nav-btn:hover {
+  background: #f3f4f6;
+}
+
+.td-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.td-cal-weekday {
+  font-size: 13px;
+  font-weight: 500;
+  color: #9ca3af;
+  padding: 6px 0;
+}
+
+.td-cal-day {
+  font-size: 14px;
+  color: #374151;
+  padding: 8px 4px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.td-cal-day {
+  width: 100%;
+}
+.td-cal-day:hover:not(.td-cal-day-inactive) {
+  background: #eff6ff;
+}
+
+.td-cal-day-inactive {
+  color: #d1d5db;
+  cursor: default;
+}
+
+.td-cal-day-selected {
+  background: rgba(85, 150, 254, 0.5) !important;
+  color: #1e293b !important;
+  font-weight: 700;
+  border-radius: 50%;
+}
+/* يوم البداية: نص شمال مربع (متصل بالشريط) ونص يمين دائري */
+.td-cal-day-range-start {
+  border-radius: 50% 0 0 50% !important;
+}
+
+/* يوم النهاية: نص يمين مربع (متصل بالشريط) ونص شمال دائري */
+.td-cal-day-range-end {
+  border-radius: 0 50% 50% 0 !important;
+}
+
+.td-cal-day-range {
+  background: #dbeafe;
+  border-radius: 0;
+}
+
+/* ===== Loading Step ===== */
+.td-qai-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px 20px;
+  min-height: 200px;
+  text-align: center;
+}
+
+.td-qai-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #5596fe;
+  border-radius: 50%;
+  animation: td-spin 0.8s linear infinite;
+}
+
+@keyframes td-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.td-qai-loading-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.td-qai-loading-sub {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 340px;
+}
+/* ===== Skeleton (transition step before spinner) ===== */
+.td-qai-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 4px 4px 8px;
+}
+
+.td-qai-skeleton-header {
+  width: 60%;
+  height: 26px;
+  border-radius: 8px;
+  background: #e5e7eb;
+}
+
+.td-qai-skeleton-sub {
+  width: 90%;
+  height: 12px;
+  border-radius: 6px;
+  background: #eceef1;
+}
+
+.td-qai-skeleton-sub-short {
+  width: 50%;
+  margin-top: -8px;
+}
+
+.td-qai-skeleton-label {
+  width: 30%;
+  height: 16px;
+  border-radius: 6px;
+  background: #e5e7eb;
+  margin-top: 8px;
+}
+
+.td-qai-skeleton-row {
+  display: flex;
+  gap: 16px;
+}
+
+.td-qai-skeleton-input {
+  flex: 1;
+  height: 44px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  position: relative;
+  overflow: hidden;
+}
+
+.td-qai-skeleton-pill {
+  flex: 1;
+  height: 38px;
+  border-radius: 30px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+}
+
+.td-qai-skeleton-pill-active {
+  background: #dbeafe;
+  border-color: #dbeafe;
+}
+
+.td-qai-skeleton-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 30px;
+  background: #cbd2db;
+  margin-top: 8px;
+}
+
+.td-qai-skeleton-header,
+.td-qai-skeleton-sub,
+.td-qai-skeleton-label {
+  background: #e5e7eb;
+}
+
+.td-qai-skeleton-input {
+  background: #f3f4f6;
+}
+
+.td-qai-skeleton-pill {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+}
+
+.td-qai-skeleton-pill-active {
+  background: #c4e0f9;
+  border-color: #c4e0f9;
+}
+
+.td-qai-skeleton-btn {
+  background: #9ca3af;
+}
+/* ===== Manage Trip Modal ===== */
+.td-modal-manage-trip {
+  background: #fff;
+  width: 480px;
+  min-height: 480px;
+  height: auto;
+  border-radius: 30px;
+  border: 1px solid #e5e7eb;
+  opacity: 1;
+  padding-top: 42px;
+  padding-right: 40px;
+  padding-bottom: 28px;
+  padding-left: 40px;
+  max-height: 90vh;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 31px;
+  position: relative;
+  box-sizing: border-box;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+.td-modal-manage-trip::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+.td-mt-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  text-align: left;
+}
+
+.td-mt-subtitle {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 4px 0 8px 0;
+  text-align: left;
+}
+
+.td-mt-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Menu options */
+.td-mt-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 4px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.td-mt-option:hover {
+  background: #f9fafb;
+}
+
+.td-mt-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.td-mt-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.td-mt-option-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.td-mt-option-danger {
+  color: #e02424;
+}
+
+.td-mt-option-sub {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.td-mt-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+}
+
+/* Submit / cancel / confirm buttons */
+.td-mt-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(90deg, #5596fe, #97ceff);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+
+.td-mt-submit-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.td-mt-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.td-mt-confirm-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.td-mt-confirm-danger {
+  color: #e02424;
+}
+
+.td-mt-cancel-btn {
+  width: 100%;
+  padding: 14px;
+  background: #fff;
+  color: #5596fe;
+  border: 1.5px solid #5596fe;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+.td-mt-confirm-btn {
+  width: 100%;
+  padding: 14px;
+  background: #fff;
+  color: #e02424;
+  border: 1.5px solid #e02424;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:
+    "SF Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+/* Move to Another Trip list */
+.td-mt-trip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0;
+}
+
+.td-mt-trip-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.td-mt-trip-card.selected {
+  border-color: #5596fe;
+  background: #eff6ff;
+}
+
+.td-mt-trip-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Solid selected day (Move to Another Day calendar) */
+.td-cal-day-selected-solid {
+  background: #5596fe !important;
+  color: #fff !important;
+  font-weight: 700;
+  border-radius: 50%;
 }

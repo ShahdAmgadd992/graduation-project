@@ -199,7 +199,8 @@ const trendingDestinations = [
   },
 ];
 
-const TourCard = ({ tour }) => {
+// ✅ FIX: selectedCategories passed as prop instead of being read from closure
+const TourCard = ({ tour, selectedCategories = [] }) => {
   const [liked, setLiked] = useState(false);
   return (
     <div className="tour-card">
@@ -247,16 +248,24 @@ const TourCard = ({ tour }) => {
         </div>
         <button
           className="tour-card-view-btn"
-          onClick={() =>
-            window.navigateToTripDetails && window.navigateToTripDetails(tour)
-          }
+          onClick={() => {
+            // ✅ FIX: now uses the prop correctly
+            const cat = selectedCategories.includes("Hotels & Stays")
+              ? "hotel"
+              : selectedCategories.includes("Restaurants & Cafes")
+                ? "restaurant"
+                : "attraction";
+            window.navigateToTripDetails &&
+              window.navigateToTripDetails({ ...tour, category: cat });
+          }}
         >
           View Details
-        </button>{" "}
+        </button>
       </div>
     </div>
   );
 };
+
 const TrendingCard = ({ item }) => (
   <div
     className="trending-card"
@@ -931,8 +940,13 @@ const Explore = () => {
               </div>
               <div className="tours-grid">
                 {filteredTours.length > 0 ? (
+                  // ✅ FIX: pass selectedCategories prop
                   filteredTours.map((tour) => (
-                    <TourCard key={tour.id} tour={tour} />
+                    <TourCard
+                      key={tour.id}
+                      tour={tour}
+                      selectedCategories={selectedCategories}
+                    />
                   ))
                 ) : (
                   <div className="loading-placeholder">No results found.</div>
@@ -955,8 +969,13 @@ const Explore = () => {
                     Loading recommended destinations...
                   </div>
                 ) : (
+                  // ✅ FIX: pass selectedCategories prop
                   displayedPopular.map((tour) => (
-                    <TourCard key={tour.id} tour={tour} />
+                    <TourCard
+                      key={tour.id}
+                      tour={tour}
+                      selectedCategories={selectedCategories}
+                    />
                   ))
                 )}
               </div>
@@ -986,8 +1005,13 @@ const Explore = () => {
                     <div className="fetch-error">{hiddenGemsError}</div>
                   )}
                   <div className="tours-grid">
+                    {/* ✅ FIX: pass selectedCategories prop */}
                     {hiddenGems.map((tour) => (
-                      <TourCard key={tour.id} tour={tour} />
+                      <TourCard
+                        key={tour.id}
+                        tour={tour}
+                        selectedCategories={selectedCategories}
+                      />
                     ))}
                   </div>
                 </div>
@@ -1008,8 +1032,13 @@ const Explore = () => {
                     <div className="fetch-error">{popularAPIError}</div>
                   )}
                   <div className="tours-grid">
+                    {/* ✅ FIX: pass selectedCategories prop */}
                     {popularDestAPI.map((tour) => (
-                      <TourCard key={tour.id} tour={tour} />
+                      <TourCard
+                        key={tour.id}
+                        tour={tour}
+                        selectedCategories={selectedCategories}
+                      />
                     ))}
                   </div>
                 </div>

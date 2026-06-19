@@ -149,6 +149,11 @@ function App() {
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+    window.navigateToWishlist = () => {
+      window.history.pushState({}, "", "/saved-places");
+      setCurrentPage("savedplaces");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
     window.navigateToTripDetails = (placeData) => {
       window.__tripDetailsData = placeData;
       window.history.pushState({}, "", "/trip-details");
@@ -174,6 +179,7 @@ function App() {
       delete window.navigateToInterests;
       delete window.navigateToUserHome;
       delete window.navigateToTripDetails;
+      delete window.navigateToWishlist;
     };
   }, []);
 
@@ -218,7 +224,7 @@ function App() {
 
   return (
     <AuthProvider>
-      <div style={{ width: "100%", overflowY: "auto" }}>{renderPage()}</div>
+      <div style={{ width: "100%" }}>{renderPage()}</div>{" "}
     </AuthProvider>
   );
 }
