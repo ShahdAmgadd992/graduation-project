@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import robotImg from "../../assets/ai-planner/Robot - Modern cute chatbot 1.svg";
 import ellipseImg from "../../assets/ai-planner/Ellipse 21.svg";
 import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
-import searchIcon from "../../assets/ai-planner/search_icon.svg";
+import searchIcon from "../../assets/icons/searchIcon.png";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { useAuth } from "../../context/useAuth";
@@ -270,6 +270,7 @@ const AiPlanner = () => {
       budget: 1,
       people: peopleCount,
       interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
+      mustInclude: ""
     };
 
     try {
@@ -306,6 +307,7 @@ const AiPlanner = () => {
         budget: totalBudget,
         people: peopleCount,
         interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
+        mustInclude: ""
       };
 
       const response = await withRetry(() => aiService.generatePlan(requestPayload));
