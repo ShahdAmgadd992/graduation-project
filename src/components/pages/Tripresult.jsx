@@ -194,6 +194,10 @@ const TripResult = ({ tripPlan, user }) => {
         people: Math.max(1, (tripPlan.adults ?? 1) + (tripPlan.children ?? 0)),
         interests: tripPlan.requestPayload?.interests ?? [],
         existingPlan: existingPlanFlat,
+        places:       existingPlanFlat,   // required by /ai/edit — candidate places to act on
+        conversation: [                   // required by /ai/edit — must use "user"/"assistant" roles
+          { role: "user", content: editText },
+        ],
       };
 
       const response = await callEdit(editPayload);

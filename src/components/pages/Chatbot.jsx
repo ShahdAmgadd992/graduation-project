@@ -1,52 +1,123 @@
 import React, { useState, useRef, useEffect } from "react";
 import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
 import sendIconImg from "../../assets/ai-planner/material-symbols_send-outline.svg";
-import voiceIconImg from "../../assets/ai-planner/mingcute_voice-line.svg";
-import addIconImg from "../../assets/ai-planner/add-rounded.svg";
-import cameraIconImg from "../../assets/ai-planner/camera.svg";
-import photoIconImg from "../../assets/ai-planner/photo.svg";
-import fileIconImg from "../../assets/ai-planner/file.svg";
-import videoIconImg from "../../assets/ai-planner/video.svg";
 import aiService from "../../services/aiService";
 import "./AiPlanner.css";
 
+const STATIC_GREETING =
+  "Hi! I'm Mindy, your AI travel assistant\nI can help you plan your perfect trip in Egypt.\nWhat would you like to do today?";
+
+const EMPTY_COLLECTED = {
+  destination: null,
+  days: null,
+  budget: null,
+  interests: [],
+  people: null,
+  mustInclude: [],
+};
+
+const hasAnyValue = (obj) =>
+  !!obj &&
+  Object.values(obj).some((v) => (Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && v !== ""));
+
 // ── Chatbot component ──
-const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      from: "ai",
-      text: "Hi! I'm Mindy, your AI travel assistant\nI can help you plan your perfect trip in Egypt.\nWhat would you like to do today?",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    },
-  ]);
+const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollected = null }) => {
+  // True when the user already picked something in the AiPlanner wizard
+  // before opening the chat (destination, dates, people, interests, budget...).
+  const startedFromSelections = hasAnyValue(initialCollected);
+
+  // The chat always starts by asking the API for the opening message —
+  // the AI is designed to introduce itself, so we never hardcode that text.
+  const [messages, setMessages] = useState([]);
   const [inputVal, setInputVal] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [isTyping, setIsTyping] = useState(true);
   const [chatError, setChatError] = useState(null);
   const [sessionId] = useState(() => `session-${Date.now()}`);
+
+  // Accumulated answers from the conversation — sent with every message
+  const [collected, setCollected] = useState({
+    ...EMPTY_COLLECTED,
+    ...(initialCollected || {}),
+  });
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
-
-  const attachOptions = [
-    { label: "Camera", icon: cameraIconImg },
-    { label: "Photo", icon: photoIconImg },
-    { label: "File", icon: fileIconImg },
-    { label: "Video", icon: videoIconImg },
-  ];
-
-  const aiReplies = [
-    "Amazing! I'll take care of everything for you\nI just need a few details first.\nWhere would you like to go in Egypt?",
-    "Great choice! How many days are you planning to stay?",
-    "Perfect! What's your budget per person?",
-    "Wonderful! What activities do you enjoy?\n(e.g. beaches, history, food, adventure)",
-    "I'm putting together your perfect trip now... 🗺️\nThis will just take a moment!",
-  ];
-  const [replyIndex, setReplyIndex] = useState(0);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping, bottomRef]);
+
+  // Always kick the conversation off via the API on open:
+  // - if the user already answered things in the wizard, the AI asks about
+  //   whatever is still missing instead of starting over.
+  // - if nothing was selected yet, the AI introduces itself and starts the
+  //   conversation on its own (it's designed to greet first).
+  useEffect(() => {
+    kickoffConversation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const kickoffConversation = async () => {
+    setIsTyping(true);
+    setChatError(null);
+    try {
+      const chatPayload = {
+        sessionId,
+        message: startedFromSelections
+          ? "Let's continue planning my trip with what I've already chosen."
+          : "Hi",
+        collected: { ...collected },
+        cardAnswers: {
+          destination: collected.destination,
+          days: collected.days,
+          budget: collected.budget,
+          interests: collected.interests,
+          people: collected.people,
+          must_include: collected.mustInclude,
+        },
+      };
+      const response = await aiService.chat(chatPayload);
+      const data = response.data;
+
+      if (data?.collected) {
+        setCollected((prev) => ({ ...prev, ...data.collected }));
+      }
+
+      const reply =
+        data?.output ??
+        data?.reply ??
+        data?.message ??
+        data?.content?.[0]?.text ??
+        "Sorry, I didn't get a usable response from the server.";
+
+      setMessages([
+        {
+          id: Date.now(),
+          from: "ai",
+          text: reply,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } catch (err) {
+      // If the kickoff call fails, fall back to the normal static greeting
+      // so the user isn't stuck looking at an empty chat.
+      const errorMsg =
+        err.response?.data?.output ??
+        err.response?.data?.message ??
+        err.message ??
+        "Failed to get response. Please try again.";
+      setChatError(errorMsg);
+      setMessages([
+        {
+          id: Date.now(),
+          from: "ai",
+          text: STATIC_GREETING,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   const sendMessage = async () => {
     if (!inputVal.trim()) return;
@@ -58,20 +129,51 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
     setChatError(null);
 
     try {
-      // POST /api/v1/ai/chat  — schema: { sessionId, message }
+      // POST /api/v1/ai/chat — full schema per integration guide
       const chatPayload = {
         sessionId,
         message: userMsg.text,
+        collected: {
+          destination: collected.destination,
+          days: collected.days,
+          budget: collected.budget,
+          interests: collected.interests,
+          people: collected.people,
+          mustInclude: collected.mustInclude,   // array per docs
+        },
+        cardAnswers: {
+          destination: collected.destination,
+          days: collected.days,
+          budget: collected.budget,
+          interests: collected.interests,
+          people: collected.people,
+          must_include: collected.mustInclude,  // snake_case per docs
+        },
       };
       const response = await aiService.chat(chatPayload);
 
-      // Response shape: { reply } or a text block; fall back to cycling prompts
+      // Real backend response shape (per Swagger):
+      // { status, output, collected, missing }
+      // status examples: "budget_unfeasible", "incomplete", "complete", etc.
+      // output  -> the human-readable assistant message to show
+      // collected -> merged/updated answers gathered so far
+      // missing -> array of field names still needed
       const data = response.data;
+
+      // If backend returns updated collected fields, merge them in
+      if (data?.collected) {
+        setCollected((prev) => ({ ...prev, ...data.collected }));
+      }
+
+      // Prefer the real API fields; fall back to other common shapes
+      // only if the backend response doesn't match the documented schema.
       const reply =
+        data?.output ??
         data?.reply ??
         data?.message ??
         data?.content?.[0]?.text ??
-        aiReplies[replyIndex % aiReplies.length];
+        "Sorry, I didn't get a usable response from the server.";
+
       setMessages((prev) => [
         ...prev,
         {
@@ -81,22 +183,31 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
-      setReplyIndex((i) => i + 1);
+
+      // Optional: surface a plan-ready trip card once the backend says so.
+      // Adjust the condition below once you confirm the exact "ready" status
+      // string the backend sends (e.g. "complete" / "plan_ready").
+      if (data?.status === "complete" || data?.status === "plan_ready") {
+        // TODO: hook this up to your trip-summary-card UI (see image mock)
+        // e.g. setTripSummary(data.plan ?? data.collected)
+      }
     } catch (err) {
-      setChatError(
-        err.response?.data?.message ?? err.message ?? "Failed to get response. Please try again."
-      );
-      const fallbackReply = aiReplies[replyIndex % aiReplies.length];
+      // Real failure (network/server error) — show it plainly, don't fake a reply.
+      const errorMsg =
+        err.response?.data?.output ??
+        err.response?.data?.message ??
+        err.message ??
+        "Failed to get response. Please try again.";
+      setChatError(errorMsg);
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           from: "ai",
-          text: fallbackReply,
+          text: `⚠️ ${errorMsg}`,
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
-      setReplyIndex((i) => i + 1);
     } finally {
       setIsTyping(false);
     }
@@ -161,27 +272,9 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
           <div ref={bottomRef} />
         </div>
 
-        {/* Attach menu */}
-        {showAttachMenu && (
-          <div className="chatbot-attach-menu">
-            {attachOptions.map((opt) => (
-              <button key={opt.label} className="chatbot-attach-item" onClick={() => setShowAttachMenu(false)}>
-                <img src={opt.icon} alt={opt.label} className="chatbot-attach-icon" />
-                <span className="chatbot-attach-label">{opt.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
         {/* Input */}
         {chatError && <div className="chatbot-error">{chatError}</div>}
         <div className="chatbot-input-row">
-          <button
-            className="chatbot-add-btn"
-            onClick={() => setShowAttachMenu((v) => !v)}
-          >
-            <img src={addIconImg} alt="Add" className="chatbot-add-icon" />
-          </button>
           <div className="chatbot-input-wrap">
             <input
               ref={inputRef}
@@ -191,9 +284,6 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest" }) => {
               onChange={(e) => setInputVal(e.target.value)}
               onKeyDown={handleKey}
             />
-            <button className="chatbot-voice-btn">
-              <img src={voiceIconImg} alt="Voice" className="chatbot-voice-icon" />
-            </button>
           </div>
           <button className="chatbot-send-btn" onClick={sendMessage} disabled={!inputVal.trim()}>
             <img src={sendIconImg} alt="Send" className="chatbot-send-icon" />

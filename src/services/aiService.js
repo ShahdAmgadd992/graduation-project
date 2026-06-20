@@ -42,6 +42,11 @@ const aiService = {
   homePlaces: (data) => {
     return apiClient.post('/ai/places/home', data);
   },
+
+  // POST /api/v1/ai/places/getplaces — flexible filtered list
+  getPlaces: (data) => {
+    return apiClient.post('/ai/places/getplaces', data);
+  },
 };
 
 export default aiService;

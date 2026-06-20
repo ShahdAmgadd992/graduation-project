@@ -2,30 +2,19 @@ import React, { useState, useEffect } from "react";
 import robotImg from "../../assets/ai-planner/Robot - Modern cute chatbot 1.svg";
 import ellipseImg from "../../assets/ai-planner/Ellipse 21.svg";
 import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
+import searchIcon from "../../assets/ai-planner/search_icon.svg";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { useAuth } from "../../context/useAuth";
 import ChatBot from "./ChatBot";
 import TripResult from "./TripResult";
 import "./AiPlanner.css";
-import searchIcon from "../../assets/icons/search.png";
+import aiService from "../../services/aiService";
+
 const destinations = [
-  "Cairo",
-  "Giza",
-  "Alexandria",
-  "Aswan",
-  "Luxor",
-  "Asyut",
-  "Beheira",
-  "Fayoum",
-  "Ismailia",
-  "Port Said",
-  "Matroh",
-  "Suez",
-  "Red Sea",
-  "Sinai",
-  "Hurghada",
-  "Sharm Elsheikh",
+  "Cairo","Giza","Alexandria","Aswan","Luxor","Asyut",
+  "Beheira","Fayoum","Ismailia","Port Said","Marsa Matrouh","Suez",
+  "Red Sea","Sinai","Hurghada","Sharm El Sheikh",
 ];
 
 const interestOptions = [
@@ -254,44 +243,45 @@ const AiPlanner = () => {
     }
   };
 
+  // Retry helper — waits `delay` ms then tries again (max `retries` times)
+  const withRetry = async (fn, retries = 3, delay = 4000) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        return await fn();
+      } catch (err) {
+        const status = err.response?.status;
+        // Only retry on 503; surface everything else immediately
+        if (status !== 503 || attempt === retries) throw err;
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  };
+
   const fetchMinimumBudget = async () => {
     setIsLoading(true);
     setLoadingText("Calculating best prices...");
     setPlanError(null);
 
+    const days = getTripDays();
+    const peopleCount = Math.max(1, adults + children);
+    const requestPayload = {
+      city: selectedDest,
+      days: Math.min(days, 7),
+      budget: 1,
+      people: peopleCount,
+      interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
+    };
+
     try {
-      const days = getTripDays();
-      const peopleCount = Math.max(1, adults + children);
-
-      const requestPayload = {
-        city: selectedDest,
-        days: Math.min(days, 7),
-        budget: 1,
-        people: peopleCount,
-        interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
-      };
-
-      const { default: aiService } = await import("../../services/aiService");
-      const response = await aiService.generatePlan(requestPayload);
-
+      const response = await withRetry(() => aiService.generatePlan(requestPayload));
       const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
-
-      if (floorPerPerson) {
-        setApiMinBudget(floorPerPerson);
-      } else {
-        setApiMinBudget(300);
-      }
+      setApiMinBudget(floorPerPerson ?? 300);
     } catch (err) {
-      const peopleCount = Math.max(1, adults + children);
-      const floorPerPerson = extractBudgetFloor(
-        err.response?.data,
-        peopleCount,
-      );
-
-      if (floorPerPerson) {
-        setApiMinBudget(floorPerPerson);
-      } else {
-        setApiMinBudget(300);
+      // On 503 after all retries — still extract floor if present, else use 300
+      const floorPerPerson = extractBudgetFloor(err.response?.data, peopleCount);
+      setApiMinBudget(floorPerPerson ?? 300);
+      if (err.response?.status === 503) {
+        setPlanError("AI service is busy. Budget estimates may not be accurate — you can still try generating.");
       }
     } finally {
       setStep(5);
@@ -308,8 +298,7 @@ const AiPlanner = () => {
       const days = getTripDays();
       const peopleCount = Math.max(1, adults + children);
       const perPersonBudget = parseFloat(getBudgetAmount()) || 0;
-
-      const totalBudget = perPersonBudget * peopleCount;
+      const totalBudget = perPersonBudget * peopleCount; // UI shows per-person; API needs total
 
       const requestPayload = {
         city: selectedDest,
@@ -319,8 +308,7 @@ const AiPlanner = () => {
         interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
       };
 
-      const { default: aiService } = await import("../../services/aiService");
-      const response = await aiService.generatePlan(requestPayload);
+      const response = await withRetry(() => aiService.generatePlan(requestPayload));
 
       const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
       if (floorPerPerson) {
@@ -419,7 +407,7 @@ const AiPlanner = () => {
 
       const userMsg =
         status === 503
-          ? "Our AI service is temporarily busy. Please wait a moment and try again."
+          ? "AI service is still busy after multiple retries. Please wait a minute and try again."
           : status === 401 || status === 403
             ? "Session expired. Please log in and try again."
             : status === 400
@@ -454,6 +442,17 @@ const AiPlanner = () => {
   const filteredDests = destinations.filter((d) =>
     d.toLowerCase().includes(search.toLowerCase()),
   );
+
+  // Snapshot of whatever the user has already picked in the wizard so far.
+  // Passed to the ChatBot so it doesn't re-ask things that are already answered.
+  const getCollectedFromState = () => ({
+    destination: selectedDest || null,
+    days: startDate && endDate ? getTripDays() : null,
+    budget: hasBudget ? getBudgetAmount() : null,
+    interests: selectedInterests.length > 0 ? selectedInterests : [],
+    people: adults + children > 0 ? adults + children : null,
+    mustInclude: [],
+  });
 
   const botMessages = {
     1: "Tap the bot if you need some inspiration.",
@@ -756,6 +755,8 @@ const AiPlanner = () => {
           userId={user?.userId}
           userName={user?.displayName}
           onClose={() => setShowChatbot(false)}
+          onClose={() => setShowChatbot(false)}
+          initialCollected={getCollectedFromState()}
         />
       )}
 
