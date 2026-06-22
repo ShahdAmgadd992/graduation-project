@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import ReviewsIcon from "../../assets/icons/ReviewsIcon.png";
 import "./TripDetails.css";
+import tripService from "../../services/tripService";
 
 const TripDetails = ({ place }) => {
   const [liked, setLiked] = useState(false);
@@ -36,6 +37,16 @@ const TripDetails = ({ place }) => {
   const [manageSelectedDay, setManageSelectedDay] = useState(null);
   const [manageMoveTripId, setManageMoveTripId] = useState(null);
   const [hasOpenedManageOnce, setHasOpenedManageOnce] = useState(false);
+  useEffect(() => {
+    tripService
+      .getTrips({ Page: 1, PageSize: 20 })
+      .then((res) => {
+        const items = res.data?.items || res.data || [];
+        setApiTrips(items);
+      })
+      .catch((err) => console.error("Failed to load trips:", err));
+  }, []);
+  const [apiTrips, setApiTrips] = useState([]);
 
   // ===== Toast helper =====
   const showToastMsg = (msg) => {
@@ -804,32 +815,32 @@ const TripDetails = ({ place }) => {
               Select an itinerary to add {data.name}
             </p>
             <div className="td-add-trip-list">
-              {[
-                {
-                  id: 1,
-                  name: "Dahab Tour",
-                  days: 3,
-                  places: 12,
-                  image:
-                    "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200",
-                },
-                {
-                  id: 2,
-                  name: "Egypt Adventure",
-                  days: 3,
-                  places: 12,
-                  image:
-                    "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200",
-                },
-                {
-                  id: 3,
-                  name: "Aswan Heritage Tour",
-                  days: 3,
-                  places: 12,
-                  image:
-                    "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=200",
-                },
-              ].map((trip) => (
+              {(apiTrips.length > 0
+                ? apiTrips
+                : [
+                    {
+                      id: 1,
+                      title: "Dahab Tour",
+                      durationDays: 3,
+                      coverImage:
+                        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200",
+                    },
+                    {
+                      id: 2,
+                      title: "Egypt Adventure",
+                      durationDays: 3,
+                      coverImage:
+                        "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200",
+                    },
+                    {
+                      id: 3,
+                      title: "Aswan Heritage Tour",
+                      durationDays: 3,
+                      coverImage:
+                        "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=200",
+                    },
+                  ]
+              ).map((trip) => (
                 <div
                   key={trip.id}
                   className={`td-trip-option ${selectedTrip === trip.id ? "selected" : ""}`}
@@ -842,14 +853,18 @@ const TripDetails = ({ place }) => {
                     onChange={() => setSelectedTrip(trip.id)}
                   />
                   <img
-                    src={trip.image}
-                    alt={trip.name}
+                    src={
+                      trip.coverImage ||
+                      trip.image ||
+                      "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200"
+                    }
+                    alt={trip.title}
                     className="td-trip-img"
                   />
                   <div className="td-trip-info">
-                    <span className="td-trip-name">{trip.name}</span>
+                    <span className="td-trip-name">{trip.title}</span>
                     <span className="td-trip-meta">
-                      {trip.days} days . {trip.places} places
+                      {trip.durationDays || 3} days
                     </span>
                   </div>
                   {selectedTrip === trip.id && (
@@ -859,9 +874,12 @@ const TripDetails = ({ place }) => {
                       </span>
                       <select className="td-day-select">
                         <option>Auto-assign ✨</option>
-                        <option>Day 1</option>
-                        <option>Day 2</option>
-                        <option>Day 3</option>
+                        {Array.from(
+                          { length: trip.durationDays || 3 },
+                          (_, i) => (
+                            <option key={i + 1}>Day {i + 1}</option>
+                          ),
+                        )}
                       </select>
                     </div>
                   )}
@@ -882,16 +900,40 @@ const TripDetails = ({ place }) => {
             </div>
             <button
               className="td-confirm-btn"
-              onClick={() => {
-                const tripName =
-                  ["Dahab Tour", "Egypt Adventure", "Aswan Heritage Tour"][
-                    selectedTrip - 1
-                  ] || "your trip";
+              onClick={async () => {
+                if (!selectedTrip) return;
+                const trip = (
+                  apiTrips.length > 0
+                    ? apiTrips
+                    : [
+                        { id: 1, title: "Dahab Tour" },
+                        { id: 2, title: "Egypt Adventure" },
+                        { id: 3, title: "Aswan Heritage Tour" },
+                      ]
+                ).find((t) => t.id === selectedTrip);
+
+                try {
+                  await tripService.updateTrip(selectedTrip, {
+                    placesToAdd: [
+                      {
+                        name: data.name,
+                        city: data.city,
+                        category: category,
+                        image: data.images?.[0] || "",
+                      },
+                    ],
+                  });
+                } catch (err) {
+                  console.error("Failed to add place to trip:", err);
+                }
+
                 setAddedToTrip(true);
-                setAddedTripName(tripName);
+                setAddedTripName(trip?.title || "your trip");
                 setShowAddTripModal(false);
                 setHasOpenedManageOnce(false);
-                showToastMsg(`${data.name} added to ${tripName} ✅`);
+                showToastMsg(
+                  `${data.name} added to ${trip?.title || "your trip"} ✅`,
+                );
               }}
             >
               Confirm
@@ -1327,70 +1369,82 @@ const TripDetails = ({ place }) => {
                     </p>
                   </div>
                 </div>
+
                 <div className="td-mt-trip-list">
-                  {[
-                    {
-                      id: 1,
-                      name: "Dahab Tour",
-                      days: 3,
-                      places: 12,
-                      image:
-                        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200",
-                    },
-                    {
-                      id: 2,
-                      name: "Egypt Adventure",
-                      days: 3,
-                      places: 12,
-                      image:
-                        "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200",
-                    },
-                    {
-                      id: 3,
-                      name: "Aswan heritage Tour",
-                      days: 4,
-                      places: 20,
-                      image:
-                        "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=200",
-                    },
-                  ].map((trip) => (
+                  {(apiTrips.length > 0
+                    ? apiTrips
+                    : [
+                        {
+                          id: 1,
+                          title: "Dahab Tour",
+                          durationDays: 3,
+                          coverImage:
+                            "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200",
+                        },
+                        {
+                          id: 2,
+                          title: "Egypt Adventure",
+                          durationDays: 3,
+                          coverImage:
+                            "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200",
+                        },
+                        {
+                          id: 3,
+                          title: "Aswan Heritage Tour",
+                          durationDays: 4,
+                          coverImage:
+                            "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=200",
+                        },
+                      ]
+                  ).map((trip) => (
                     <div
                       key={trip.id}
                       className={`td-mt-trip-card ${manageMoveTripId === trip.id ? "selected" : ""}`}
                       onClick={() => setManageMoveTripId(trip.id)}
                     >
                       <img
-                        src={trip.image}
-                        alt={trip.name}
+                        src={
+                          trip.coverImage ||
+                          trip.image ||
+                          "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200"
+                        }
+                        alt={trip.title}
                         className="td-mt-trip-img"
                       />
                       <div className="td-trip-info">
-                        <span className="td-trip-name">{trip.name}</span>
+                        <span className="td-trip-name">{trip.title}</span>
                         <span className="td-trip-meta">
-                          {trip.days} days . {trip.places} places
+                          {trip.durationDays || 3} days
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
+
                 <button
                   className="td-mt-submit-btn"
                   disabled={!manageMoveTripId}
                   onClick={() => {
-                    const tripName =
-                      ["Dahab Tour", "Egypt Adventure", "Aswan heritage Tour"][
-                        manageMoveTripId - 1
-                      ] || "the trip";
+                    const trip = (
+                      apiTrips.length > 0
+                        ? apiTrips
+                        : [
+                            { id: 1, title: "Dahab Tour" },
+                            { id: 2, title: "Egypt Adventure" },
+                            { id: 3, title: "Aswan Heritage Tour" },
+                          ]
+                    ).find((t) => t.id === manageMoveTripId);
                     setShowManageTripModal(false);
                     setManageTripStep("menu");
-                    showToastMsg(`Place moved to ${tripName} successfully!`);
+                    showToastMsg(
+                      `Place moved to ${trip?.title || "the trip"} successfully!`,
+                    );
                   }}
                 >
                   Move Trip
                 </button>
               </>
             )}
-
             {/* Step: Remove from Trip */}
             {manageTripStep === "remove" && (
               <>

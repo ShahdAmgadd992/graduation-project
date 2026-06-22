@@ -435,7 +435,7 @@ const UserHome = () => {
           </div>
           <button
             className="view-saved-btn"
-            onClick={() => handleNavigation("explore")}
+            onClick={() => window.navigateToSavedPlaces?.()}
           >
             View All Saved ↗
           </button>

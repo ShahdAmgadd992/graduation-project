@@ -1,7 +1,7 @@
 .calendar-page {
   min-height: 100vh;
   background: #f8f9fb;
-  padding: 40px 60px 60px;
+  padding: 40px 20px 60px;
   font-family: "Poppins", sans-serif;
 }
 
@@ -31,9 +31,10 @@
 
 .calendar-body {
   display: flex;
+  justify-content: center;
   gap: 40px;
   align-items: flex-start;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -155,10 +156,11 @@
 
 /* ── Trip Cards ── */
 .calendar-trips {
-  flex: 1;
+  min-width: 520px;
   display: flex;
   flex-direction: column;
   gap: 33px;
+  justify-content: center;
 }
 
 .trip-card {
@@ -260,4 +262,11 @@
     width: 100%;
     height: auto;
   }
+}
+.calendar-body.no-trips {
+  justify-content: center;
+}
+
+.calendar-body.no-trips .calendar-trips {
+  display: none;
 }

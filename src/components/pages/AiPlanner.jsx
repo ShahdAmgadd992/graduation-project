@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import robotImg from "../../assets/ai-planner/Robot - Modern cute chatbot 1.svg";
 import ellipseImg from "../../assets/ai-planner/Ellipse 21.svg";
 import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
-import searchIcon from "../../assets/icons/searchIcon.png";
+import searchIcon from "../../assets/icons/search.png";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { useAuth } from "../../context/useAuth";
@@ -12,9 +12,22 @@ import "./AiPlanner.css";
 import aiService from "../../services/aiService";
 
 const destinations = [
-  "Cairo","Giza","Alexandria","Aswan","Luxor","Asyut",
-  "Beheira","Fayoum","Ismailia","Port Said","Marsa Matrouh","Suez",
-  "Red Sea","Sinai","Hurghada","Sharm El Sheikh",
+  "Cairo",
+  "Giza",
+  "Alexandria",
+  "Aswan",
+  "Luxor",
+  "Asyut",
+  "Beheira",
+  "Fayoum",
+  "Ismailia",
+  "Port Said",
+  "Marsa Matrouh",
+  "Suez",
+  "Red Sea",
+  "Sinai",
+  "Hurghada",
+  "Sharm El Sheikh",
 ];
 
 const interestOptions = [
@@ -270,19 +283,26 @@ const AiPlanner = () => {
       budget: 1,
       people: peopleCount,
       interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
-      mustInclude: ""
+      mustInclude: "",
     };
 
     try {
-      const response = await withRetry(() => aiService.generatePlan(requestPayload));
+      const response = await withRetry(() =>
+        aiService.generatePlan(requestPayload),
+      );
       const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
       setApiMinBudget(floorPerPerson ?? 300);
     } catch (err) {
       // On 503 after all retries — still extract floor if present, else use 300
-      const floorPerPerson = extractBudgetFloor(err.response?.data, peopleCount);
+      const floorPerPerson = extractBudgetFloor(
+        err.response?.data,
+        peopleCount,
+      );
       setApiMinBudget(floorPerPerson ?? 300);
       if (err.response?.status === 503) {
-        setPlanError("AI service is busy. Budget estimates may not be accurate — you can still try generating.");
+        setPlanError(
+          "AI service is busy. Budget estimates may not be accurate — you can still try generating.",
+        );
       }
     } finally {
       setStep(5);
@@ -307,10 +327,12 @@ const AiPlanner = () => {
         budget: totalBudget,
         people: peopleCount,
         interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
-        mustInclude: ""
+        mustInclude: "",
       };
 
-      const response = await withRetry(() => aiService.generatePlan(requestPayload));
+      const response = await withRetry(() =>
+        aiService.generatePlan(requestPayload),
+      );
 
       const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
       if (floorPerPerson) {

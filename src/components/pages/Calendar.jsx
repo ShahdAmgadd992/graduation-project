@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Calendar.css";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import dahab from "../../assets/cities/dahab.jpg";
 import luxor from "../../assets/cities/luxor.jpg";
 import aswan from "../../assets/cities/aswan.jpg";
+import tripService from "../../services/tripService";
 
 const TRIPS = [
   {
@@ -69,24 +70,61 @@ function getDaysInPrevMonth(year, month) {
   return new Date(year, month, 0).getDate();
 }
 
-function getTripForDay(day, month, year) {
-  for (let i = 0; i < TRIPS.length; i++) {
-    const t = TRIPS[i];
-    if (
-      t.month === month &&
-      t.year === year &&
-      day >= t.startDay &&
-      day <= t.endDay
-    )
-      return t;
-  }
-  return null;
-}
-
 function CalendarPage() {
   const today = new Date();
-  const [viewMonth, setViewMonth] = useState(4);
-  const [viewYear, setViewYear] = useState(2026);
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [trips, setTrips] = useState(TRIPS); // fallback للـ hardcoded
+
+  useEffect(() => {
+    tripService
+      .getTrips({ Page: 1, PageSize: 50 })
+      .then((res) => {
+        const items = res.data?.items || res.data || [];
+        if (items.length > 0) {
+          const mapped = items
+            .filter((t) => t.startDate && t.endDate)
+            .map((t, i) => {
+              const start = new Date(t.startDate);
+              const end = new Date(t.endDate);
+              const colors = [
+                "#FF6B6B",
+                "#A78BFA",
+                "#34D399",
+                "#F59E0B",
+                "#3B82F6",
+              ];
+              return {
+                id: t.id,
+                title: t.title,
+                location: t.city || t.location || "Egypt",
+                startDay: start.getDate(),
+                endDay: end.getDate(),
+                month: start.getMonth(),
+                year: start.getFullYear(),
+                image: t.coverImage || dahab,
+                color: colors[i % colors.length],
+              };
+            });
+          setTrips(mapped);
+        }
+      })
+      .catch((err) => console.error("Failed to load trips for calendar:", err));
+  }, []);
+
+  function getTripForDay(day, month, year) {
+    for (let i = 0; i < trips.length; i++) {
+      const t = trips[i];
+      if (
+        t.month === month &&
+        t.year === year &&
+        day >= t.startDay &&
+        day <= t.endDay
+      )
+        return t;
+    }
+    return null;
+  }
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
@@ -145,7 +183,9 @@ function CalendarPage() {
           </p>
         </div>
 
-        <div className="calendar-body">
+        <div
+          className={`calendar-body ${trips.filter((t) => t.month === viewMonth && t.year === viewYear).length === 0 ? "no-trips" : ""}`}
+        >
           {/* Left: Month Grid */}
           <div className="calendar-grid-wrap">
             <div className="cal-nav">
@@ -209,58 +249,58 @@ function CalendarPage() {
 
           {/* Right: Trip Cards */}
           <div className="calendar-trips">
-            {TRIPS.filter(
-              (t) => t.month === viewMonth && t.year === viewYear,
-            ).map((trip) => (
-              <div className="trip-card" key={trip.id}>
-                <div
-                  className="trip-bookmark"
-                  style={{ borderTopColor: trip.color }}
-                >
+            {trips
+              .filter((t) => t.month === viewMonth && t.year === viewYear)
+              .map((trip) => (
+                <div className="trip-card" key={trip.id}>
                   <div
-                    className="trip-bookmark-inner"
-                    style={{ backgroundColor: trip.color }}
-                  />
+                    className="trip-bookmark"
+                    style={{ borderTopColor: trip.color }}
+                  >
+                    <div
+                      className="trip-bookmark-inner"
+                      style={{ backgroundColor: trip.color }}
+                    />
+                  </div>
+                  <div className="trip-card-img">
+                    <img src={trip.image} alt={trip.title} />
+                  </div>
+                  <div className="trip-card-info">
+                    <h4 className="trip-card-title">{trip.title}</h4>
+                    <p className="trip-card-location">
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      {trip.location}
+                    </p>
+                    <p className="trip-card-dates">
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                      {formatDate(trip.startDay, trip.month)} –{" "}
+                      {formatDate(trip.endDay, trip.month)}
+                    </p>
+                  </div>
                 </div>
-                <div className="trip-card-img">
-                  <img src={trip.image} alt={trip.title} />
-                </div>
-                <div className="trip-card-info">
-                  <h4 className="trip-card-title">{trip.title}</h4>
-                  <p className="trip-card-location">
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    {trip.location}
-                  </p>
-                  <p className="trip-card-dates">
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <rect x="3" y="4" width="18" height="18" rx="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    {formatDate(trip.startDay, trip.month)} –{" "}
-                    {formatDate(trip.endDay, trip.month)}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>
