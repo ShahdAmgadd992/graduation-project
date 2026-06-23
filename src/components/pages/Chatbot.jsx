@@ -18,43 +18,330 @@ const EMPTY_COLLECTED = {
 
 const hasAnyValue = (obj) =>
   !!obj &&
-  Object.values(obj).some((v) => (Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && v !== ""));
+  Object.values(obj).some((v) =>
+    Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && v !== ""
+  );
 
-// ── Chatbot component ──
-const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollected = null }) => {
-  // True when the user already picked something in the AiPlanner wizard
-  // before opening the chat (destination, dates, people, interests, budget...).
+// ─── Trip Summary Card ────────────────────────────────────────────────────────
+// Renders at the bottom of the chat once the AI returns status "complete"
+// or "plan_ready". Matches the UI screenshot exactly:
+//   • Left side  — destination photo (fallback gradient if no image)
+//   • Right side — 📍 destination, 🗓 duration, 👥 travelers, 💰 budget
+//   • Full-width "Full Plan ›" button that calls onViewPlan()
+const TripSummaryCard = ({ summary, onViewPlan }) => {
+  if (!summary) return null;
+
+  const {
+    image,
+    destination,
+    days,
+    nights,
+    people,
+    budget,
+  } = summary;
+
+  const nightsLabel = nights ?? (days ? days - 1 : null);
+
+  return (
+    <div className="chat-trip-card">
+      {/* Photo */}
+      <div className="chat-trip-card__photo-wrap">
+        {image ? (
+          <img
+            src={image}
+            alt={destination}
+            className="chat-trip-card__photo"
+          />
+        ) : (
+          <div className="chat-trip-card__photo-fallback">
+            <span style={{ fontSize: "2rem" }}>🌍</span>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="chat-trip-card__info">
+        {destination && (
+          <p className="chat-trip-card__row">
+            <span className="chat-trip-card__icon">📍</span>
+            <span>
+              <strong>Destination:</strong> {destination}
+            </span>
+          </p>
+        )}
+        {days && (
+          <p className="chat-trip-card__row">
+            <span className="chat-trip-card__icon">🗓</span>
+            <span>
+              <strong>Duration:</strong> {days} {days === 1 ? "Day" : "Days"}
+              {nightsLabel != null ? `, ${nightsLabel} ${nightsLabel === 1 ? "Night" : "Nights"}` : ""}
+            </span>
+          </p>
+        )}
+        {people && (
+          <p className="chat-trip-card__row">
+            <span className="chat-trip-card__icon">👥</span>
+            <span>
+              <strong>Travelers:</strong> {people}
+            </span>
+          </p>
+        )}
+        {budget && (
+          <p className="chat-trip-card__row">
+            <span className="chat-trip-card__icon">💰</span>
+            <span>
+              <strong>Est. Budget:</strong>{" "}
+              <span className="chat-trip-card__budget">*{budget} EGP / person</span>
+            </span>
+          </p>
+        )}
+
+        {/* CTA */}
+        <button className="chat-trip-card__btn" onClick={onViewPlan}>
+          Full Plan &rsaquo;
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── Budget breakdown row (transport / activities / meals / entry fees) ───────
+// Matches the small icon row shown at the very bottom of the chat in the UI.
+const BudgetBreakdown = ({ breakdown }) => {
+  if (!breakdown) return null;
+  const items = [
+    { label: "Transport", icon: "🚌", value: breakdown.transport },
+    { label: "Activities", icon: "🎯", value: breakdown.activities },
+    { label: "Meals", icon: "🍽️", value: breakdown.meals },
+    { label: "Entry fees", icon: "🎟️", value: breakdown.entryFees ?? breakdown.entry_fees },
+  ].filter((i) => i.value != null);
+
+  if (!items.length) return null;
+
+  return (
+    <div className="chatbot-msg-row chatbot-msg-row--ai">
+      <div className="chatbot-avatar">
+        <img src={chatIconImg} alt="AI" className="chatbot-avatar-icon" />
+      </div>
+      <div className="chatbot-bubble-wrap">
+        <div className="chatbot-sender-info">
+          <span className="chatbot-sender-name">Ai Assistant</span>
+        </div>
+        <div className="chatbot-bubble chatbot-bubble--ai chat-budget-breakdown">
+          {items.map((item) => (
+            <div key={item.label} className="chat-budget-breakdown__item">
+              <span className="chat-budget-breakdown__icon">{item.icon}</span>
+              <span className="chat-budget-breakdown__label">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── ChatBot ──────────────────────────────────────────────────────────────────
+/**
+ * Props
+ * ─────
+ * userName        – display name shown in the header  (default "Laila")
+ * onClose         – called when the user taps ← back
+ * userId          – passed through to aiService calls
+ * initialCollected– answers already picked in the AiPlanner wizard
+ * onTripReady     – (tripPlan) => void
+ *                   Called when the AI returns status "complete" / "plan_ready"
+ *                   AND the plan data is parsed into a TripResult-compatible
+ *                   object. The parent (AiPlanner) should store it and render
+ *                   <TripResult tripPlan={...} /> after closing the chatbot.
+ */
+const ChatBot = ({
+  userName = "Laila",
+  onClose,
+  userId = "guest",
+  initialCollected = null,
+  onTripReady,       // ← NEW: parent callback
+}) => {
   const startedFromSelections = hasAnyValue(initialCollected);
 
-  // The chat always starts by asking the API for the opening message —
-  // the AI is designed to introduce itself, so we never hardcode that text.
   const [messages, setMessages] = useState([]);
   const [inputVal, setInputVal] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   const [chatError, setChatError] = useState(null);
   const [sessionId] = useState(() => `session-${Date.now()}`);
 
-  // Accumulated answers from the conversation — sent with every message
+  // Accumulated answers
   const [collected, setCollected] = useState({
     ...EMPTY_COLLECTED,
     ...(initialCollected || {}),
   });
+
+  // Trip summary card state — shown once plan is ready
+  const [tripSummary, setTripSummary] = useState(null);    // { destination, days, nights, people, budget, image }
+  const [tripPlanData, setTripPlanData] = useState(null);  // full TripResult-compatible object
+  const [budgetBreakdown, setBudgetBreakdown] = useState(null);
+
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping, bottomRef]);
+  }, [messages, isTyping, tripSummary, bottomRef]);
 
-  // Always kick the conversation off via the API on open:
-  // - if the user already answered things in the wizard, the AI asks about
-  //   whatever is still missing instead of starting over.
-  // - if nothing was selected yet, the AI introduces itself and starts the
-  //   conversation on its own (it's designed to greet first).
   useEffect(() => {
     kickoffConversation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /**
+   * Parse whatever the backend sends when status is "complete" / "plan_ready"
+   * into the shape that both the TripSummaryCard and TripResult expect.
+   */
+  const parsePlanFromResponse = (data, currentCollected) => {
+    const rawData = Array.isArray(data?.plan)
+      ? data.plan[0]
+      : (data?.plan ?? data?.collected ?? data);
+
+    const destination =
+      currentCollected?.destination ??
+      rawData?.destination ??
+      rawData?.city ??
+      null;
+
+    const days =
+      currentCollected?.days ??
+      rawData?.days ??
+      null;
+
+    const nights = days ? days - 1 : null;
+
+    const people =
+      currentCollected?.people
+        ? `${currentCollected.people} ${currentCollected.people === 1 ? "Person" : "People"}`
+        : rawData?.people
+        ? `${rawData.people} ${rawData.people === 1 ? "Person" : "People"}`
+        : null;
+
+    const budget =
+      currentCollected?.budget ??
+      rawData?.budget_per_person ??
+      rawData?.budget ??
+      null;
+
+    // First photo from any day slot
+    const FALLBACK_IMG =
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80";
+
+    const findFirstPhoto = (plan) => {
+      if (!plan) return null;
+      for (let d = 1; d <= 7; d++) {
+        const dayData = plan[`day${d}`];
+        if (!dayData) continue;
+        for (const slot of ["morning", "afternoon", "evening"]) {
+          const photo = (dayData[slot] ?? []).find((p) => p?.photo_url)?.photo_url;
+          if (photo) return photo;
+        }
+      }
+      return null;
+    };
+
+    const image = findFirstPhoto(rawData) ?? FALLBACK_IMG;
+
+    // Budget breakdown
+    const breakdown = rawData?.budget_breakdown ?? data?.budget_breakdown ?? null;
+    if (breakdown) setBudgetBreakdown(breakdown);
+
+    // Build itinerary for TripResult
+    const itinerary = [];
+    const dayDetails = {};
+    const numDays = days ?? 3;
+
+    for (let d = 1; d <= numDays; d++) {
+      const dayKey = `day${d}`;
+      const dayData = rawData?.[dayKey];
+
+      const slots = ["morning", "afternoon", "evening"].map((slot) => {
+        const items = dayData?.[slot] ?? [];
+        const titles = items.map((p) => p?.name ?? p?.title ?? "").filter(Boolean);
+        return {
+          time: slot.charAt(0).toUpperCase() + slot.slice(1),
+          title: titles[0] ?? `${slot} activities`,
+          activities: titles.length ? titles : ["Explore the area"],
+          rawItems: items,
+        };
+      });
+
+      dayDetails[d] = slots;
+
+      const allItems = ["morning", "afternoon", "evening"].flatMap(
+        (s) => dayData?.[s] ?? []
+      );
+      const tags = [
+        ...new Set(
+          allItems.map((p) => p?.category ?? p?.type).filter(Boolean)
+        ),
+      ].slice(0, 3);
+
+      const dayCost = allItems.reduce(
+        (sum, p) => sum + (p?.cost ?? p?.price ?? 0),
+        0
+      );
+
+      const firstImg =
+        allItems.find((p) => p?.photo_url)?.photo_url ?? FALLBACK_IMG;
+
+      itinerary.push({
+        day: d,
+        description: dayData?.title ?? `Day ${d} in ${destination ?? "Egypt"}`,
+        duration: `${allItems.length} stops`,
+        type: "Full day",
+        cost: dayCost,
+        tags: tags.length ? tags : ["Explore"],
+        img: firstImg,
+      });
+    }
+
+    // Hotel / accommodation
+    const accommodationRaw = rawData?.accommodation ?? null;
+    const firstHotel = Array.isArray(accommodationRaw)
+      ? accommodationRaw[0]
+      : accommodationRaw;
+    const hotel = firstHotel
+      ? {
+          name: firstHotel.name,
+          city: firstHotel.city ?? firstHotel.city_en,
+          address: firstHotel.address,
+          photoUrl: firstHotel.photo_url,
+          price: firstHotel.cost ?? firstHotel.price,
+          rating: firstHotel.rating,
+          checkIn: null,
+          checkOut: null,
+          nights,
+        }
+      : null;
+
+    const fullTripPlan = {
+      destination,
+      days: numDays,
+      nights,
+      people: currentCollected?.people ?? null,
+      budget: budget ?? null,
+      itinerary,
+      dayDetails,
+      hotel,
+      accommodation: accommodationRaw,
+      rawPlan: rawData,
+      collected: currentCollected,
+    };
+
+    return {
+      summary: { destination, days: numDays, nights, people, budget, image },
+      fullTripPlan,
+    };
+  };
+
+  // ── Kickoff ───────────────────────────────────────────────────────────────
 
   const kickoffConversation = async () => {
     setIsTyping(true);
@@ -94,12 +381,21 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
           id: Date.now(),
           from: "ai",
           text: reply,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
+
+      // Check if plan is immediately ready (e.g. user had all info pre-filled)
+      if (data?.status === "complete" || data?.status === "plan_ready") {
+        const mergedCollected = { ...collected, ...(data.collected ?? {}) };
+        const { summary, fullTripPlan } = parsePlanFromResponse(data, mergedCollected);
+        setTripSummary(summary);
+        setTripPlanData(fullTripPlan);
+      }
     } catch (err) {
-      // If the kickoff call fails, fall back to the normal static greeting
-      // so the user isn't stuck looking at an empty chat.
       const errorMsg =
         err.response?.data?.output ??
         err.response?.data?.message ??
@@ -111,7 +407,10 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
           id: Date.now(),
           from: "ai",
           text: STATIC_GREETING,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
     } finally {
@@ -119,9 +418,14 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
     }
   };
 
+  // ── Send message ──────────────────────────────────────────────────────────
+
   const sendMessage = async () => {
     if (!inputVal.trim()) return;
-    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const now = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     const userMsg = { id: Date.now(), from: "user", text: inputVal.trim(), time: now };
     setMessages((prev) => [...prev, userMsg]);
     setInputVal("");
@@ -129,7 +433,6 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
     setChatError(null);
 
     try {
-      // POST /api/v1/ai/chat — full schema per integration guide
       const chatPayload = {
         sessionId,
         message: userMsg.text,
@@ -139,7 +442,7 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
           budget: collected.budget,
           interests: collected.interests,
           people: collected.people,
-          mustInclude: collected.mustInclude,   // array per docs
+          mustInclude: collected.mustInclude,
         },
         cardAnswers: {
           destination: collected.destination,
@@ -147,26 +450,18 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
           budget: collected.budget,
           interests: collected.interests,
           people: collected.people,
-          must_include: collected.mustInclude,  // snake_case per docs
+          must_include: collected.mustInclude,
         },
       };
       const response = await aiService.chat(chatPayload);
-
-      // Real backend response shape (per Swagger):
-      // { status, output, collected, missing }
-      // status examples: "budget_unfeasible", "incomplete", "complete", etc.
-      // output  -> the human-readable assistant message to show
-      // collected -> merged/updated answers gathered so far
-      // missing -> array of field names still needed
       const data = response.data;
 
-      // If backend returns updated collected fields, merge them in
+      let mergedCollected = { ...collected };
       if (data?.collected) {
-        setCollected((prev) => ({ ...prev, ...data.collected }));
+        mergedCollected = { ...collected, ...data.collected };
+        setCollected(mergedCollected);
       }
 
-      // Prefer the real API fields; fall back to other common shapes
-      // only if the backend response doesn't match the documented schema.
       const reply =
         data?.output ??
         data?.reply ??
@@ -180,19 +475,20 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
           id: Date.now() + 1,
           from: "ai",
           text: reply,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
 
-      // Optional: surface a plan-ready trip card once the backend says so.
-      // Adjust the condition below once you confirm the exact "ready" status
-      // string the backend sends (e.g. "complete" / "plan_ready").
+      // ── Plan ready → show the Trip Summary Card ──
       if (data?.status === "complete" || data?.status === "plan_ready") {
-        // TODO: hook this up to your trip-summary-card UI (see image mock)
-        // e.g. setTripSummary(data.plan ?? data.collected)
+        const { summary, fullTripPlan } = parsePlanFromResponse(data, mergedCollected);
+        setTripSummary(summary);
+        setTripPlanData(fullTripPlan);
       }
     } catch (err) {
-      // Real failure (network/server error) — show it plainly, don't fake a reply.
       const errorMsg =
         err.response?.data?.output ??
         err.response?.data?.message ??
@@ -205,7 +501,10 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
           id: Date.now() + 1,
           from: "ai",
           text: `⚠️ ${errorMsg}`,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
     } finally {
@@ -220,9 +519,20 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
     }
   };
 
+  // ── "Full Plan" button handler ────────────────────────────────────────────
+  const handleViewFullPlan = () => {
+    if (tripPlanData && onTripReady) {
+      onTripReady(tripPlanData);
+    }
+    onClose?.();
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="chatbot-overlay" onClick={onClose}>
       <div className="chatbot-panel" onClick={(e) => e.stopPropagation()}>
+
         {/* Header */}
         <div className="chatbot-header">
           <button className="chatbot-back-btn" onClick={onClose}>←</button>
@@ -238,7 +548,7 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
                   <img src={chatIconImg} alt="AI" className="chatbot-avatar-icon" />
                 </div>
               )}
-              <div className={`chatbot-bubble-wrap`}>
+              <div className="chatbot-bubble-wrap">
                 {msg.from === "ai" && (
                   <div className="chatbot-sender-info">
                     <span className="chatbot-time">{msg.time}</span>
@@ -246,14 +556,18 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
                   </div>
                 )}
                 <div className={`chatbot-bubble chatbot-bubble--${msg.from}`}>
-                  {msg.text.split("\n").map((line, i) => (
-                    <span key={i}>{line}{i < msg.text.split("\n").length - 1 && <br />}</span>
+                  {msg.text.split("\n").map((line, i, arr) => (
+                    <span key={i}>
+                      {line}
+                      {i < arr.length - 1 && <br />}
+                    </span>
                   ))}
                 </div>
               </div>
             </div>
           ))}
 
+          {/* Typing indicator */}
           {isTyping && (
             <div className="chatbot-msg-row chatbot-msg-row--ai">
               <div className="chatbot-avatar">
@@ -264,16 +578,51 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
                   <span className="chatbot-sender-name">Ai Assistant</span>
                 </div>
                 <div className="chatbot-bubble chatbot-bubble--ai chatbot-typing">
-                  <span className="chatbot-dot" /><span className="chatbot-dot" /><span className="chatbot-dot" />
+                  <span className="chatbot-dot" />
+                  <span className="chatbot-dot" />
+                  <span className="chatbot-dot" />
                 </div>
               </div>
             </div>
           )}
+
+          {/* ── Trip Summary Card — appears once AI says plan is complete ── */}
+          {tripSummary && !isTyping && (
+            <>
+              {/* Budget breakdown icons row (optional, from backend) */}
+              <BudgetBreakdown breakdown={budgetBreakdown} />
+
+              {/* The card itself */}
+              <div className="chatbot-msg-row chatbot-msg-row--ai">
+                <div className="chatbot-avatar">
+                  <img src={chatIconImg} alt="AI" className="chatbot-avatar-icon" />
+                </div>
+                <div className="chatbot-bubble-wrap" style={{ width: "100%" }}>
+                  <div className="chatbot-sender-info">
+                    <span className="chatbot-time">
+                      {new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    <span className="chatbot-sender-name">Ai Assistant</span>
+                  </div>
+                  <TripSummaryCard
+                    summary={tripSummary}
+                    onViewPlan={handleViewFullPlan}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
+        {/* Error */}
         {chatError && <div className="chatbot-error">{chatError}</div>}
+
+        {/* Input */}
         <div className="chatbot-input-row">
           <div className="chatbot-input-wrap">
             <input
@@ -285,7 +634,11 @@ const ChatBot = ({ userName = "Laila", onClose, userId = "guest", initialCollect
               onKeyDown={handleKey}
             />
           </div>
-          <button className="chatbot-send-btn" onClick={sendMessage} disabled={!inputVal.trim()}>
+          <button
+            className="chatbot-send-btn"
+            onClick={sendMessage}
+            disabled={!inputVal.trim()}
+          >
             <img src={sendIconImg} alt="Send" className="chatbot-send-icon" />
           </button>
         </div>

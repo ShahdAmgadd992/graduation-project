@@ -683,6 +683,7 @@
   align-items: flex-start;
   justify-content: center;
   box-sizing: border-box;
+  position: relative;
 }
 
 .aip-result-left {
@@ -1814,4 +1815,427 @@
   margin: 0;
   line-height: 1.5;
   font-family: "Poppins", sans-serif;
+}
+
+/* ══════════════════════════════
+   HOTEL CARD (before Day 1)
+══════════════════════════════ */
+.aip-hotel-card {
+  display: flex;
+  gap: 20px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e5e7eb;
+  width: 700px;
+  box-sizing: border-box;
+  text-align: left;
+  align-items: flex-start;
+}
+
+.aip-hotel-img {
+  width: 120px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.aip-hotel-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aip-hotel-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.aip-hotel-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.aip-hotel-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.aip-hotel-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aip-hotel-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #22c55e;
+  margin: 0;
+}
+
+.aip-hotel-address {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ══════════════════════════════
+   CHECKBOX — place items
+══════════════════════════════ */
+.aip-place-checkbox {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  accent-color: #5596fe;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 2px;
+}
+
+.aip-day-slot-name--checked {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+/* ══════════════════════════════
+   ACTIVE TIMELINE LINE
+══════════════════════════════ */
+.aip-timeline-line--active {
+  background: #5596fe;
+}
+
+/* ══════════════════════════════
+   SAVE ERROR
+══════════════════════════════ */
+.aip-save-error {
+  font-size: 0.82rem;
+  color: #ef4444;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-family: "Poppins", sans-serif;
+  max-width: 560px;
+  width: 90%;
+  box-sizing: border-box;
+}
+
+/* ══════════════════════════════
+   MAPBOX MAP
+══════════════════════════════ */
+.aip-result-map {
+  position: sticky;
+  top: 90px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+}
+
+.aip-mapbox-container {
+  width: 380px;
+  height: calc(100vh - 140px);
+  min-height: 480px;
+  max-height: 780px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+/* Map legend — now lives BELOW the map frame in normal flow (never overlaps
+   or shrinks the map itself). Compact horizontal row, wraps if needed. */
+.aip-map-legend-below {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 4px 0;
+}
+
+.aip-map-legend-below-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.aip-map-legend-below-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.aip-map-legend-below-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  font-family: "Poppins", sans-serif;
+}
+
+.aip-map-legend-below-count {
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+/* Custom marker — sizing handled inline in JS */
+.aip-map-marker {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.30));
+  transition: transform 0.15s ease;
+}
+.aip-map-marker:hover {
+  transform: scale(1.15);
+}
+
+/* Mapbox popup tweak */
+.mapboxgl-popup-content {
+  border-radius: 10px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.14) !important;
+  padding: 10px 14px !important;
+  font-family: "Poppins", sans-serif !important;
+}
+
+/* Hide the blue FAB circle (aip-bot-fab removed from JSX; keep rule in case) */
+.aip-bot-fab {
+  display: none !important;
+}
+
+/* Timeline active line */
+.aip-timeline-line--active {
+  background: #5596fe;
+}
+
+/* Checkbox */
+.aip-place-checkbox {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  accent-color: #5596fe;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 2px;
+}
+
+.aip-day-slot-name--checked {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+/* Hotel card */
+.aip-hotel-card {
+  display: flex;
+  gap: 20px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  border: 1px solid #e5e7eb;
+  width: 700px;
+  box-sizing: border-box;
+  align-items: flex-start;
+}
+.aip-hotel-img {
+  width: 120px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+.aip-hotel-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.aip-hotel-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; font-weight: 600; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.aip-hotel-name { font-size: 1rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.aip-hotel-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.78rem; color: #6b7280; }
+.aip-hotel-meta-item { display: flex; align-items: center; gap: 4px; }
+.aip-hotel-price { font-size: 1rem; font-weight: 700; color: #22c55e; margin: 0; }
+.aip-hotel-address { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+
+/* Save error */
+.aip-save-error {
+  font-size: 0.82rem; color: #ef4444; background: #fef2f2;
+  border: 1px solid #fecaca; border-radius: 10px; padding: 10px 14px;
+  margin: 0 0 12px; line-height: 1.5; font-family: "Poppins", sans-serif;
+  max-width: 560px; width: 90%; box-sizing: border-box;
+}
+
+/* Map fallback when image fails */
+.aip-map-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #f8faff;
+  color: #9ca3af;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.85rem;
+}
+.aip-map-fallback span { font-size: 2.5rem; }
+/* ══════════════════════════════════════════════════════════════════
+   CHATBOT — TRIP SUMMARY CARD
+   ظاهر في آخر الشات لما الـ AI يرجع status "complete" / "plan_ready"
+══════════════════════════════════════════════════════════════════ */
+
+.chat-trip-card {
+  display: flex;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  max-width: 360px;
+  width: 100%;
+  margin-top: 6px;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Left — destination photo */
+.chat-trip-card__photo-wrap {
+  width: 110px;
+  min-width: 110px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e0eaff 0%, #c7d9ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-trip-card__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.chat-trip-card__photo-fallback {
+  width: 100%;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+/* Right — info */
+.chat-trip-card__info {
+  flex: 1;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.chat-trip-card__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  color: #374151;
+  line-height: 1.4;
+  font-family: "Poppins", sans-serif;
+}
+
+.chat-trip-card__icon {
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.chat-trip-card__row strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.chat-trip-card__budget {
+  color: #5596fe;
+  font-weight: 700;
+}
+
+/* "Full Plan ›" CTA */
+.chat-trip-card__btn {
+  margin-top: 10px;
+  padding: 9px 16px;
+  background: linear-gradient(90deg, #5596fe 0%, #3b7ef0 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: opacity 0.18s;
+}
+
+.chat-trip-card__btn:hover {
+  opacity: 0.88;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CHATBOT — BUDGET BREAKDOWN ROW
+  (Transport / Activities / Meals / Entry fees)
+══════════════════════════════════════════════════════════════════ */
+
+.chat-budget-breakdown {
+  display: flex !important;
+  gap: 18px;
+  padding: 10px 14px !important;
+  background: #f8faff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.chat-budget-breakdown__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-budget-breakdown__icon {
+  font-size: 18px;
+}
+
+.chat-budget-breakdown__label {
+  font-size: 10px;
+  color: #6b7280;
+  font-family: "Poppins", sans-serif;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CHATBOT ERROR BANNER
+══════════════════════════════════════════════════════════════════ */
+
+.chatbot-error {
+  margin: 0 20px 8px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #ef4444;
+  font-family: "Poppins", sans-serif;
+  line-height: 1.5;
 }

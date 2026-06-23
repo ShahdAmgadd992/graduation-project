@@ -107,6 +107,14 @@ const AiPlanner = () => {
 
   const [showChatbot, setShowChatbot] = useState(false);
 
+  // ── Called by ChatBot when AI finishes collecting all trip details ──
+  // Receives a TripResult-compatible object and jumps straight to the result screen.
+  const handleTripReadyFromChat = (fullTripPlan) => {
+    setTripPlan(fullTripPlan);
+    setShowResult(true);
+    setShowChatbot(false);
+  };
+
   const progressPercent = (step / totalSteps) * 100;
 
   const handlePrevMonth = () => {
@@ -405,7 +413,29 @@ const AiPlanner = () => {
         });
       }
 
-      const accommodation = rawPlan?.accommodation ?? null;
+      // Map accommodation array from backend → hotel object for TripResult
+      const accommodationRaw = rawPlan?.accommodation ?? null;
+      const firstHotel = Array.isArray(accommodationRaw)
+        ? accommodationRaw[0]
+        : accommodationRaw;
+
+      const hotel = firstHotel
+        ? {
+            name: firstHotel.name,
+            city: firstHotel.city ?? firstHotel.city_en,
+            address: firstHotel.address,
+            photoUrl: firstHotel.photo_url,
+            price: firstHotel.cost ?? firstHotel.price,
+            rating: firstHotel.rating,
+            checkIn: startDate
+              ? `${startDate.day} ${MONTH_NAMES[startDate.month].slice(0, 3)}`
+              : null,
+            checkOut: endDate
+              ? `${endDate.day} ${MONTH_NAMES[endDate.month].slice(0, 3)}`
+              : null,
+            nights: days - 1,
+          }
+        : null;
 
       setTripPlan({
         destination: selectedDest,
@@ -417,9 +447,17 @@ const AiPlanner = () => {
         budget: perPersonBudget,
         itinerary,
         dayDetails,
-        accommodation,
+        hotel,
+        accommodation: accommodationRaw,
         rawPlan,
         requestPayload,
+        startDate: startDate
+          ? new Date(startDate.year, startDate.month, startDate.day).toISOString()
+          : null,
+        endDate: endDate
+          ? new Date(endDate.year, endDate.month, endDate.day).toISOString()
+          : null,
+        collected: getCollectedFromState(),
       });
 
       setShowResult(true);
@@ -779,8 +817,8 @@ const AiPlanner = () => {
           userId={user?.userId}
           userName={user?.displayName}
           onClose={() => setShowChatbot(false)}
-          onClose={() => setShowChatbot(false)}
           initialCollected={getCollectedFromState()}
+          onTripReady={handleTripReadyFromChat}
         />
       )}
 

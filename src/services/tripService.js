@@ -7,7 +7,7 @@ const tripService = {
   },
 
   // GET /api/v1/trips  — params: { Status, Page, PageSize }
-  // Status enum: 0=Planning, 1=Upcoming, 2=Active, 3=Completed, 4=Cancelled
+  // TripStatus enum: 0=Planning, 1=Upcoming, 2=Active, 3=Completed
   getTrips: (params) => {
     return apiClient.get('/trips', { params });
   },
@@ -17,14 +17,14 @@ const tripService = {
     return apiClient.get(`/trips/${id}`);
   },
 
-  // PATCH /api/v1/trips/{id}
-  updateTrip: (id, data) => {
-    return apiClient.patch(`/trips/${id}`, data);
+  // PUT /api/v1/trips/{id}/plan  (full plan update)
+  updateTripPlan: (id, data) => {
+    return apiClient.put(`/trips/${id}/plan`, data);
   },
 
-  // DELETE /api/v1/trips/{id}
-  deleteTrip: (id) => {
-    return apiClient.delete(`/trips/${id}`);
+  // PATCH /api/v1/trips/{id}/rename
+  renameTrip: (id, title) => {
+    return apiClient.patch(`/trips/${id}/rename`, { title });
   },
 
   // PATCH /api/v1/trips/{id}/status?status=N
@@ -32,21 +32,44 @@ const tripService = {
     return apiClient.patch(`/trips/${id}/status`, null, { params: { status } });
   },
 
-  // GET /api/v1/trips/{tripId}/budget
-  getBudget: (tripId) => {
-    return apiClient.get(`/trips/${tripId}/budget`);
+  // PATCH /api/v1/trips/{id}/confirm
+  confirmTrip: (id) => {
+    return apiClient.patch(`/trips/${id}/confirm`);
   },
 
-  // POST /api/v1/trips/{tripId}/budget
-  allocateBudget: (tripId, data) => {
-    return apiClient.post(`/trips/${tripId}/budget`, data);
+  // PATCH /api/v1/trips/{id}/complete
+  completeTrip: (id) => {
+    return apiClient.patch(`/trips/${id}/complete`);
   },
 
-  // PATCH /api/v1/trips/{tripId}/budget/actual-spent
-  updateActualSpent: (tripId, amt) => {
-    return apiClient.patch(`/trips/${tripId}/budget/actual-spent`, {
-      actualSpentEgp: amt,
-    });
+  // POST /api/v1/trips/{id}/share  → returns share token
+  shareTrip: (id) => {
+    return apiClient.post(`/trips/${id}/share`);
+  },
+
+  // GET /api/v1/trips/share/{token}  → public trip view
+  getTripByShareToken: (token) => {
+    return apiClient.get(`/trips/share/${token}`);
+  },
+
+  // POST /api/v1/trips/{id}/review
+  createReview: (id, data) => {
+    return apiClient.post(`/trips/${id}/review`, data);
+  },
+
+  // PATCH /api/v1/trips/{id}/review
+  updateReview: (id, data) => {
+    return apiClient.patch(`/trips/${id}/review`, data);
+  },
+
+  // DELETE /api/v1/trips/{id}/review
+  deleteReview: (id) => {
+    return apiClient.delete(`/trips/${id}/review`);
+  },
+
+  // GET /api/v1/trips/{id}/review/me
+  getMyReview: (id) => {
+    return apiClient.get(`/trips/${id}/review/me`);
   },
 };
 
