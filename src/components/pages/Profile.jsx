@@ -497,7 +497,11 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("Overview");
   // ── real API data ──
   const [profileData, setProfileData] = useState(null);
-  const [dashboardData, setDashboardData] = useState({ totalTrips: 0, totalReviews: 0, totalSaved: 0 });
+  const [dashboardData, setDashboardData] = useState({
+    totalTrips: 0,
+    totalReviews: 0,
+    totalSaved: 0,
+  });
   const [apiTrips, setApiTrips] = useState([]);
   const [tripsLoading, setTripsLoading] = useState(false);
   const [apiInterests, setApiInterests] = useState([]);
@@ -595,7 +599,11 @@ const Profile = () => {
         setApiTrips(items);
       } catch (err) {
         console.error("Profile fetch error:", err);
-        setProfileError(err.response?.data?.message || err.message || "Failed to load profile");
+        setProfileError(
+          err.response?.data?.message ||
+            err.message ||
+            "Failed to load profile",
+        );
       } finally {
         setProfileLoading(false);
         setTripsLoading(false);
@@ -624,7 +632,11 @@ const Profile = () => {
       setShowProfileSavedModal(true);
     } catch (err) {
       console.error("Profile update error:", err);
-      setUpdateError(err.response?.data?.message || err.message || "Failed to update profile");
+      setUpdateError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to update profile",
+      );
     } finally {
       setUpdateLoading(false);
     }
@@ -640,7 +652,10 @@ const Profile = () => {
       setShowInterestsModal(false);
       showToast("Interests updated!");
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to save interests", "error");
+      showToast(
+        err.response?.data?.message || "Failed to save interests",
+        "error",
+      );
     } finally {
       setInterestsSaving(false);
     }
@@ -652,7 +667,9 @@ const Profile = () => {
     try {
       const refreshToken = localStorage.getItem("refreshToken");
       if (refreshToken) await authService.logout(refreshToken);
-    } catch (_) { /* ignore */ } finally {
+    } catch (_) {
+      /* ignore */
+    } finally {
       authService.clearTokens();
       if (window.navigateToSignIn) {
         window.navigateToSignIn();
@@ -664,14 +681,26 @@ const Profile = () => {
 
   // ── Change Password ────────────────────────────────────────────────────────
   const handleChangePassword = async () => {
-    if (!cpCurrent || !cpNew || !cpConfirm) { setCpError("All fields are required."); return; }
-    if (cpNew !== cpConfirm) { setCpError("New passwords do not match."); return; }
-    if (cpNew.length < 8) { setCpError("Password must be at least 8 characters."); return; }
-    setCpLoading(true); setCpError("");
+    if (!cpCurrent || !cpNew || !cpConfirm) {
+      setCpError("All fields are required.");
+      return;
+    }
+    if (cpNew !== cpConfirm) {
+      setCpError("New passwords do not match.");
+      return;
+    }
+    if (cpNew.length < 8) {
+      setCpError("Password must be at least 8 characters.");
+      return;
+    }
+    setCpLoading(true);
+    setCpError("");
     try {
       await authService.changePassword(cpCurrent, cpNew, cpConfirm);
       setShowChangePasswordModal(false);
-      setCpCurrent(""); setCpNew(""); setCpConfirm("");
+      setCpCurrent("");
+      setCpNew("");
+      setCpConfirm("");
       showToast("Password updated successfully!");
     } catch (err) {
       setCpError(err.response?.data?.message || "Failed to change password.");
@@ -682,7 +711,10 @@ const Profile = () => {
 
   // ── Submit Review ──────────────────────────────────────────────────────────
   const handleSubmitReview = async () => {
-    if (!reviewTarget?.locationId) { showToast("No location to review", "error"); return; }
+    if (!reviewTarget?.locationId) {
+      showToast("No location to review", "error");
+      return;
+    }
     setReviewSaving(true);
     try {
       // POST /api/v1/reviews — locationId comes from the trip's first location
@@ -693,10 +725,14 @@ const Profile = () => {
         reviewText: reviewText || undefined,
       });
       setShowReviewModal(false);
-      setReviewText(""); setReviewRating(5);
+      setReviewText("");
+      setReviewRating(5);
       showToast("Review submitted!");
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to submit review.", "error");
+      showToast(
+        err.response?.data?.message || "Failed to submit review.",
+        "error",
+      );
     } finally {
       setReviewSaving(false);
     }
@@ -708,7 +744,9 @@ const Profile = () => {
       // DELETE /api/v1/users/me
       const { default: apiClient } = await import("../../services/apiClient");
       await apiClient.delete("/users/me");
-    } catch (_) { /* ignore */ } finally {
+    } catch (_) {
+      /* ignore */
+    } finally {
       authService.clearTokens();
       if (window.navigateToSignIn) {
         window.navigateToSignIn();
@@ -730,22 +768,48 @@ const Profile = () => {
   // وخلصنا التحميل، بنستخدم الـ dummyApiTrips بدالها عشان نقدر نشوف شكل الصفحة.
   // ✅ لما الباك يخلص ويتأكد إن كل اليوزرز عندهم trips حقيقية، امسحي السطر اللي
   // فيه "effectiveTrips" واستبدليه بـ: const effectiveTrips = apiTrips;
-  const effectiveTrips = (!tripsLoading && apiTrips.length === 0) ? dummyApiTrips : apiTrips;
+  const effectiveTrips =
+    !tripsLoading && apiTrips.length === 0 ? dummyApiTrips : apiTrips;
 
   const upcomingFiltered = effectiveTrips
-    .filter((t) => t.status === "Upcoming" || t.status === "1" || t.status === 1)
-    .filter((t) => (t.destinationGovernorate ?? t.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()));
+    .filter(
+      (t) => t.status === "Upcoming" || t.status === "1" || t.status === 1,
+    )
+    .filter((t) =>
+      (t.destinationGovernorate ?? t.title ?? "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()),
+    );
 
   const draftsFiltered = effectiveTrips
-    .filter((t) => t.status === "Planning" || t.status === "0" || t.status === 0)
-    .filter((t) => (t.destinationGovernorate ?? "").toLowerCase().includes(searchQuery.toLowerCase()));
+    .filter(
+      (t) => t.status === "Planning" || t.status === "0" || t.status === 0,
+    )
+    .filter((t) =>
+      (t.destinationGovernorate ?? "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()),
+    );
 
   const completedFiltered = effectiveTrips
-    .filter((t) => t.status === "Completed" || t.status === "3" || t.status === 3)
-    .filter((t) => (t.destinationGovernorate ?? "").toLowerCase().includes(searchQuery.toLowerCase()));
+    .filter(
+      (t) => t.status === "Completed" || t.status === "3" || t.status === 3,
+    )
+    .filter((t) =>
+      (t.destinationGovernorate ?? "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()),
+    );
 
   // helper: format API trip date
-  const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }) : "";
+  const fmtDate = (iso) =>
+    iso
+      ? new Date(iso).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : "";
 
   return (
     <>
@@ -781,10 +845,21 @@ const Profile = () => {
                 </button>
               </div>
               <div className="profile-info">
-                <h2 className="profile-name">{profileData?.displayName || displayName}</h2>
-                <p className="profile-bio">{profileData?.bio || "Chasing sunrises, collecting stories."}</p>
+                <h2 className="profile-name">
+                  {profileData?.displayName || displayName}
+                </h2>
+                <p className="profile-bio">
+                  {profileData?.bio || "Chasing sunrises, collecting stories."}
+                </p>
                 <p className="profile-location">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#5596fe"
+                    strokeWidth="2"
+                  >
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
@@ -846,14 +921,45 @@ const Profile = () => {
 
               <div className="stats-grid">
                 {[
-                  { value: dashboardData.totalTrips,   label: "Trips Completed",  icon: <img src={tripsIcon}    alt="trips"    width="24" height="24" /> },
-                  { value: dashboardData.totalSaved,   label: "Saved Places",     icon: <img src={fullHeart}    alt="saved"    width="24" height="24" /> },
-                  { value: upcomingFiltered.length,    label: "Upcoming Trips",   icon: <img src={uisCalender} alt="upcoming" width="24" height="24" /> },
-                  { value: dashboardData.totalReviews, label: "Reviews Written",  icon: <img src={pin}          alt="reviews"  width="24" height="24" /> },
+                  {
+                    value: dashboardData.totalTrips,
+                    label: "Trips Completed",
+                    icon: (
+                      <img src={tripsIcon} alt="trips" width="24" height="24" />
+                    ),
+                  },
+                  {
+                    value: dashboardData.totalSaved,
+                    label: "Saved Places",
+                    icon: (
+                      <img src={fullHeart} alt="saved" width="24" height="24" />
+                    ),
+                  },
+                  {
+                    value: upcomingFiltered.length,
+                    label: "Upcoming Trips",
+                    icon: (
+                      <img
+                        src={uisCalender}
+                        alt="upcoming"
+                        width="24"
+                        height="24"
+                      />
+                    ),
+                  },
+                  {
+                    value: dashboardData.totalReviews,
+                    label: "Reviews Written",
+                    icon: (
+                      <img src={pin} alt="reviews" width="24" height="24" />
+                    ),
+                  },
                 ].map((stat, i) => (
                   <div className="stat-card" key={i}>
                     <div className="stat-icon-circle">{stat.icon}</div>
-                    <h3 className="stat-value">{profileLoading ? "—" : stat.value}</h3>
+                    <h3 className="stat-value">
+                      {profileLoading ? "—" : stat.value}
+                    </h3>
                     <p className="stat-label">{stat.label}</p>
                   </div>
                 ))}
@@ -862,16 +968,32 @@ const Profile = () => {
               <div className="overview-section">
                 <div className="section-card-header">
                   <h4>My Travel Interests</h4>
-                  <button className="edit-icon-btn" onClick={() => { setTempInterests([...apiInterests]); setShowInterestsModal(true); }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
+                  <button
+                    className="edit-icon-btn"
+                    onClick={() => {
+                      setTempInterests([...apiInterests]);
+                      setShowInterestsModal(true);
+                    }}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#5596fe"
+                      strokeWidth="2"
+                    >
                       <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </button>
                 </div>
                 <div className="interests-wrap">
-                  {(apiInterests.length ? apiInterests : interests.filter(i=>i.active).map(i=>i.label)).map((label, i) => {
-                    const found = interests.find(x => x.label === label);
+                  {(apiInterests.length
+                    ? apiInterests
+                    : interests.filter((i) => i.active).map((i) => i.label)
+                  ).map((label, i) => {
+                    const found = interests.find((x) => x.label === label);
                     return (
                       <span key={i} className="interest-tag active">
                         {found?.emoji} {label}
@@ -879,7 +1001,21 @@ const Profile = () => {
                     );
                   })}
                   {apiInterests.length === 0 && !profileLoading && (
-                    <button className="edit-icon-btn" style={{fontSize:13,color:"#5596fe",border:"none",background:"none",cursor:"pointer",padding:0}} onClick={() => { setTempInterests([]); setShowInterestsModal(true); }}>
+                    <button
+                      className="edit-icon-btn"
+                      style={{
+                        fontSize: 13,
+                        color: "#5596fe",
+                        border: "none",
+                        background: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                      onClick={() => {
+                        setTempInterests([]);
+                        setShowInterestsModal(true);
+                      }}
+                    >
                       + Add interests
                     </button>
                   )}
@@ -971,214 +1107,71 @@ const Profile = () => {
               </div>
 
               {tripsLoading && (
-                <div style={{ textAlign:"center", padding:"40px", color:"#999", fontSize:14 }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                    color: "#999",
+                    fontSize: 14,
+                  }}
+                >
                   Loading your trips...
                 </div>
               )}
 
               {/* ===== Upcoming Trips Section ===== */}
-              {!tripsLoading && (activeFilter === "ALL" || activeFilter === "Upcoming") && (
-                <div className="overview-section">
-                  <div className="section-card-header">
-                    <h4>Upcoming Trips</h4>
-                    <button className="see-all-btn">See All</button>
-                  </div>
-                  <div className="my-trips-grid">
-                    {upcomingFiltered
-                      .slice(0, showAllTrips ? undefined : 3)
-                      .map((trip) => (
-                        <div className="my-trip-card" key={trip.id}>
-                          <div className="my-trip-img-wrap">
-                            {trip.image ? (
-                              <img
-                                src={trip.image}
-                                alt={trip.title}
-                                className="my-trip-img"
-                              />
-                            ) : (
-                              <div className="no-img-placeholder">
-                                <svg
-                                  width="36"
-                                  height="36"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="#ccc"
-                                  strokeWidth="1.5"
-                                >
-                                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                                  <circle cx="12" cy="13" r="4" />
-                                </svg>
-                              </div>
-                            )}
-                            <span className="trip-status-badge">
-                              {trip.status}
-                            </span>
-                            <div style={{ position: "relative" }}>
-                              <button
-                                className="trip-more-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuId(
-                                    openMenuId === `up-${trip.id}`
-                                      ? null
-                                      : `up-${trip.id}`,
-                                  );
-                                }}
-                              >
-                                ⋮
-                              </button>
-                              {openMenuId === `up-${trip.id}` && (
-                                <div className="trip-dropdown">
-                                  <button className="dropdown-item">
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                      <circle cx="12" cy="12" r="3" />
-                                    </svg>
-                                    Open
-                                  </button>
-                                  <button className="dropdown-item">
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                                    </svg>
-                                    Rename
-                                  </button>
-                                  <button className="dropdown-item">
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-                                      <polyline points="16 6 12 2 8 6" />
-                                      <line x1="12" y1="2" x2="12" y2="15" />
-                                    </svg>
-                                    Share
-                                  </button>
-                                  <button className="dropdown-item delete">
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <polyline points="3 6 5 6 21 6" />
-                                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                                      <path d="M10 11v6M14 11v6" />
-                                      <path d="M9 6V4h6v2" />
-                                    </svg>
-                                    Delete
-                                  </button>
+              {!tripsLoading &&
+                (activeFilter === "ALL" || activeFilter === "Upcoming") && (
+                  <div className="overview-section">
+                    <div className="section-card-header">
+                      <h4>Upcoming Trips</h4>
+                      <button className="see-all-btn">See All</button>
+                    </div>
+                    <div className="my-trips-grid">
+                      {upcomingFiltered
+                        .slice(0, showAllTrips ? undefined : 3)
+                        .map((trip) => (
+                          <div className="my-trip-card" key={trip.id}>
+                            <div className="my-trip-img-wrap">
+                              {trip.image ? (
+                                <img
+                                  src={trip.image}
+                                  alt={trip.title}
+                                  className="my-trip-img"
+                                />
+                              ) : (
+                                <div className="no-img-placeholder">
+                                  <svg
+                                    width="36"
+                                    height="36"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#ccc"
+                                    strokeWidth="1.5"
+                                  >
+                                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                                    <circle cx="12" cy="13" r="4" />
+                                  </svg>
                                 </div>
                               )}
-                            </div>
-                          </div>
-                          <div className="my-trip-info">
-                            <h5 className="my-trip-title">{trip.destinationGovernorate ?? trip.title ?? "Trip"}</h5>
-                            <p className="my-trip-meta">
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                              </svg>
-                              {fmtDate(trip.startDate)} – {fmtDate(trip.endDate)}
-                            </p>
-                            <p className="my-trip-meta">
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="20"/>
-                              </svg>
-                              {trip.durationDays ?? "—"} days · {trip.totalBudgetEgp?.toLocaleString() ?? "—"} EGP
-                            </p>
-                            <div className="my-trip-highlights">
-                              {(trip.days?.[0]?.locations ?? []).slice(0, 2).map((loc, i) => (
-                                <p key={i} className="my-trip-highlight-item">• {loc.nameEn ?? loc.nameAr ?? "Place"}</p>
-                              ))}
-                            </div>
-                            <button className="view-itinerary-btn" onClick={() => navigate(`/trips/${trip.tripId}`)}>
-                              View Itinerary
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                  {upcomingFiltered.length > 3 && activeFilter !== "ALL" && (
-                    <div className="show-more-wrap">
-                      <button
-                        className="show-more-btn"
-                        onClick={() => setShowAllTrips(!showAllTrips)}
-                      >
-                        {showAllTrips ? "Show Less" : "Show More"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ===== Drafts Section ===== */}
-              {!tripsLoading && (activeFilter === "ALL" || activeFilter === "Drafts") && (
-                <div className="overview-section">
-                  <div className="section-card-header">
-                    <h4>Drafts</h4>
-                    <button className="see-all-btn">See All</button>
-                  </div>
-                  <div className="my-trips-grid">
-                    {draftsFiltered
-                      .slice(0, showAllDrafts ? undefined : 3)
-                      .map((draft) => (
-                        <div className="my-trip-card" key={draft.id}>
-                          <div className="draft-img-wrap">
-                            <span className="trip-status-badge">Draft</span>
-                            <div className="draft-img-placeholder">
-                              <svg
-                                width="32"
-                                height="32"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#aaa"
-                                strokeWidth="1.5"
-                              >
-                                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                                <circle cx="12" cy="13" r="4" />
-                              </svg>
-                            </div>
-                          </div>
-                          <div className="my-trip-info">
-                            <div className="draft-title-row">
-                              <h5 className="my-trip-title">{draft.title}</h5>
+                              <span className="trip-status-badge">
+                                {trip.status}
+                              </span>
                               <div style={{ position: "relative" }}>
                                 <button
                                   className="trip-more-btn"
-                                  style={{ position: "static" }}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenMenuId(
-                                      openMenuId === `draft-${draft.id}`
+                                      openMenuId === `up-${trip.id}`
                                         ? null
-                                        : `draft-${draft.id}`,
+                                        : `up-${trip.id}`,
                                     );
                                   }}
                                 >
                                   ⋮
                                 </button>
-                                {openMenuId === `draft-${draft.id}` && (
+                                {openMenuId === `up-${trip.id}` && (
                                   <div className="trip-dropdown">
                                     <button className="dropdown-item">
                                       <svg
@@ -1189,10 +1182,38 @@ const Profile = () => {
                                         stroke="currentColor"
                                         strokeWidth="2"
                                       >
-                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
                                       </svg>
-                                      Edit Title
+                                      Open
+                                    </button>
+                                    <button className="dropdown-item">
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                      </svg>
+                                      Rename
+                                    </button>
+                                    <button className="dropdown-item">
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+                                        <polyline points="16 6 12 2 8 6" />
+                                        <line x1="12" y1="2" x2="12" y2="15" />
+                                      </svg>
+                                      Share
                                     </button>
                                     <button className="dropdown-item delete">
                                       <svg
@@ -1208,137 +1229,372 @@ const Profile = () => {
                                         <path d="M10 11v6M14 11v6" />
                                         <path d="M9 6V4h6v2" />
                                       </svg>
-                                      Delete Draft
+                                      Delete
                                     </button>
                                   </div>
                                 )}
                               </div>
                             </div>
-                            <p className="draft-edited">
-                              Last edited: {draft.lastEdited}
-                            </p>
-                            <p className="draft-hint">
-                              Just 2 steps left to create your magic trip!
-                            </p>
-                            <div className="draft-progress-wrap">
-                              <div className="draft-progress-header">
-                                <span className="draft-progress-label">
-                                  Planning Progress
-                                </span>
-                                <span className="draft-progress-pct">
-                                  ({draft.progress}%)
-                                </span>
+                            <div className="my-trip-info">
+                              <h5 className="my-trip-title">
+                                {trip.destinationGovernorate ??
+                                  trip.title ??
+                                  "Trip"}
+                              </h5>
+                              <p className="my-trip-meta">
+                                <svg
+                                  width="13"
+                                  height="13"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#999"
+                                  strokeWidth="2"
+                                >
+                                  <rect
+                                    x="3"
+                                    y="4"
+                                    width="18"
+                                    height="18"
+                                    rx="2"
+                                  />
+                                  <line x1="16" y1="2" x2="16" y2="6" />
+                                  <line x1="8" y1="2" x2="8" y2="6" />
+                                  <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                                {fmtDate(trip.startDate)} –{" "}
+                                {fmtDate(trip.endDate)}
+                              </p>
+                              <p className="my-trip-meta">
+                                <svg
+                                  width="13"
+                                  height="13"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#999"
+                                  strokeWidth="2"
+                                >
+                                  <rect
+                                    x="3"
+                                    y="4"
+                                    width="18"
+                                    height="18"
+                                    rx="2"
+                                  />
+                                  <line x1="3" y1="10" x2="21" y2="10" />
+                                  <line x1="9" y1="4" x2="9" y2="20" />
+                                </svg>
+                                {trip.durationDays ?? "—"} days ·{" "}
+                                {trip.totalBudgetEgp?.toLocaleString() ?? "—"}{" "}
+                                EGP
+                              </p>
+                              <div className="my-trip-highlights">
+                                {(trip.days?.[0]?.locations ?? [])
+                                  .slice(0, 2)
+                                  .map((loc, i) => (
+                                    <p
+                                      key={i}
+                                      className="my-trip-highlight-item"
+                                    >
+                                      • {loc.nameEn ?? loc.nameAr ?? "Place"}
+                                    </p>
+                                  ))}
                               </div>
-                              <div className="draft-progress-bar">
-                                <div
-                                  className="draft-progress-fill"
-                                  style={{ width: `${draft.progress}%` }}
-                                />
+                              <button
+                                className="view-itinerary-btn"
+                                onClick={() =>
+                                  navigate(`/trips/${trip.tripId}`)
+                                }
+                              >
+                                View Itinerary
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                    {upcomingFiltered.length > 3 && activeFilter !== "ALL" && (
+                      <div className="show-more-wrap">
+                        <button
+                          className="show-more-btn"
+                          onClick={() => setShowAllTrips(!showAllTrips)}
+                        >
+                          {showAllTrips ? "Show Less" : "Show More"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              {/* ===== Drafts Section ===== */}
+              {!tripsLoading &&
+                (activeFilter === "ALL" || activeFilter === "Drafts") && (
+                  <div className="overview-section">
+                    <div className="section-card-header">
+                      <h4>Drafts</h4>
+                      <button className="see-all-btn">See All</button>
+                    </div>
+                    <div className="my-trips-grid">
+                      {draftsFiltered
+                        .slice(0, showAllDrafts ? undefined : 3)
+                        .map((draft) => (
+                          <div className="my-trip-card" key={draft.id}>
+                            <div className="draft-img-wrap">
+                              <span className="trip-status-badge">Draft</span>
+                              <div className="draft-img-placeholder">
+                                <svg
+                                  width="32"
+                                  height="32"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#aaa"
+                                  strokeWidth="1.5"
+                                >
+                                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                                  <circle cx="12" cy="13" r="4" />
+                                </svg>
                               </div>
                             </div>
-                            <button className="continue-planning-btn">
-                              Continue Planning
-                            </button>
+                            <div className="my-trip-info">
+                              <div className="draft-title-row">
+                                <h5 className="my-trip-title">{draft.title}</h5>
+                                <div style={{ position: "relative" }}>
+                                  <button
+                                    className="trip-more-btn"
+                                    style={{ position: "static" }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuId(
+                                        openMenuId === `draft-${draft.id}`
+                                          ? null
+                                          : `draft-${draft.id}`,
+                                      );
+                                    }}
+                                  >
+                                    ⋮
+                                  </button>
+                                  {openMenuId === `draft-${draft.id}` && (
+                                    <div className="trip-dropdown">
+                                      <button className="dropdown-item">
+                                        <svg
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                        >
+                                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                        Edit Title
+                                      </button>
+                                      <button className="dropdown-item delete">
+                                        <svg
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                        >
+                                          <polyline points="3 6 5 6 21 6" />
+                                          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                          <path d="M10 11v6M14 11v6" />
+                                          <path d="M9 6V4h6v2" />
+                                        </svg>
+                                        Delete Draft
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="draft-edited">
+                                Last edited: {draft.lastEdited}
+                              </p>
+                              <p className="draft-hint">
+                                Just 2 steps left to create your magic trip!
+                              </p>
+                              <div className="draft-progress-wrap">
+                                <div className="draft-progress-header">
+                                  <span className="draft-progress-label">
+                                    Planning Progress
+                                  </span>
+                                  <span className="draft-progress-pct">
+                                    ({draft.progress}%)
+                                  </span>
+                                </div>
+                                <div className="draft-progress-bar">
+                                  <div
+                                    className="draft-progress-fill"
+                                    style={{ width: `${draft.progress}%` }}
+                                  />
+                                </div>
+                              </div>
+                              <button className="continue-planning-btn">
+                                Continue Planning
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                  </div>
-                  {draftsFiltered.length > 3 && activeFilter !== "ALL" && (
-                    <div className="show-more-wrap">
-                      <button
-                        className="show-more-btn"
-                        onClick={() => setShowAllDrafts(!showAllDrafts)}
-                      >
-                        {showAllDrafts ? "Show Less" : "Show More"}
-                      </button>
+                        ))}
                     </div>
-                  )}
-                </div>
-              )}
+                    {draftsFiltered.length > 3 && activeFilter !== "ALL" && (
+                      <div className="show-more-wrap">
+                        <button
+                          className="show-more-btn"
+                          onClick={() => setShowAllDrafts(!showAllDrafts)}
+                        >
+                          {showAllDrafts ? "Show Less" : "Show More"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {/* ===== Completed Trips Section ===== */}
-              {!tripsLoading && (activeFilter === "ALL" || activeFilter === "Completed") && (
-                <div className="overview-section">
-                  <div className="section-card-header">
-                    <h4>Completed Trips</h4>
-                    <button className="see-all-btn">See All</button>
-                  </div>
-                  <div className="my-trips-grid">
-                    {completedFiltered
-                      .slice(0, showAllCompleted ? undefined : 3)
-                      .map((trip) => (
-                        <div className="my-trip-card" key={trip.id}>
-                          <div className="my-trip-img-wrap">
-                            <img
-                              src={trip.image}
-                              alt={trip.title}
-                              className="my-trip-img"
-                            />
-                            <span className="trip-status-badge">
-                              {trip.status}
-                            </span>
-                            <button className="trip-more-btn">⋮</button>
-                          </div>
-                          <div className="my-trip-info">
-                            <h5 className="my-trip-title">{trip.destinationGovernorate ?? trip.title ?? "Trip"}</h5>
-                            <div className="completed-meta-row">
-                              <p className="my-trip-meta">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
-                                  <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                                </svg>
-                                {trip.durationDays ?? "—"} Days
-                              </p>
-                              <p className="my-trip-meta">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
-                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-                                </svg>
-                                {trip.destinationGovernorate ?? "Egypt"}
-                              </p>
-                            </div>
-                            <p className="my-trip-meta">
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="20"/>
-                              </svg>
-                              {(trip.days?.[0]?.locations?.length ?? 0)} places
-                            </p>
-                            <div className="my-trip-highlights">
-                              {(trip.days?.[0]?.locations ?? []).slice(0,2).map((loc, i) => (
-                                <p key={i} className="my-trip-highlight-item">• {loc.nameEn ?? loc.nameAr ?? "Place"}</p>
-                              ))}
-                            </div>
-                            <p className="completed-last-updated">
-                              Last Updated : {trip.lastUpdated ?? fmtDate(trip.endDate)}
-                            </p>
-                            <button
-                              className="view-itinerary-btn"
-                              style={{ marginTop: 10, background: "linear-gradient(90deg,#5596fe,#97ceff)", color:"#fff", border:"none" }}
-                              onClick={() => {
-                                const locId = trip.days?.[0]?.locations?.[0]?.locationId ?? null;
-                                setReviewTarget({ locationId: locId, tripTitle: trip.title ?? trip.destinationGovernorate });
-                                setReviewRating(5); setReviewText("");
-                                setShowReviewModal(true);
-                              }}
-                            >
-                              Write a Review
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                  {completedFiltered.length > 3 && activeFilter !== "ALL" && (
-                    <div className="show-more-wrap">
-                      <button
-                        className="show-more-btn"
-                        onClick={() => setShowAllCompleted(!showAllCompleted)}
-                      >
-                        {showAllCompleted ? "Show Less" : "Show More"}
-                      </button>
+              {!tripsLoading &&
+                (activeFilter === "ALL" || activeFilter === "Completed") && (
+                  <div className="overview-section">
+                    <div className="section-card-header">
+                      <h4>Completed Trips</h4>
+                      <button className="see-all-btn">See All</button>
                     </div>
-                  )}
-                </div>
-              )}
+                    <div className="my-trips-grid">
+                      {completedFiltered
+                        .slice(0, showAllCompleted ? undefined : 3)
+                        .map((trip) => (
+                          <div className="my-trip-card" key={trip.id}>
+                            <div className="my-trip-img-wrap">
+                              <img
+                                src={trip.image}
+                                alt={trip.title}
+                                className="my-trip-img"
+                              />
+                              <span className="trip-status-badge">
+                                {trip.status}
+                              </span>
+                              <button className="trip-more-btn">⋮</button>
+                            </div>
+                            <div className="my-trip-info">
+                              <h5 className="my-trip-title">
+                                {trip.destinationGovernorate ??
+                                  trip.title ??
+                                  "Trip"}
+                              </h5>
+                              <div className="completed-meta-row">
+                                <p className="my-trip-meta">
+                                  <svg
+                                    width="13"
+                                    height="13"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#999"
+                                    strokeWidth="2"
+                                  >
+                                    <rect
+                                      x="3"
+                                      y="4"
+                                      width="18"
+                                      height="18"
+                                      rx="2"
+                                    />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                  </svg>
+                                  {trip.durationDays ?? "—"} Days
+                                </p>
+                                <p className="my-trip-meta">
+                                  <svg
+                                    width="13"
+                                    height="13"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#999"
+                                    strokeWidth="2"
+                                  >
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                  </svg>
+                                  {trip.destinationGovernorate ?? "Egypt"}
+                                </p>
+                              </div>
+                              <p className="my-trip-meta">
+                                <svg
+                                  width="13"
+                                  height="13"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#999"
+                                  strokeWidth="2"
+                                >
+                                  <rect
+                                    x="3"
+                                    y="4"
+                                    width="18"
+                                    height="18"
+                                    rx="2"
+                                  />
+                                  <line x1="3" y1="10" x2="21" y2="10" />
+                                  <line x1="9" y1="4" x2="9" y2="20" />
+                                </svg>
+                                {trip.days?.[0]?.locations?.length ?? 0} places
+                              </p>
+                              <div className="my-trip-highlights">
+                                {(trip.days?.[0]?.locations ?? [])
+                                  .slice(0, 2)
+                                  .map((loc, i) => (
+                                    <p
+                                      key={i}
+                                      className="my-trip-highlight-item"
+                                    >
+                                      • {loc.nameEn ?? loc.nameAr ?? "Place"}
+                                    </p>
+                                  ))}
+                              </div>
+                              <p className="completed-last-updated">
+                                Last Updated :{" "}
+                                {trip.lastUpdated ?? fmtDate(trip.endDate)}
+                              </p>
+                              <button
+                                className="view-itinerary-btn"
+                                style={{
+                                  marginTop: 10,
+                                  background:
+                                    "linear-gradient(90deg,#5596fe,#97ceff)",
+                                  color: "#fff",
+                                  border: "none",
+                                }}
+                                onClick={() => {
+                                  const locId =
+                                    trip.days?.[0]?.locations?.[0]
+                                      ?.locationId ?? null;
+                                  setReviewTarget({
+                                    locationId: locId,
+                                    tripTitle:
+                                      trip.title ?? trip.destinationGovernorate,
+                                  });
+                                  setReviewRating(5);
+                                  setReviewText("");
+                                  setShowReviewModal(true);
+                                }}
+                              >
+                                Write a Review
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                    {completedFiltered.length > 3 && activeFilter !== "ALL" && (
+                      <div className="show-more-wrap">
+                        <button
+                          className="show-more-btn"
+                          onClick={() => setShowAllCompleted(!showAllCompleted)}
+                        >
+                          {showAllCompleted ? "Show Less" : "Show More"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
           )}
 
@@ -1990,17 +2246,33 @@ const Profile = () => {
                         onClick={() => setShowLogoutModal(true)}
                       >
                         <div className="settings-row-left">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#555"
+                            strokeWidth="2"
+                          >
                             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
                             <polyline points="16 17 21 12 16 7" />
                             <line x1="21" y1="12" x2="9" y2="12" />
                           </svg>
                           <div>
                             <p className="settings-item-title">Log Out</p>
-                            <p className="settings-item-desc">Sign out of your account</p>
+                            <p className="settings-item-desc">
+                              Sign out of your account
+                            </p>
                           </div>
                         </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#999"
+                          strokeWidth="2"
+                        >
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </div>
@@ -2184,14 +2456,33 @@ const Profile = () => {
 
               {/* Delete Account Modal */}
               {showDeleteAccountModal && (
-                <div className="modal-overlay" onClick={() => setShowDeleteAccountModal(false)}>
-                  <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="modal-overlay"
+                  onClick={() => setShowDeleteAccountModal(false)}
+                >
+                  <div
+                    className="modal-box"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
                     <h3 className="modal-title">Delete Account?</h3>
-                    <p className="modal-desc">Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+                    <p className="modal-desc">
+                      Are you sure you want to permanently delete your account?
+                      This action cannot be undone.
+                    </p>
                     <div className="modal-actions">
-                      <button className="modal-cancel-btn" onClick={() => setShowDeleteAccountModal(false)}>Cancel</button>
-                      <button className="modal-delete-btn" onClick={handleDeleteAccount}>Delete</button>
+                      <button
+                        className="modal-cancel-btn"
+                        onClick={() => setShowDeleteAccountModal(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="modal-delete-btn"
+                        onClick={handleDeleteAccount}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2199,16 +2490,35 @@ const Profile = () => {
 
               {/* Logout Confirmation Modal */}
               {showLogoutModal && (
-                <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
-                  <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="modal-overlay"
+                  onClick={() => setShowLogoutModal(false)}
+                >
+                  <div
+                    className="modal-box"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div style={{ fontSize: 36, marginBottom: 12 }}>👋</div>
                     <h3 className="modal-title">Log Out?</h3>
-                    <p className="modal-desc">Are you sure you want to log out of your account?</p>
+                    <p className="modal-desc">
+                      Are you sure you want to log out of your account?
+                    </p>
                     <div className="modal-actions">
-                      <button className="modal-cancel-btn" onClick={() => setShowLogoutModal(false)}>Cancel</button>
-                      <button className="modal-delete-btn"
-                        style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: logoutLoading ? 0.6 : 1 }}
-                        onClick={handleLogout} disabled={logoutLoading}>
+                      <button
+                        className="modal-cancel-btn"
+                        onClick={() => setShowLogoutModal(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="modal-delete-btn"
+                        style={{
+                          background: "linear-gradient(90deg,#5596fe,#97ceff)",
+                          opacity: logoutLoading ? 0.6 : 1,
+                        }}
+                        onClick={handleLogout}
+                        disabled={logoutLoading}
+                      >
                         {logoutLoading ? "Logging out..." : "Log Out"}
                       </button>
                     </div>
@@ -2218,33 +2528,121 @@ const Profile = () => {
 
               {/* Change Password Modal */}
               {showChangePasswordModal && (
-                <div className="modal-overlay" onClick={() => { setShowChangePasswordModal(false); setCpError(""); }}>
-                  <div className="modal-box" style={{ width: 420 }} onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="modal-overlay"
+                  onClick={() => {
+                    setShowChangePasswordModal(false);
+                    setCpError("");
+                  }}
+                >
+                  <div
+                    className="modal-box"
+                    style={{ width: 420 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <h3 className="modal-title">Change Password</h3>
-                    <p className="modal-desc">Enter your current password and choose a new one.</p>
-                    <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:16 }}>
+                    <p className="modal-desc">
+                      Enter your current password and choose a new one.
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
+                        marginBottom: 16,
+                      }}
+                    >
                       {[
-                        { ph:"Current Password", val:cpCurrent, set:setCpCurrent },
-                        { ph:"New Password",      val:cpNew,     set:setCpNew     },
-                        { ph:"Confirm Password",  val:cpConfirm, set:setCpConfirm },
+                        {
+                          ph: "Current Password",
+                          val: cpCurrent,
+                          set: setCpCurrent,
+                        },
+                        { ph: "New Password", val: cpNew, set: setCpNew },
+                        {
+                          ph: "Confirm Password",
+                          val: cpConfirm,
+                          set: setCpConfirm,
+                        },
                       ].map(({ ph, val, set }) => (
-                        <div key={ph} style={{ position:"relative" }}>
-                          <svg style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)" }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+                        <div key={ph} style={{ position: "relative" }}>
+                          <svg
+                            style={{
+                              position: "absolute",
+                              left: 14,
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                            }}
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#aaa"
+                            strokeWidth="2"
+                          >
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0110 0v4" />
                           </svg>
-                          <input type="password" placeholder={ph} value={val} onChange={(e)=>set(e.target.value)}
-                            style={{ width:"100%", padding:"12px 14px 12px 40px", border:"1.5px solid #e8e8e8", borderRadius:10, fontSize:14, outline:"none", boxSizing:"border-box", color:"#374151", background:"#fff" }} />
+                          <input
+                            type="password"
+                            placeholder={ph}
+                            value={val}
+                            onChange={(e) => set(e.target.value)}
+                            style={{
+                              width: "100%",
+                              padding: "12px 14px 12px 40px",
+                              border: "1.5px solid #e8e8e8",
+                              borderRadius: 10,
+                              fontSize: 14,
+                              outline: "none",
+                              boxSizing: "border-box",
+                              color: "#374151",
+                              background: "#fff",
+                            }}
+                          />
                         </div>
                       ))}
-                      {cpError && <p style={{ color:"#e53935", fontSize:13, margin:0 }}>{cpError}</p>}
-                      <p style={{ fontSize:12, color:"#999", textAlign:"left", margin:0 }}>
-                        • At least 8 characters long<br/>• Include at least one number or special character
+                      {cpError && (
+                        <p
+                          style={{ color: "#e53935", fontSize: 13, margin: 0 }}
+                        >
+                          {cpError}
+                        </p>
+                      )}
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: "#999",
+                          textAlign: "left",
+                          margin: 0,
+                        }}
+                      >
+                        • At least 8 characters long
+                        <br />• Include at least one number or special character
                       </p>
                     </div>
                     <div className="modal-actions">
-                      <button className="modal-cancel-btn" onClick={() => { setShowChangePasswordModal(false); setCpError(""); setCpCurrent(""); setCpNew(""); setCpConfirm(""); }}>Cancel</button>
-                      <button className="modal-delete-btn" style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: cpLoading ? 0.6 : 1 }}
-                        onClick={handleChangePassword} disabled={cpLoading}>
+                      <button
+                        className="modal-cancel-btn"
+                        onClick={() => {
+                          setShowChangePasswordModal(false);
+                          setCpError("");
+                          setCpCurrent("");
+                          setCpNew("");
+                          setCpConfirm("");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="modal-delete-btn"
+                        style={{
+                          background: "linear-gradient(90deg,#5596fe,#97ceff)",
+                          opacity: cpLoading ? 0.6 : 1,
+                        }}
+                        onClick={handleChangePassword}
+                        disabled={cpLoading}
+                      >
                         {cpLoading ? "Saving..." : "Save Changes"}
                       </button>
                     </div>
@@ -2568,7 +2966,14 @@ const Profile = () => {
 
       {toast && (
         <div className={`toast-notification ${toast.type}`}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
             <polyline points="20 6 9 17 4 12" />
           </svg>
           {toast.message}
@@ -2577,19 +2982,32 @@ const Profile = () => {
 
       {/* ═══ INTERESTS EDIT MODAL ═══ */}
       {showInterestsModal && (
-        <div className="modal-overlay" onClick={() => setShowInterestsModal(false)}>
-          <div className="modal-box" style={{ width: 520, maxHeight:"80vh", overflowY:"auto" }} onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title" style={{ marginBottom:6 }}>Edit Travel Interests</h3>
-            <p className="modal-desc" style={{ marginBottom:16 }}>Select the interests that best match your travel style.</p>
-            <div className="interests-wrap" style={{ marginBottom:20 }}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowInterestsModal(false)}
+        >
+          <div
+            className="modal-box"
+            style={{ width: 520, maxHeight: "80vh", overflowY: "auto" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="modal-title" style={{ marginBottom: 6 }}>
+              Edit Travel Interests
+            </h3>
+            <p className="modal-desc" style={{ marginBottom: 16 }}>
+              Select the interests that best match your travel style.
+            </p>
+            <div className="interests-wrap" style={{ marginBottom: 20 }}>
               {interests.map((item, i) => (
                 <span
                   key={i}
                   className={`interest-tag ${tempInterests.includes(item.label) ? "active" : ""}`}
-                  style={{ cursor:"pointer" }}
+                  style={{ cursor: "pointer" }}
                   onClick={() => {
                     setTempInterests((prev) =>
-                      prev.includes(item.label) ? prev.filter((x) => x !== item.label) : [...prev, item.label]
+                      prev.includes(item.label)
+                        ? prev.filter((x) => x !== item.label)
+                        : [...prev, item.label],
                     );
                   }}
                 >
@@ -2598,10 +3016,21 @@ const Profile = () => {
               ))}
             </div>
             <div className="modal-actions">
-              <button className="modal-cancel-btn" onClick={() => setShowInterestsModal(false)}>Cancel</button>
-              <button className="modal-delete-btn"
-                style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: interestsSaving ? 0.6 : 1 }}
-                onClick={handleSaveInterests} disabled={interestsSaving}>
+              <button
+                className="modal-cancel-btn"
+                onClick={() => setShowInterestsModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-delete-btn"
+                style={{
+                  background: "linear-gradient(90deg,#5596fe,#97ceff)",
+                  opacity: interestsSaving ? 0.6 : 1,
+                }}
+                onClick={handleSaveInterests}
+                disabled={interestsSaving}
+              >
                 {interestsSaving ? "Saving..." : "Save Interests"}
               </button>
             </div>
@@ -2611,8 +3040,15 @@ const Profile = () => {
 
       {/* ═══ WRITE A REVIEW MODAL ═══ */}
       {showReviewModal && (
-        <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
-          <div className="modal-box" style={{ width: 440 }} onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowReviewModal(false)}
+        >
+          <div
+            className="modal-box"
+            style={{ width: 440 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="modal-title">Write a Review</h3>
             {reviewTarget?.tripTitle && (
               <p className="modal-desc" style={{ marginBottom: 12 }}>
@@ -2620,28 +3056,61 @@ const Profile = () => {
               </p>
             )}
             {!reviewTarget?.locationId && (
-              <p style={{ color:"#e53935", fontSize:13, marginBottom:12 }}>
-                ⚠️ This trip has no location data attached — review cannot be linked to a specific place.
+              <p style={{ color: "#e53935", fontSize: 13, marginBottom: 12 }}>
+                ⚠️ This trip has no location data attached — review cannot be
+                linked to a specific place.
               </p>
             )}
             {/* Star rating */}
-            <div style={{ display:"flex", gap:6, marginBottom:14 }}>
-              {[1,2,3,4,5].map((s) => (
-                <span key={s} style={{ fontSize:28, cursor:"pointer", color: s <= reviewRating ? "#f5a623" : "#ddd" }}
-                  onClick={() => setReviewRating(s)}>★</span>
+            <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <span
+                  key={s}
+                  style={{
+                    fontSize: 28,
+                    cursor: "pointer",
+                    color: s <= reviewRating ? "#f5a623" : "#ddd",
+                  }}
+                  onClick={() => setReviewRating(s)}
+                >
+                  ★
+                </span>
               ))}
             </div>
             <textarea
               placeholder="Share your experience..."
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              style={{ width:"100%", minHeight:110, border:"1.5px solid #e8e8e8", borderRadius:10, padding:"12px", fontSize:14, color:"#374151", resize:"vertical", outline:"none", fontFamily:"inherit", boxSizing:"border-box" }}
+              style={{
+                width: "100%",
+                minHeight: 110,
+                border: "1.5px solid #e8e8e8",
+                borderRadius: 10,
+                padding: "12px",
+                fontSize: 14,
+                color: "#374151",
+                resize: "vertical",
+                outline: "none",
+                fontFamily: "inherit",
+                boxSizing: "border-box",
+              }}
             />
-            <div className="modal-actions" style={{ marginTop:16 }}>
-              <button className="modal-cancel-btn" onClick={() => setShowReviewModal(false)}>Cancel</button>
-              <button className="modal-delete-btn"
-                style={{ background:"linear-gradient(90deg,#5596fe,#97ceff)", opacity: reviewSaving || !reviewTarget?.locationId ? 0.6 : 1 }}
-                onClick={handleSubmitReview} disabled={reviewSaving || !reviewTarget?.locationId}>
+            <div className="modal-actions" style={{ marginTop: 16 }}>
+              <button
+                className="modal-cancel-btn"
+                onClick={() => setShowReviewModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-delete-btn"
+                style={{
+                  background: "linear-gradient(90deg,#5596fe,#97ceff)",
+                  opacity: reviewSaving || !reviewTarget?.locationId ? 0.6 : 1,
+                }}
+                onClick={handleSubmitReview}
+                disabled={reviewSaving || !reviewTarget?.locationId}
+              >
                 {reviewSaving ? "Submitting..." : "Submit Review"}
               </button>
             </div>
