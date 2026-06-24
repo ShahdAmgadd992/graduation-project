@@ -76,11 +76,17 @@ function VerifyEmail() {
       const otp = code.join("");
 
       if (verifyMode === "email") {
-        // Email verification after signup
         await verifyEmail(email, otp);
         sessionStorage.removeItem("verifyEmail");
-        if (typeof window.navigateToSignIn === "function") {
-          window.navigateToSignIn();
+        console.log("✅ verify success");
+        console.log("hasSeen:", localStorage.getItem("hasSeenInterests"));
+        const hasSeen = localStorage.getItem("hasSeenInterests");
+        if (!hasSeen) {
+          console.log("➡️ navigating to interests");
+          window.navigateToInterests?.();
+        } else {
+          console.log("➡️ navigating to userhome");
+          window.navigateToUserHome?.();
         }
       } else {
         // Password reset OTP verification

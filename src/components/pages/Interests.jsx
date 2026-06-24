@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Interests.css";
 import logo from "../../assets/general/logo.png";
+import userService from "../../services/userService";
 
 const interests = [
   { id: 1, emoji: "🌿", label: "Nature & Oasis" },
@@ -30,8 +31,17 @@ const Interests = () => {
     );
   };
 
-  const handleContinue = () => {
-    localStorage.setItem("userInterests", JSON.stringify(selected));
+  const handleContinue = async () => {
+    const selectedLabels = interests
+      .filter((i) => selected.includes(i.id))
+      .map((i) => i.label);
+
+    try {
+      await userService.updateInterests(selectedLabels);
+    } catch (err) {
+      console.error("Failed to save interests:", err);
+    }
+
     localStorage.setItem("hasSeenInterests", "true");
     window.navigateToUserHome?.();
   };

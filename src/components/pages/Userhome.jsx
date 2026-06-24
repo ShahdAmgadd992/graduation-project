@@ -32,6 +32,9 @@ import alexandria from "../../assets/cities/alexandria.jpg";
 import marsaMatrouh from "../../assets/cities/marsaMatrouh.jpg";
 import hurghada from "../../assets/cities/hurghada.jpg";
 import Arrow from "../../assets/icons/Arrow.png";
+import { fetchHomePlaces } from "../../services/tripmindApi";
+import { useHomePlaces } from "../../services/useHomePlaces";
+import { useSavedPlaces } from "../../context/SavedPlacesContext";
 
 const testimonials = [
   {
@@ -71,7 +74,40 @@ const UserHome = () => {
 
   // Get first name only
   const firstName = user?.displayName?.split(" ")[0] || "Traveler";
+  const { savedPlaces, toggleSaved, isSaved } = useSavedPlaces();
+  const displayedSaved = savedPlaces.slice(0, 3);
+  const { featured, loading } = useHomePlaces("Cairo");
+  const [hiddenGemPlaces, setHiddenGemPlaces] = useState([]);
 
+  useEffect(() => {
+    const cities = ["Dahab", "Siwa", "Luxor", "Aswan", "Saint Catherine"];
+    Promise.all(cities.map((city) => fetchHomePlaces(city)))
+      .then((results) => {
+        const places = results.map((data, idx) => {
+          const allPlaces = [
+            ...(data.featured ?? []),
+            ...(data.hidden_gems ?? []),
+          ];
+          const best = allPlaces[0];
+          return {
+            city: cities[idx],
+            region: [
+              "South Sinai",
+              "Western Desert",
+              "Upper Egypt",
+              "Nubia",
+              "Mount Sinai",
+            ][idx],
+            image:
+              best?.photo_url ||
+              [dahab, siwa, luxor, aswan, saintCatherine][idx],
+            place_id: best?.place_id,
+          };
+        });
+        setHiddenGemPlaces(places);
+      })
+      .catch(() => {});
+  }, []);
   const handleNavigation = (page) => {
     if (page === "explore") window.navigateToExplore?.();
     if (page === "home") window.navigateToUserHome?.();
@@ -134,7 +170,11 @@ const UserHome = () => {
       slider.removeEventListener("mousemove", onMouseMove);
     };
   }, []);
-
+  useEffect(() => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollLeft = 0;
+    }
+  }, [featured]);
   return (
     <>
       {/* ===== Hero Section ===== */}
@@ -215,68 +255,51 @@ const UserHome = () => {
             your style
           </p>
           <div className="packages-row" ref={sliderRef}>
-            {[
-              {
-                img: siwaMysticRetreat,
-                title: "Siwa Mystic Retreat",
-                days: "4 days",
-                loc: "Western Desert",
-              },
-              {
-                img: nile,
-                title: "The Nile Heritage Path",
-                days: "6 days",
-                loc: "Luxor & Aswan",
-              },
-              {
-                img: deepBlue,
-                title: "Deep Blue Serenity",
-                days: "5 days",
-                loc: "Marsa Alam",
-              },
-              {
-                img: pyramid,
-                title: "The Pyramid",
-                days: "1 day",
-                loc: "Giza",
-              },
-            ].map((pkg) => (
-              <div className="package-card" key={pkg.title}>
-                <div className="package-img">
-                  <img src={pkg.img} alt={pkg.title} />
-                </div>
-                <div className="package-info">
-                  <h4>{pkg.title}</h4>
-                  <div className="package-meta">
-                    <span>
-                      <img
-                        src={calender}
-                        alt="calender"
-                        style={{ width: "12px" }}
-                      />{" "}
-                      {pkg.days}
-                    </span>
-                    <span>
-                      <img
-                        src={location3}
-                        alt="location3"
-                        style={{ width: "12px" }}
-                      />{" "}
-                      {pkg.loc}
-                    </span>
+            {loading ? (
+              <div style={{ padding: "20px", color: "#888" }}>Loading...</div>
+            ) : (
+              featured.slice(0, 6).map((place) => (
+                <div className="package-card" key={place.place_id}>
+                  <div className="package-img">
+                    <img
+                      src={place.photo_url || siwaMysticRetreat}
+                      alt={place.name}
+                    />
                   </div>
-                  <p className="package-price">
-                    USD 60 <span>/ person</span>
-                  </p>
-                  <button
-                    className="book-now-btn"
-                    onClick={() => window.navigateToAiPlanner?.()}
-                  >
-                    Customize with AI
-                  </button>
+                  <div className="package-info">
+                    <h4>{place.name}</h4>
+                    <div className="package-meta">
+                      <span>
+                        <img
+                          src={calender}
+                          alt="calender"
+                          style={{ width: "12px" }}
+                        />{" "}
+                        1 day
+                      </span>
+                      <span>
+                        <img
+                          src={location3}
+                          alt="location3"
+                          style={{ width: "12px" }}
+                        />{" "}
+                        {place.city}
+                      </span>
+                    </div>
+                    <p className="package-price">
+                      {place.price > 0 ? `EGP ${place.price}` : "Free"}{" "}
+                      <span>/ person</span>
+                    </p>
+                    <button
+                      className="book-now-btn"
+                      onClick={() => window.navigateToAiPlanner?.()}
+                    >
+                      Customize with AI
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
           <button
             className="more-packages-btn"
@@ -319,78 +342,66 @@ const UserHome = () => {
             iconic spots and hidden gems.
           </p>
           <div className="destinations-row">
-            <div className="dest-card short">
-              <img src={dahab} alt="Dahab" />
-              <div className="dest-overlay">
-                <span className="dest-name">Dahab</span>
-                <span className="dest-region">
-                  <img
-                    src={location2}
-                    alt="location2"
-                    style={{ width: "8px" }}
-                  />{" "}
-                  South Sinai
-                </span>
+            {(hiddenGemPlaces.length > 0
+              ? hiddenGemPlaces
+              : [
+                  { city: "Dahab", region: "South Sinai", image: dahab },
+                  { city: "Siwa", region: "Western Desert", image: siwa },
+                  { city: "Luxor", region: "Upper Egypt", image: luxor },
+                  { city: "Aswan", region: "Nubia", image: aswan },
+                  {
+                    city: "Saint Catherine",
+                    region: "Mount Sinai",
+                    image: saintCatherine,
+                  },
+                ]
+            ).map((dest, idx) => (
+              <div
+                key={dest.city}
+                className={`dest-card ${["short", "tall", "featured", "tall", "saint"][idx]}`}
+                style={{ cursor: "pointer" }}
+                onClick={() =>
+                  dest.place_id
+                    ? window.navigateToTripDetails?.({
+                        place_id: dest.place_id,
+                        title: dest.city,
+                        city: dest.city,
+                        image: dest.image,
+                        image_urls: [dest.image],
+                        category: "attraction",
+                        rating: 4.5,
+                        reviews: 0,
+                        price: 0,
+                      })
+                    : window.navigateToExplore?.()
+                }
+              >
+                <img src={dest.image} alt={dest.city} />
+                <div className="dest-overlay">
+                  <span className="dest-name">{dest.city}</span>
+                  <span className="dest-region">
+                    <img
+                      src={location2}
+                      alt="location2"
+                      style={{ width: "8px" }}
+                    />{" "}
+                    {dest.region}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="dest-card tall">
-              <img src={siwa} alt="Siwa" />
-              <div className="dest-overlay">
-                <span className="dest-name">Siwa</span>
-                <span className="dest-region">
-                  <img
-                    src={location2}
-                    alt="location2"
-                    style={{ width: "8px" }}
-                  />{" "}
-                  Western Desert
-                </span>
-              </div>
-            </div>
-            <div className="dest-card featured">
-              <img src={luxor} alt="Luxor" />
-              <div className="dest-overlay">
-                <span className="dest-name">Luxor</span>
-                <span className="dest-region">
-                  <img
-                    src={location2}
-                    alt="location2"
-                    style={{ width: "8px" }}
-                  />{" "}
-                  Upper Egypt
-                </span>
-              </div>
-            </div>
-            <div className="dest-card tall">
-              <img src={aswan} alt="Aswan" />
-              <div className="dest-overlay">
-                <span className="dest-name">Aswan</span>
-                <span className="dest-region">
-                  <img
-                    src={location2}
-                    alt="location2"
-                    style={{ width: "8px" }}
-                  />{" "}
-                  Nubia
-                </span>
-              </div>
-            </div>
-            <div className="dest-card saint">
-              <img src={saintCatherine} alt="Saint Catherine" />
-              <div className="dest-overlay">
-                <span className="dest-name">Saint Catherine</span>
-                <span className="dest-region">
-                  <img
-                    src={location2}
-                    alt="location2"
-                    style={{ width: "8px" }}
-                  />{" "}
-                  Mount Sinai
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
-          <button className="more-btn" onClick={() => setShowSignUpModal(true)}>
+          <button
+            className="more-btn"
+            onClick={() => {
+              window.navigateToExplore?.();
+              setTimeout(() => {
+                document
+                  .getElementById("hidden-gems-section")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }, 800);
+            }}
+          >
             View All Hidden Gems ↗
           </button>
         </div>
@@ -408,31 +419,65 @@ const UserHome = () => {
             trip with AI.
           </p>
           <div className="saved-cards">
-            <div className="saved-card">
-              <img src={alexandria} alt="Alexandria" />
-              <button className="saved-heart-btn">❤️</button>
-              <div className="saved-overlay">
-                <span className="saved-name">Alexandria</span>
-                <span className="saved-rating">⭐ 4.9</span>
-              </div>
-            </div>
-            <div className="saved-card featured-saved">
-              <img src={marsaMatrouh} alt="Marsa Matrouh" />
-              <button className="saved-heart-btn">❤️</button>
-              <div className="saved-overlay">
-                <span className="saved-name">Marsa Matrouh</span>
-                <span className="saved-rating">⭐ 4.9</span>
-              </div>
-            </div>
-            <div className="saved-card">
-              <img src={hurghada} alt="Hurghada" />
-              <button className="saved-heart-btn">❤️</button>
-              <div className="saved-overlay">
-                <span className="saved-name">Hurghada</span>
-                <span className="saved-rating">⭐ 4.9</span>
-              </div>
-            </div>
-          </div>
+            {displayedSaved.length > 0
+              ? displayedSaved.map((place, idx) => (
+                  <div
+                    key={place.id}
+                    className={`saved-card ${idx === 1 ? "featured-saved" : ""}`}
+                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      window.navigateToTripDetails?.({
+                        place_id: place.id,
+                        title: place.title,
+                        city: place.city,
+                        rating: place.rating,
+                        reviews: place.reviews,
+                        price: place.price,
+                        description: place.description,
+                        image_urls: place.image_urls || [place.image],
+                        image: place.image,
+                        opening_hours: place.opening_hours,
+                        category: place.category || "attraction",
+                      })
+                    }
+                  >
+                    <img src={place.image} alt={place.title} />
+                    <button
+                      className="saved-heart-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSaved(place);
+                      }}
+                    >
+                      ❤️
+                    </button>
+                    <div className="saved-overlay">
+                      <span className="saved-name">{place.title}</span>
+                      <span className="saved-rating">
+                        ⭐ {place.rating ?? "4.9"}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              : // fallback لو مفيش saved places
+                [
+                  { img: alexandria, name: "Alexandria", rating: "4.9" },
+                  { img: marsaMatrouh, name: "Marsa Matrouh", rating: "4.9" },
+                  { img: hurghada, name: "Hurghada", rating: "4.9" },
+                ].map((item, idx) => (
+                  <div
+                    key={item.name}
+                    className={`saved-card ${idx === 1 ? "featured-saved" : ""}`}
+                  >
+                    <img src={item.img} alt={item.name} />
+                    <button className="saved-heart-btn">❤️</button>
+                    <div className="saved-overlay">
+                      <span className="saved-name">{item.name}</span>
+                      <span className="saved-rating">⭐ {item.rating}</span>
+                    </div>
+                  </div>
+                ))}
+          </div>{" "}
           <button
             className="view-saved-btn"
             onClick={() => window.navigateToSavedPlaces?.()}

@@ -6,6 +6,7 @@ import "./TripDetails.css";
 import tripService from "../../services/tripService";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { useHomePlaces } from "../../services/useHomePlaces";
 
 const TripDetails = ({ place }) => {
   const [liked, setLiked] = useState(false);
@@ -42,6 +43,25 @@ const TripDetails = ({ place }) => {
   const [hasOpenedManageOnce, setHasOpenedManageOnce] = useState(false);
 
   const [apiTrips, setApiTrips] = useState([]);
+  const { featured: nearbyFromAPI, loading: nearbyLoading } = useHomePlaces(
+    place?.city || "Cairo",
+  );
+  const nearbyPlaces = nearbyFromAPI
+    .filter((p) => p.place_id !== place?.place_id)
+    .slice(0, 3)
+    .map((p) => ({
+      name: p.name,
+      distance: `${((Math.abs(p.lat - (place?.lat ?? 0)) + Math.abs(p.lng - (place?.lng ?? 0))) * 111).toFixed(1)} km`,
+      image: p.photo_url,
+      place_id: p.place_id,
+      city: p.city,
+      rating: p.rating,
+      price: p.price,
+      description: p.description,
+      image_urls: p.image_urls,
+      opening_hours: p.opening_hours,
+      category: p.category,
+    }));
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -49,7 +69,12 @@ const TripDetails = ({ place }) => {
     tripService
       .getTrips({ Page: 1, PageSize: 20 })
       .then((res) => {
-        const items = res.data?.items || res.data || [];
+        console.log("Trips API response:", res.data); // ✅ عشان نشوف الشكل
+        const items =
+          res.data?.items ||
+          res.data?.data ||
+          res.data?.trips ||
+          (Array.isArray(res.data) ? res.data : []);
         setApiTrips(items);
       })
       .catch((err) => console.error("Failed to load trips:", err));
@@ -201,9 +226,9 @@ const TripDetails = ({ place }) => {
     },
     attraction: {
       label1: "Opening Hours",
-      val1: place?.openingHours || "08:00 am",
+      val1: place?.opening_hours?.split("-")[0] || "08:00 am",
       label2: "Closing Hours",
-      val2: place?.closingHours || "06:00 pm",
+      val2: place?.opening_hours?.split("-")[1] || "06:00 pm",
       label3: "Entry Fee",
       val3: place?.price ? `$${place.price}` : "Free",
       label4: "Best Time",
@@ -225,32 +250,11 @@ const TripDetails = ({ place }) => {
             : category === "attraction"
               ? `Entry $${place.price}`
               : `Avg. $${place.price} / Meal`,
-        images: [
-          place.image,
-          "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600",
-          "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600",
-        ],
-        overview: `${place.title} is one of Egypt's top destinations in ${place.city}, known for its unique charm and unforgettable experience.`,
-        nearbyPlaces: [
-          {
-            name: "Great Sphinx",
-            distance: "0.4 km",
-            image:
-              "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200",
-          },
-          {
-            name: "Egyptian Museum",
-            distance: "0.4 km",
-            image:
-              "https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=200",
-          },
-          {
-            name: "Saqqara",
-            distance: "0.4 km",
-            image:
-              "https://images.unsplash.com/photo-1539650116574-75c0c6d73d0e?w=200",
-          },
-        ],
+        images: place.image_urls?.length ? place.image_urls : [place.image],
+        overview:
+          place.description ||
+          `${place.title} is one of Egypt's top destinations in ${place.city}.`,
+        nearbyPlaces: nearbyPlaces || [],
         reviews_list: [
           {
             id: 1,
@@ -298,56 +302,8 @@ const TripDetails = ({ place }) => {
         ],
         overview:
           "Ali Baba is a favorite seaside restaurant in Dahab, famous for its fresh seafood, authentic local flavors, and relaxed outdoor seating right on the beach. A perfect spot for lunch or dinner with stunning sea views.",
-        nearbyPlaces: [
-          {
-            name: "Great Sphinx",
-            distance: "0.4 km",
-            image:
-              "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200",
-          },
-          {
-            name: "Egyptian Museum",
-            distance: "0.4 km",
-            image:
-              "https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=200",
-          },
-          {
-            name: "Saqqara",
-            distance: "0.4 km",
-            image:
-              "https://images.unsplash.com/photo-1539650116574-75c0c6d73d0e?w=200",
-          },
-        ],
-        reviews_list: [
-          {
-            id: 1,
-            name: "Sarah",
-            rating: 5,
-            avatar: "https://randomuser.me/api/portraits/women/1.jpg",
-            text: "One of the most unforgettable places in Egypt. The view at sunrise was incredible.",
-          },
-          {
-            id: 2,
-            name: "Ahmed",
-            rating: 5,
-            avatar: "https://randomuser.me/api/portraits/men/2.jpg",
-            text: "Perfect for photography. We spent almost 3 hours exploring the site.",
-          },
-          {
-            id: 3,
-            name: "Omar",
-            rating: 5,
-            avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-            text: "Very crowded at noon, so visiting early morning is definitely better.",
-          },
-          {
-            id: 4,
-            name: "Mona",
-            rating: 5,
-            avatar: "https://randomuser.me/api/portraits/women/4.jpg",
-            text: "Our guide explained the history beautifully. A must-visit destination.",
-          },
-        ],
+        nearbyPlaces: nearbyPlaces || [],
+        reviews_list: [],
         overallRating: 4.8,
         lat: 29.9792,
         lng: 31.1342,
@@ -669,10 +625,10 @@ const TripDetails = ({ place }) => {
           {/* ===== Images Grid ===== */}
           <div className="td-images">
             <div className="td-main-img">
-              <img src={data.images[0]} alt={data.name} />
+              <img src={data.images?.[0]} alt={data.name} />
             </div>
             <div className="td-side-imgs">
-              {data.images.slice(1, 3).map((img, i) => (
+              {(data.images || []).slice(1, 3).map((img, i) => (
                 <div key={i} className="td-side-img-wrap">
                   <img src={img} alt={`${data.name} ${i + 1}`} />
                   {i === 0 && (
@@ -710,32 +666,58 @@ const TripDetails = ({ place }) => {
               <div className="td-section">
                 <h2 className="td-section-title">Nearby Places</h2>
                 <div className="td-nearby-grid">
-                  {data.nearbyPlaces.map((np, i) => (
-                    <div key={i} className="td-nearby-card">
-                      <img
-                        src={np.image}
-                        alt={np.name}
-                        className="td-nearby-img"
-                      />
-                      <p className="td-nearby-name">{np.name}</p>
-                      <span className="td-nearby-dist">
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#5596fe"
-                          strokeWidth="2"
-                        >
-                          <rect x="1" y="3" width="15" height="13" rx="2" />
-                          <path d="M16 8h4l3 3v5h-7V8z" />
-                          <circle cx="5.5" cy="18.5" r="2.5" />
-                          <circle cx="18.5" cy="18.5" r="2.5" />
-                        </svg>
-                        {np.distance}
-                      </span>
-                    </div>
-                  ))}
+                  {nearbyLoading ? (
+                    <p style={{ color: "#888", fontSize: "14px" }}>
+                      Loading nearby places...
+                    </p>
+                  ) : (
+                    data.nearbyPlaces.map((np, i) => (
+                      <div
+                        key={i}
+                        className="td-nearby-card"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          np.place_id &&
+                          window.navigateToTripDetails &&
+                          window.navigateToTripDetails({
+                            place_id: np.place_id,
+                            title: np.name,
+                            city: np.city,
+                            rating: np.rating,
+                            price: np.price,
+                            description: np.description,
+                            image_urls: np.image_urls,
+                            opening_hours: np.opening_hours,
+                            category: np.category,
+                            image: np.image,
+                          })
+                        }
+                      >
+                        <img
+                          src={np.image}
+                          alt={np.name}
+                          className="td-nearby-img"
+                        />
+                        <p className="td-nearby-name">{np.name}</p>
+                        <span className="td-nearby-dist">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#5596fe"
+                            strokeWidth="2"
+                          >
+                            <rect x="1" y="3" width="15" height="13" rx="2" />
+                            <path d="M16 8h4l3 3v5h-7V8z" />
+                            <circle cx="5.5" cy="18.5" r="2.5" />
+                            <circle cx="18.5" cy="18.5" r="2.5" />
+                          </svg>
+                          {np.distance}
+                        </span>
+                      </div>
+                    ))
+                  )}{" "}
                 </div>
               </div>
 
@@ -785,7 +767,7 @@ const TripDetails = ({ place }) => {
                   </div>
                 </div>
                 <div className="td-reviews-grid">
-                  {data.reviews_list.map((rev) => (
+                  {(data.reviews_list || []).map((rev) => (
                     <div key={rev.id} className="td-review-card">
                       <img
                         src={rev.avatar}

@@ -3,6 +3,7 @@ import chatIconImg from "../../assets/ai-planner/chat_icon.svg";
 import sendIconImg from "../../assets/ai-planner/material-symbols_send-outline.svg";
 import aiService from "../../services/aiService";
 import "./AiPlanner.css";
+import { fetchHomePlaces } from "../../services/tripmindApi";
 
 const STATIC_GREETING =
   "Hi! I'm Mindy, your AI travel assistant\nI can help you plan your perfect trip in Egypt.\nWhat would you like to do today?";
@@ -180,6 +181,7 @@ const ChatBot = ({
   const [tripSummary, setTripSummary] = useState(null); // { destination, days, nights, people, budget, image }
   const [tripPlanData, setTripPlanData] = useState(null); // full TripResult-compatible object
   const [budgetBreakdown, setBudgetBreakdown] = useState(null);
+  const [destinationImage, setDestinationImage] = useState(null);
 
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
@@ -193,12 +195,21 @@ const ChatBot = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ✅ useEffect بتاع صورة الـ destination
+  useEffect(() => {
+    const dest = collected?.destination;
+    if (!dest) return;
+    fetchHomePlaces(dest)
+      .then((data) => {
+        const allPlaces = [...(data.featured ?? []), ...(data.trending ?? [])];
+        const photo = allPlaces.find((p) => p.photo_url)?.photo_url;
+        if (photo) setDestinationImage(photo);
+      })
+      .catch(() => {});
+  }, [collected?.destination]);
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  /**
-   * Parse whatever the backend sends when status is "complete" / "plan_ready"
-   * into the shape that both the TripSummaryCard and TripResult expect.
-   */
   const parsePlanFromResponse = (data, currentCollected) => {
     const rawData = Array.isArray(data?.plan)
       ? data.plan[0]
@@ -245,8 +256,7 @@ const ChatBot = ({
       return null;
     };
 
-    const image = findFirstPhoto(rawData) ?? FALLBACK_IMG;
-
+    const image = findFirstPhoto(rawData) ?? destinationImage ?? FALLBACK_IMG;
     // Budget breakdown
     const breakdown =
       rawData?.budget_breakdown ?? data?.budget_breakdown ?? null;
@@ -352,7 +362,7 @@ const ChatBot = ({
 
     // وبعدين نتأكد إن الـ AI قال إن الـ plan جاهز
     const hasConfirmation =
-      /plan(?:ning|ned)?|itinerary|get ready|you(?:'re| are) all set|here(?:'s| is) your/i.test(
+      /plan(?:ning|ned)?|itinerary|get ready|you(?:'re| are) all set|here(?:'s| is) your|looks good|everything(?:\s+is)?\s+(?:looks?\s+)?good|sufficient|feasible|budget.*(?:ok|good|fine|great|feasible|sufficient)|ready to (?:go|create|build|start)|let me (?:just )?finalize|finalize the details/i.test(
         text,
       );
     if (!hasConfirmation) return null;
@@ -366,6 +376,7 @@ const ChatBot = ({
         : null,
       budget: currentCollected?.budget ?? null,
       image:
+        destinationImage ??
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80",
     };
   };
@@ -390,6 +401,7 @@ const ChatBot = ({
           must_include: collected.mustInclude,
         },
       };
+
       const response = await aiService.chat(chatPayload);
       const data = response.data;
 
@@ -427,7 +439,10 @@ const ChatBot = ({
         setTripSummary(summary);
         setTripPlanData(fullTripPlan);
       } else {
-        const fallbackSummary = tryExtractSummaryFromText(reply, collected);
+        const fallbackSummary = tryExtractSummaryFromText(
+          reply,
+          mergedCollected,
+        );
         if (fallbackSummary && fallbackSummary.destination) {
           setTripSummary(fallbackSummary);
         }
@@ -502,6 +517,16 @@ const ChatBot = ({
       if (data?.collected) {
         mergedCollected = { ...collected, ...data.collected };
         setCollected(mergedCollected);
+      }
+      if (!mergedCollected.budget) {
+        const budgetMatch = userMsg.text.match(/\d+/);
+        if (budgetMatch) {
+          const extractedBudget = parseInt(budgetMatch[0]);
+          if (extractedBudget > 100) {
+            mergedCollected = { ...mergedCollected, budget: extractedBudget };
+            setCollected(mergedCollected);
+          }
+        }
       }
 
       const reply =

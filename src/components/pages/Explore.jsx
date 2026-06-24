@@ -28,7 +28,10 @@ import {
   uniqueExperiences,
   aiMagicDestinations,
 } from "../../data/exploreData";
-import locationService from "../../services/locationService";
+
+// ✅ NEW: استبدلنا locationService بـ useHomePlaces
+import { useHomePlaces } from "../../services/useHomePlaces";
+
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 
@@ -119,20 +122,26 @@ const defaultLocationImages = [
   heritageImg6,
 ];
 
-const mapLocationToTour = (location, idx) => ({
-  id: location.locationId || `${location.nameEn}-${idx}`,
-  title: location.nameEn || location.nameAr || "Egypt Discover",
-  city: location.governorate || "Egypt",
+// ✅ NEW: map shape الـ API الجديدة بدل mapLocationToTour القديمة
+const mapPlaceToTour = (place, idx) => ({
+  id: place.place_id,
+  title: place.name,
+  city: place.city,
   duration: "1 day",
-  rating: location.avgRating ? Number(location.avgRating.toFixed(1)) : 4.7,
-  reviews: location.popularityScore
-    ? Math.max(1, Math.round(location.popularityScore * 10))
-    : 22,
-  price: location.entryFeeEgp || 100,
-  badge: location.isHiddenGem ? "Hidden Gem" : null,
-  image: defaultLocationImages[idx % defaultLocationImages.length],
+  rating: place.rating ?? 4.5,
+  reviews: place.reviews_count ?? 0,
+  price: place.price ?? 0,
+  badge: place.is_hidden_gem ? "Hidden Gem" : null,
+  image:
+    place.photo_url ||
+    defaultLocationImages[idx % defaultLocationImages.length],
+  image_urls: place.image_urls || [], // ✅
+  opening_hours: place.opening_hours || "", // ✅
+  description: place.description || "", // ✅
+  maps_url: place.maps_url,
+  lat: place.lat,
+  lng: place.lng,
 });
-
 const trendingDestinations = [
   {
     id: 201,
@@ -201,8 +210,6 @@ const trendingDestinations = [
 ];
 
 const TourCard = ({ tour, selectedCategories = [] }) => {
-  const context = useSavedPlaces();
-  console.log("🔍 context:", context);
   const { toggleSaved, isSaved } = useSavedPlaces();
   const liked = isSaved(tour.id);
 
@@ -286,6 +293,7 @@ const TourCard = ({ tour, selectedCategories = [] }) => {
     </div>
   );
 };
+
 const TrendingCard = ({ item }) => (
   <div
     className="trending-card"
@@ -323,7 +331,7 @@ const TrendingCard = ({ item }) => (
         }
       >
         Visit Now
-      </button>{" "}
+      </button>
     </div>
   </div>
 );
@@ -388,14 +396,11 @@ const UniqueExperienceCard = ({ item }) => (
         className="unique-exp-btn"
         onClick={() =>
           window.navigateToTripDetails &&
-          window.navigateToTripDetails({
-            ...item,
-            category: "attraction",
-          })
+          window.navigateToTripDetails({ ...item, category: "attraction" })
         }
       >
         More Details
-      </button>{" "}
+      </button>
     </div>
   </div>
 );
@@ -480,19 +485,14 @@ const Explore = () => {
   const [showHiddenGems, setShowHiddenGems] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  const [recommendedTours, setRecommendedTours] = useState([]);
-  const [exploreLoading, setExploreLoading] = useState(false);
-  const [exploreError, setExploreError] = useState(null);
-
-  const [hiddenGems, setHiddenGems] = useState([]);
-  const [hiddenGemsLoading, setHiddenGemsLoading] = useState(false);
-  const [hiddenGemsError, setHiddenGemsError] = useState(null);
-
-  const [popularDestAPI, setPopularDestAPI] = useState([]);
-  const [popularAPILoading, setPopularAPILoading] = useState(false);
-  const [popularAPIError, setPopularAPIError] = useState(null);
-
-  const [locationDetailsCache, setLocationDetailsCache] = useState({});
+  // ✅ NEW: سطر واحد بدل 10 states + 4 useEffects
+  const {
+    featured,
+    hidden_gems: hiddenGems,
+    trending: trendingAPI,
+    loading,
+    error,
+  } = useHomePlaces(selectedCity);
 
   const dropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
@@ -511,108 +511,6 @@ const Explore = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const fetchRecommendedLocations = async () => {
-      setExploreLoading(true);
-      setExploreError(null);
-      try {
-        const response = await locationService.getRecommended(12);
-        console.log("Backend Data:", response.data);
-        if (Array.isArray(response.data)) {
-          setRecommendedTours(response.data.map(mapLocationToTour));
-        } else {
-          setRecommendedTours([]);
-        }
-      } catch (err) {
-        setExploreError(
-          err.response?.data?.message ||
-            err.message ||
-            "Failed to load recommended destinations",
-        );
-      } finally {
-        setExploreLoading(false);
-      }
-    };
-    fetchRecommendedLocations();
-  }, []);
-
-  useEffect(() => {
-    const fetchHiddenGems = async () => {
-      setHiddenGemsLoading(true);
-      setHiddenGemsError(null);
-      try {
-        const response = await locationService.getHiddenGems("Cairo");
-        console.log("Hidden Gems Data:", response.data);
-        if (Array.isArray(response.data)) {
-          setHiddenGems(response.data.map(mapLocationToTour));
-        } else {
-          setHiddenGems([]);
-        }
-      } catch (err) {
-        console.error("Hidden gems fetch error:", err);
-        setHiddenGemsError(
-          err.response?.data?.message ||
-            err.message ||
-            "Failed to load hidden gems",
-        );
-      } finally {
-        setHiddenGemsLoading(false);
-      }
-    };
-    fetchHiddenGems();
-  }, []);
-
-  useEffect(() => {
-    const fetchPopularDestinations = async () => {
-      setPopularAPILoading(true);
-      setPopularAPIError(null);
-      try {
-        const response = await locationService.getPopular("Cairo", 8);
-        console.log("Popular Destinations API Data:", response.data);
-        if (Array.isArray(response.data)) {
-          setPopularDestAPI(response.data.map(mapLocationToTour));
-        } else {
-          setPopularDestAPI([]);
-        }
-      } catch (err) {
-        console.error("Popular destinations fetch error:", err);
-        setPopularAPIError(
-          err.response?.data?.message ||
-            err.message ||
-            "Failed to load popular destinations",
-        );
-      } finally {
-        setPopularAPILoading(false);
-      }
-    };
-    fetchPopularDestinations();
-  }, []);
-
-  useEffect(() => {
-    const cacheLocationDetails = async () => {
-      if (recommendedTours.length === 0) return;
-      const locationIds = recommendedTours.map((t) => t.id).slice(0, 3);
-      for (const locId of locationIds) {
-        if (!locationDetailsCache[locId]) {
-          try {
-            const response = await locationService.getLocationById(locId);
-            console.log(`Location details for ${locId}:`, response.data);
-            setLocationDetailsCache((prev) => ({
-              ...prev,
-              [locId]: response.data,
-            }));
-          } catch (err) {
-            console.error(
-              `Failed to fetch details for location ${locId}:`,
-              err,
-            );
-          }
-        }
-      }
-    };
-    cacheLocationDetails();
-  }, [recommendedTours, locationDetailsCache]);
-
   const handleSearch = () => {
     if (searchQuery.trim())
       console.log(`Searching: ${searchQuery} in ${selectedCity}`);
@@ -627,25 +525,24 @@ const Explore = () => {
     );
   };
 
+  // ✅ NEW: بنستخدم featured بدل recommendedTours
   const getFilteredTours = () => {
     let source = selectedExperience
       ? toursData[selectedExperience] || []
-      : recommendedTours.length
-        ? recommendedTours
-        : popularDestinations;
+      : showHiddenGems // ✅ لو hidden gems محدد
+        ? hiddenGems.map(mapPlaceToTour) // اعرض الـ array من الـ API
+        : featured.length
+          ? featured.map(mapPlaceToTour)
+          : popularDestinations;
 
     if (filterCity.length > 0)
       source = source.filter((t) => filterCity.includes(t.city));
-
     if (tourNameSearch)
       source = source.filter((t) =>
         t.title.toLowerCase().includes(tourNameSearch.toLowerCase()),
       );
-
     source = source.filter((t) => t.price <= priceRange);
-
     if (showHiddenGems) source = source.filter((t) => t.badge === "Hidden Gem");
-
     if (sortBy === "Price: Low to High")
       source = [...source].sort((a, b) => a.price - b.price);
     else if (sortBy === "Price: High to Low")
@@ -666,11 +563,12 @@ const Explore = () => {
     selectedCategories.length > 0 ||
     priceRange < 2500;
 
+  // ✅ NEW: بنستخدم featured بدل recommendedTours
   const getMapCircles = () => {
     const tours = selectedExperience
       ? filteredTours
-      : recommendedTours.length
-        ? recommendedTours
+      : featured.length
+        ? featured.map(mapPlaceToTour)
         : popularDestinations;
     const citiesInTours = [...new Set(tours.map((t) => t.city))];
     return citiesInTours
@@ -685,16 +583,14 @@ const Explore = () => {
   };
 
   const mapCircles = getMapCircles();
-  const popularSource = recommendedTours.length
-    ? recommendedTours
+
+  // ✅ NEW: popularSource من featured
+  const popularSource = featured.length
+    ? featured.map(mapPlaceToTour)
     : popularDestinations;
   const displayedPopular = showMorePopular
     ? popularSource
     : popularSource.slice(0, 6);
-  const clearFilter = () => {
-    setSelectedExperience(null);
-    setFilterCity([]);
-  };
   const displayedTrending = showMoreTrending
     ? trendingDestinations
     : trendingDestinations.slice(0, 4);
@@ -834,7 +730,16 @@ const Explore = () => {
               <input
                 type="checkbox"
                 checked={showHiddenGems}
-                onChange={() => setShowHiddenGems(!showHiddenGems)}
+                onChange={() => {
+                  setShowHiddenGems(!showHiddenGems);
+                  if (!showHiddenGems) {
+                    setTimeout(() => {
+                      document
+                        .getElementById("hidden-gems-section")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }, 100);
+                  }
+                }}
               />
               <span>Show hidden gems only</span>
             </label>
@@ -999,7 +904,6 @@ const Explore = () => {
               </div>
               <div className="tours-grid">
                 {filteredTours.length > 0 ? (
-                  // ✅ FIX: pass selectedCategories prop
                   filteredTours.map((tour) => (
                     <TourCard
                       key={tour.id}
@@ -1014,21 +918,19 @@ const Explore = () => {
             </>
           ) : (
             <>
+              {/* ✅ Popular Destinations — من featured */}
               <div className="cards-header">
                 <h2>
                   <span className="text-blue">Popular</span> Destinations
                 </h2>
               </div>
-              {exploreError && (
-                <div className="fetch-error">{exploreError}</div>
-              )}
+              {error && <div className="fetch-error">{error}</div>}
               <div className="tours-grid">
-                {exploreLoading && !displayedPopular.length ? (
+                {loading && !displayedPopular.length ? (
                   <div className="loading-placeholder">
-                    Loading recommended destinations...
+                    Loading destinations...
                   </div>
                 ) : (
-                  // ✅ FIX: pass selectedCategories prop
                   displayedPopular.map((tour) => (
                     <TourCard
                       key={tour.id}
@@ -1048,54 +950,36 @@ const Explore = () => {
                   </button>
                 </div>
               )}
-              {(hiddenGemsLoading ||
-                hiddenGemsError ||
-                hiddenGems.length > 0) && (
-                <div className="hidden-gems-section">
+
+              {/* ✅ Hidden Gems — من hidden_gems في الـ API */}
+              {(showHiddenGems || hiddenGems.length > 0) && (
+                <div className="hidden-gems-section" id="hidden-gems-section">
                   <div className="cards-header">
                     <h2>Hidden Gems</h2>
                   </div>
-                  {hiddenGemsLoading && (
-                    <div className="loading-placeholder">
-                      Loading hidden gems...
-                    </div>
-                  )}
-                  {hiddenGemsError && (
-                    <div className="fetch-error">{hiddenGemsError}</div>
-                  )}
                   <div className="tours-grid">
-                    {/* ✅ FIX: pass selectedCategories prop */}
-                    {hiddenGems.map((tour) => (
+                    {hiddenGems.map((place, idx) => (
                       <TourCard
-                        key={tour.id}
-                        tour={tour}
+                        key={place.place_id}
+                        tour={mapPlaceToTour(place, idx)}
                         selectedCategories={selectedCategories}
                       />
                     ))}
                   </div>
                 </div>
               )}
-              {(popularAPILoading ||
-                popularAPIError ||
-                popularDestAPI.length > 0) && (
+
+              {/* ✅ Trending Now — من trending في الـ API */}
+              {trendingAPI.length > 0 && (
                 <div className="popular-api-section">
                   <div className="cards-header">
-                    <h2>Popular Picks</h2>
+                    <h2>Trending Now</h2>
                   </div>
-                  {popularAPILoading && (
-                    <div className="loading-placeholder">
-                      Loading popular picks...
-                    </div>
-                  )}
-                  {popularAPIError && (
-                    <div className="fetch-error">{popularAPIError}</div>
-                  )}
                   <div className="tours-grid">
-                    {/* ✅ FIX: pass selectedCategories prop */}
-                    {popularDestAPI.map((tour) => (
+                    {trendingAPI.map((place, idx) => (
                       <TourCard
-                        key={tour.id}
-                        tour={tour}
+                        key={place.place_id}
+                        tour={mapPlaceToTour(place, idx)}
                         selectedCategories={selectedCategories}
                       />
                     ))}

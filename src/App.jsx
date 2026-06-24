@@ -30,7 +30,7 @@ function App() {
     if (path === "/explore") return "explore";
     if (path === "/profile") return "profile";
     if (path === "/ai-planner") return "aiplanner";
-    if (path === "/home") return "home";
+    if (path === "/home") return "userhome";
     if (path === "/calendar") return "calendar";
     if (path === "/about-us") return "aboutus";
     if (path === "/interests") return "interests";
