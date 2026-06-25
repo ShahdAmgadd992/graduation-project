@@ -7,5 +7,12 @@ export default defineConfig({
     fs: {
       strict: false,
     },
+    proxy: {
+      '/api': {
+        target: 'https://tripmind.runasp.net',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 });
