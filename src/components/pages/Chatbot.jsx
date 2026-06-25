@@ -29,7 +29,7 @@ const hasAnyValue = (obj) =>
 //   • Left side  — destination photo (fallback gradient if no image)
 //   • Right side — 📍 destination, 🗓 duration, 👥 travelers, 💰 budget
 //   • Full-width "Full Plan ›" button that calls onViewPlan()
-const TripSummaryCard = ({ summary, onViewPlan }) => {
+const TripSummaryCard = ({ summary, onViewPlan, isGenerating = false }) => {
   if (!summary) return null;
 
   const { image, destination, days, nights, people, budget } = summary;
@@ -95,8 +95,12 @@ const TripSummaryCard = ({ summary, onViewPlan }) => {
         )}
 
         {/* CTA */}
-        <button className="chat-trip-card__btn" onClick={onViewPlan}>
-          Full Plan &rsaquo;
+        <button
+          className="chat-trip-card__btn"
+          onClick={onViewPlan}
+          disabled={isGenerating}
+        >
+          {isGenerating ? "Generating…" : <>Full Plan &rsaquo;</>}
         </button>
       </div>
     </div>
@@ -182,15 +186,19 @@ const ChatBot = ({
   const [tripPlanData, setTripPlanData] = useState(null); // full TripResult-compatible object
   const [budgetBreakdown, setBudgetBreakdown] = useState(null);
   const [destinationImage, setDestinationImage] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const hasKickedOff = useRef(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping, tripSummary, bottomRef]);
 
   useEffect(() => {
+    if (hasKickedOff.current) return;
+    hasKickedOff.current = true;
     kickoffConversation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -441,7 +449,7 @@ const ChatBot = ({
       } else {
         const fallbackSummary = tryExtractSummaryFromText(
           reply,
-          mergedCollected,
+          collected,
         );
         if (fallbackSummary && fallbackSummary.destination) {
           setTripSummary(fallbackSummary);
@@ -596,11 +604,136 @@ const ChatBot = ({
   };
 
   // ── "Full Plan" button handler ────────────────────────────────────────────
-  const handleViewFullPlan = () => {
-    if (tripPlanData && onTripReady) {
+  // If AI already returned a complete itinerary, use it directly.
+  // Otherwise, fire a real generate-plan request with the collected chat data.
+  const handleViewFullPlan = async () => {
+    if (!onTripReady) return;
+
+    if (tripPlanData?.itinerary?.length > 0) {
       onTripReady(tripPlanData);
+      onClose?.();
+      return;
     }
-    onClose?.();
+
+    setIsGenerating(true);
+    try {
+      const peopleCount = Math.max(
+        1,
+        typeof collected.people === "number" ? collected.people : 1,
+      );
+      const perPersonBudget = parseFloat(collected.budget) || 0;
+      const totalBudget = perPersonBudget * peopleCount;
+      const days = typeof collected.days === "number" ? collected.days : 3;
+
+      const requestPayload = {
+        city: collected.destination,
+        days: Math.min(days, 7),
+        budget: totalBudget,
+        people: peopleCount,
+        interests:
+          collected.interests?.length > 0 ? collected.interests : ["Cafe"],
+        mustInclude: "",
+      };
+
+      const response = await aiService.generatePlan(requestPayload);
+      const rawData = Array.isArray(response.data)
+        ? response.data[0]
+        : response.data;
+      const rawPlan = rawData?.plan ?? rawData;
+      const nights = days - 1;
+      const FALLBACK_IMG =
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80";
+      const itinerary = [];
+      const dayDetails = {};
+
+      for (let d = 1; d <= days; d++) {
+        const dayKey = `day${d}`;
+        const dayData = rawPlan?.[dayKey];
+        const slots = ["morning", "afternoon", "evening"].map((slot) => {
+          const items = dayData?.[slot] ?? [];
+          const titles = items
+            .map((p) => p?.name ?? p?.title ?? "")
+            .filter(Boolean);
+          return {
+            time: slot.charAt(0).toUpperCase() + slot.slice(1),
+            title: titles[0] ?? `${slot} activities`,
+            activities: titles.length ? titles : ["Explore the area"],
+            rawItems: items,
+          };
+        });
+        dayDetails[d] = slots;
+
+        const allItems = ["morning", "afternoon", "evening"].flatMap(
+          (s) => dayData?.[s] ?? [],
+        );
+        const tags = [
+          ...new Set(
+            allItems.map((p) => p?.category ?? p?.type).filter(Boolean),
+          ),
+        ].slice(0, 3);
+        const dayCost = allItems.reduce(
+          (sum, p) => sum + (p?.cost ?? p?.price ?? 0),
+          0,
+        );
+        const firstImg =
+          allItems.find((p) => p?.photo_url)?.photo_url ?? FALLBACK_IMG;
+
+        itinerary.push({
+          day: d,
+          description:
+            dayData?.title ??
+            `Day ${d} in ${collected.destination ?? "Egypt"}`,
+          duration: `${allItems.length} stops`,
+          type: "Full day",
+          cost: dayCost,
+          tags: tags.length ? tags : ["Explore"],
+          img: firstImg,
+        });
+      }
+
+      const accommodationRaw = rawPlan?.accommodation ?? null;
+      const firstHotel = Array.isArray(accommodationRaw)
+        ? accommodationRaw[0]
+        : accommodationRaw;
+      const hotel = firstHotel
+        ? {
+            name: firstHotel.name,
+            city: firstHotel.city ?? firstHotel.city_en,
+            address: firstHotel.address,
+            photoUrl: firstHotel.photo_url,
+            price: firstHotel.cost ?? firstHotel.price,
+            rating: firstHotel.rating,
+            checkIn: null,
+            checkOut: null,
+            nights,
+          }
+        : null;
+
+      onTripReady({
+        destination: collected.destination,
+        days,
+        nights,
+        people: peopleCount,
+        budget: perPersonBudget,
+        itinerary,
+        dayDetails,
+        hotel,
+        accommodation: accommodationRaw,
+        rawPlan,
+        requestPayload,
+        collected,
+      });
+      onClose?.();
+    } catch (err) {
+      console.error("generate-plan failed from chat:", err);
+      // Fallback: pass partial data so TripResult can still open
+      if (tripPlanData && onTripReady) {
+        onTripReady(tripPlanData);
+        onClose?.();
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -702,6 +835,7 @@ const ChatBot = ({
                   <TripSummaryCard
                     summary={tripSummary}
                     onViewPlan={handleViewFullPlan}
+                    isGenerating={isGenerating}
                   />
                 </div>
               </div>

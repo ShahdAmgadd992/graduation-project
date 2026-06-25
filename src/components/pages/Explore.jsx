@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import "./Explore.css";
 import exploreBg from "../../assets/explore/explore.jpg";
 import starRate from "../../assets/explore/star-rate.svg";
-import favList from "../../assets/explore/fav-list.svg";
 import timeIcon from "../../assets/explore/bx_time.jpg";
 
 import AttractionsIcon from "../../assets/explore/Attractions.svg";
@@ -18,60 +17,32 @@ import heritageImg5 from "../../assets/explore/saqqara-step-pyramid.jpg";
 import heritageImg6 from "../../assets/explore/philae-temple.jpg";
 import { useSavedPlaces } from "../../context/SavedPlacesContext";
 
+// Leaflet Imports (Restored)
 import { MapContainer, TileLayer, Circle, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+
 import ExperiencesIcon from "../../assets/explore/Experiences.svg";
 import {
-  toursData,
-  popularDestinations,
   cityCoordinates,
   uniqueExperiences,
   aiMagicDestinations,
 } from "../../data/exploreData";
 
-// ✅ NEW: استبدلنا locationService بـ useHomePlaces
 import { useHomePlaces } from "../../services/useHomePlaces";
-
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 
-const cities = [
-  "Cairo",
-  "Giza",
-  "Alexandria",
-  "Luxor",
-  "Aswan",
-  "Hurghada",
-  "Sharm El-Sheikh",
-  "Dahab",
-  "Siwa",
-  "Marsa Matruh",
-  "Saint Catherine",
-  "Port Said",
-  "Suez",
-  "Ismailia",
-  "Mansoura",
-  "Tanta",
-  "Zagazig",
-  "Minya",
-  "Sohag",
-  "Qena",
-  "Beni Suef",
-  "Faiyum",
-  "Asyut",
-  "Damanhur",
-  "Kafr El-Sheikh",
-  "Damietta",
-  "Beheira",
-  "Sharqia",
-  "Monufia",
-  "Gharbia",
-  "Dakahlia",
-  "North Sinai",
-  "South Sinai",
-  "Red Sea",
-  "New Valley",
-  "Matrouh",
+// Strict Allowed UI Options
+const sidebarCities = [
+  "Cairo", "Giza", "Alexandria", "Luxor", "Aswan",
+  "Sharm El Sheikh", "Hurghada", "Port Said", "Ismailia",
+  "Marsa Matrouh", "Fayoum"
+];
+
+const targetCategories = [
+  "historical_sites", "arts_culture", "cafe", "food", 
+  "food_cafes", "beaches", "shopping", "nature", 
+  "religious_sites", "entertainment"
 ];
 
 const categories = [
@@ -82,28 +53,12 @@ const categories = [
   { icon: NightToursIcon, label: "Night Tours" },
 ];
 
-const travelExperiences = [
-  "Heritage",
-  "Adventure",
-  "Coastal",
-  "Marine",
-  "Wellness",
-];
 const sortOptions = [
   "Popularity",
   "Price: Low to High",
   "Price: High to Low",
   "Rating",
 ];
-
-const circleColors = {
-  Heritage: "#8B5CF6",
-  Adventure: "#F59E0B",
-  Marine: "#10B981",
-  Coastal: "#3B82F6",
-  Wellness: "#EC4899",
-  popular: "#5596fe",
-};
 
 const momentImages = [
   heritageImg1,
@@ -122,90 +77,56 @@ const defaultLocationImages = [
   heritageImg6,
 ];
 
-// ✅ NEW: map shape الـ API الجديدة بدل mapLocationToTour القديمة
 const mapPlaceToTour = (place, idx) => ({
-  id: place.place_id,
-  title: place.name,
-  city: place.city,
+  id: place.place_id || idx,
+  title: place.name || "Unknown Place",
+  city: place.city || "Unknown",
   duration: "1 day",
   rating: place.rating ?? 4.5,
   reviews: place.reviews_count ?? 0,
   price: place.price ?? 0,
+  category: place.category || "",
   badge: place.is_hidden_gem ? "Hidden Gem" : null,
+  is_popular: place.is_popular || false,
   image:
     place.photo_url ||
     defaultLocationImages[idx % defaultLocationImages.length],
-  image_urls: place.image_urls || [], // ✅
-  opening_hours: place.opening_hours || "", // ✅
-  description: place.description || "", // ✅
+  image_urls: place.image_urls || [],
+  opening_hours: place.opening_hours || "",
+  description: place.description || "",
   maps_url: place.maps_url,
   lat: place.lat,
   lng: place.lng,
 });
+
 const trendingDestinations = [
   {
     id: 201,
     title: "The Blue Hole",
     city: "Dahab",
-    description:
-      "Dive into one of the world's most famous dive sites, with crystal-clear waters plunging over 100 meters deep.",
+    description: "Dive into one of the world's most famous dive sites, with crystal-clear waters plunging over 100 meters deep.",
     image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800",
   },
   {
     id: 202,
     title: "Salt Lakes",
     city: "Siwa",
-    description:
-      "Float in crystal clear salt lakes for a surreal natural spa experience.",
+    description: "Float in crystal clear salt lakes for a surreal natural spa experience.",
     image: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800",
   },
   {
     id: 203,
     title: "Orange Bay",
     city: "Hurghada",
-    description:
-      "Escape to a secluded paradise island surrounded by turquoise waters and vibrant coral reefs.",
+    description: "Escape to a secluded paradise island surrounded by turquoise waters and vibrant coral reefs.",
     image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800",
   },
   {
     id: 204,
     title: "White Desert",
     city: "Farafra",
-    description:
-      "Wander through a surreal moonscape of chalk-white rock formations sculpted by centuries of wind.",
+    description: "Wander through a surreal moonscape of chalk-white rock formations sculpted by centuries of wind.",
     image: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800",
-  },
-  {
-    id: 205,
-    title: "Karnak Temple",
-    city: "Luxor",
-    description:
-      "Walk through the largest ancient religious site in the world, built over 2,000 years of pharaonic history.",
-    image: "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800",
-  },
-  {
-    id: 206,
-    title: "Siwa Oasis",
-    city: "Siwa",
-    description:
-      "Discover a remote desert oasis where ancient ruins, palm groves, and freshwater springs coexist.",
-    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800",
-  },
-  {
-    id: 207,
-    title: "Mount Sinai",
-    city: "Saint Catherine",
-    description:
-      "Trek to the summit at dawn and witness a breathtaking sunrise above the clouds from a biblical peak.",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
-  },
-  {
-    id: 208,
-    title: "Nile Cruise",
-    city: "Luxor",
-    description:
-      "Sail the world's longest river past ancient temples, fertile banks, and golden sunsets.",
-    image: "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=800",
   },
 ];
 
@@ -214,13 +135,15 @@ const TourCard = ({ tour, selectedCategories = [] }) => {
   const liked = isSaved(tour.id);
 
   const handleToggle = () => {
-    const type = selectedCategories.includes("Hotels & Stays")
+    const type = selectedCategories.includes("hotels")
       ? "Hotels"
-      : selectedCategories.includes("Restaurants & Cafes")
+      : selectedCategories.includes("cafe")
         ? "Restaurants"
         : "Trips";
     toggleSaved({ ...tour, placeType: type });
   };
+
+  const isVariablePrice = ["cafe", "food", "food_cafes"].includes(tour.category);
 
   return (
     <div className="tour-card">
@@ -271,6 +194,9 @@ const TourCard = ({ tour, selectedCategories = [] }) => {
             <strong>{tour.rating}</strong> ({tour.reviews} reviews)
           </span>
         </div>
+        <div className="tour-card-price">
+          {isVariablePrice ? "~" : ""}{tour.price} EGP
+        </div>
         <div className="tour-card-duration">
           <img src={timeIcon} alt="duration" className="time-icon" />
           {tour.duration}
@@ -278,13 +204,8 @@ const TourCard = ({ tour, selectedCategories = [] }) => {
         <button
           className="tour-card-view-btn"
           onClick={() => {
-            const cat = selectedCategories.includes("Hotels & Stays")
-              ? "hotel"
-              : selectedCategories.includes("Restaurants & Cafes")
-                ? "restaurant"
-                : "attraction";
             window.navigateToTripDetails &&
-              window.navigateToTripDetails({ ...tour, category: cat });
+              window.navigateToTripDetails({ ...tour, category: tour.category || "attraction" });
           }}
         >
           View Details
@@ -323,10 +244,10 @@ const TrendingCard = ({ item }) => (
           window.navigateToTripDetails &&
           window.navigateToTripDetails({
             ...item,
-            category: "attraction",
-            rating: 4.7,
-            reviews: 120,
-            price: 0,
+            category: item.category || "attraction",
+            rating: item.rating || 4.7,
+            reviews: item.reviews || 120,
+            price: item.price || 0,
           })
         }
       >
@@ -470,13 +391,15 @@ const UniqueExperienceSection = () => {
 };
 
 const Explore = () => {
-  const [selectedCity, setSelectedCity] = useState("Cairo");
+  // Completely decoupled search box states - MUST initialize empty/null
+  const [searchBoxCity, setSearchBoxCity] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeSearchCity, setActiveSearchCity] = useState("Cairo");
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
-  const [selectedExperience, setSelectedExperience] = useState(null);
   const [filterCity, setFilterCity] = useState([]);
-  const [priceRange, setPriceRange] = useState(2500);
+  const [priceRange, setPriceRange] = useState(10000);
   const [tourNameSearch, setTourNameSearch] = useState("");
   const [sortBy, setSortBy] = useState("Popularity");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -485,14 +408,14 @@ const Explore = () => {
   const [showHiddenGems, setShowHiddenGems] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // ✅ NEW: سطر واحد بدل 10 states + 4 useEffects
+  // Data fetching
   const {
-    featured,
-    hidden_gems: hiddenGems,
-    trending: trendingAPI,
+    featured = [],
+    hidden_gems: hiddenGems = [],
+    popular: popularAPI = [], 
     loading,
     error,
-  } = useHomePlaces(selectedCity);
+  } = useHomePlaces(activeSearchCity);
 
   const dropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
@@ -512,9 +435,15 @@ const Explore = () => {
   }, []);
 
   const handleSearch = () => {
-    if (searchQuery.trim())
-      console.log(`Searching: ${searchQuery} in ${selectedCity}`);
+    // Only fetch/update global map when SEARCH is explicitly clicked
+    if (searchBoxCity) {
+      setActiveSearchCity(searchBoxCity);
+    }
+    if (searchQuery.trim()) {
+      setTourNameSearch(searchQuery);
+    }
   };
+
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleSearch();
   };
@@ -525,75 +454,64 @@ const Explore = () => {
     );
   };
 
-  // ✅ NEW: بنستخدم featured بدل recommendedTours
+  // Extract Popular items entirely from the top explore display
+  const popularPlacesList = popularAPI.length > 0 ? popularAPI : featured.filter(p => p.is_popular);
+  const popularIds = new Set(popularPlacesList.map(p => p.place_id));
+  
+  // Regular items for the top that specifically exclude Popular items
+  const regularFeaturedList = featured.filter(p => !p.is_popular && !popularIds.has(p.place_id));
+
   const getFilteredTours = () => {
-    let source = selectedExperience
-      ? toursData[selectedExperience] || []
-      : showHiddenGems // ✅ لو hidden gems محدد
-        ? hiddenGems.map(mapPlaceToTour) // اعرض الـ array من الـ API
-        : featured.length
-          ? featured.map(mapPlaceToTour)
-          : popularDestinations;
+    let source = showHiddenGems ? hiddenGems : regularFeaturedList;
+    let tours = source.map(mapPlaceToTour);
 
-    if (filterCity.length > 0)
-      source = source.filter((t) => filterCity.includes(t.city));
-    if (tourNameSearch)
-      source = source.filter((t) =>
-        t.title.toLowerCase().includes(tourNameSearch.toLowerCase()),
-      );
-    source = source.filter((t) => t.price <= priceRange);
-    if (showHiddenGems) source = source.filter((t) => t.badge === "Hidden Gem");
-    if (sortBy === "Price: Low to High")
-      source = [...source].sort((a, b) => a.price - b.price);
-    else if (sortBy === "Price: High to Low")
-      source = [...source].sort((a, b) => b.price - a.price);
-    else if (sortBy === "Rating")
-      source = [...source].sort((a, b) => b.rating - a.rating);
+    if (filterCity.length > 0) tours = tours.filter((t) => filterCity.includes(t.city));
+    if (selectedCategories.length > 0) tours = tours.filter((t) => selectedCategories.includes(t.category));
+    if (tourNameSearch) tours = tours.filter((t) => t.title.toLowerCase().includes(tourNameSearch.toLowerCase()));
+    
+    tours = tours.filter((t) => t.price <= priceRange);
+    
+    if (showHiddenGems) tours = tours.filter((t) => t.badge === "Hidden Gem");
+    
+    if (sortBy === "Price: Low to High") tours.sort((a, b) => a.price - b.price);
+    else if (sortBy === "Price: High to Low") tours.sort((a, b) => b.price - a.price);
+    else if (sortBy === "Rating") tours.sort((a, b) => b.rating - a.rating);
 
-    return source;
+    return tours;
   };
 
   const filteredTours = getFilteredTours();
 
   const hasActiveFilter =
-    selectedExperience ||
     filterCity.length > 0 ||
     tourNameSearch ||
     showHiddenGems ||
     selectedCategories.length > 0 ||
-    priceRange < 2500;
+    priceRange < 10000;
 
-  // ✅ NEW: بنستخدم featured بدل recommendedTours
   const getMapCircles = () => {
-    const tours = selectedExperience
-      ? filteredTours
-      : featured.length
-        ? featured.map(mapPlaceToTour)
-        : popularDestinations;
+    const tours = regularFeaturedList.map(mapPlaceToTour);
     const citiesInTours = [...new Set(tours.map((t) => t.city))];
     return citiesInTours
       .filter((city) => cityCoordinates[city])
       .map((city) => ({
         city,
         coords: cityCoordinates[city],
-        color: selectedExperience
-          ? circleColors[selectedExperience]
-          : circleColors.popular,
+        color: "#5596fe",
       }));
   };
 
   const mapCircles = getMapCircles();
 
-  // ✅ NEW: popularSource من featured
-  const popularSource = featured.length
-    ? featured.map(mapPlaceToTour)
-    : popularDestinations;
-  const displayedPopular = showMorePopular
-    ? popularSource
-    : popularSource.slice(0, 6);
-  const displayedTrending = showMoreTrending
-    ? trendingDestinations
-    : trendingDestinations.slice(0, 4);
+  // Top Explore Section Source (Explicitly prevents Popular elements from rendering here)
+  const exploreSource = regularFeaturedList.map(mapPlaceToTour);
+  const displayedExplore = showMorePopular ? exploreSource : exploreSource.slice(0, 6);
+
+  // Bottom Trending Section Source (Explicitly forces ONLY popular elements to render here)
+  const popularSource = popularPlacesList.map(mapPlaceToTour);
+  const displayedTrending = showMoreTrending 
+    ? popularSource 
+    : popularSource.slice(0, 4);
 
   return (
     <>
@@ -611,7 +529,7 @@ const Explore = () => {
                 className={`custom-select-trigger ${dropdownOpen ? "open" : ""}`}
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >
-                <span>{selectedCity}</span>
+                <span>{searchBoxCity || "Select City"}</span>
                 <svg
                   className={`chevron ${dropdownOpen ? "rotate" : ""}`}
                   width="16"
@@ -626,17 +544,17 @@ const Explore = () => {
               </div>
               {dropdownOpen && (
                 <div className="custom-dropdown-menu">
-                  {cities.map((city) => (
+                  {sidebarCities.map((city) => (
                     <div
                       key={city}
-                      className={`custom-dropdown-item ${selectedCity === city ? "selected" : ""}`}
+                      className={`custom-dropdown-item ${searchBoxCity === city ? "selected" : ""}`}
                       onClick={() => {
-                        setSelectedCity(city);
+                        setSearchBoxCity(city);
                         setDropdownOpen(false);
                       }}
                     >
                       {city}
-                      {selectedCity === city && (
+                      {searchBoxCity === city && (
                         <svg
                           width="14"
                           height="14"
@@ -711,7 +629,7 @@ const Explore = () => {
           <div className="sidebar-section">
             <h4>Select City</h4>
             <div className="sidebar-city-list">
-              {cities.map((city) => (
+              {sidebarCities.map((city) => (
                 <label key={city} className="sidebar-checkbox">
                   <input
                     type="checkbox"
@@ -747,8 +665,8 @@ const Explore = () => {
 
           <div className="sidebar-section">
             <h4>Select Category</h4>
-            {["Trips & Tours", "Hotels & Stays", "Restaurants & Cafes"].map(
-              (cat) => (
+            <div className="sidebar-city-list">
+              {targetCategories.map((cat) => (
                 <label key={cat} className="sidebar-checkbox">
                   <input
                     type="checkbox"
@@ -761,43 +679,25 @@ const Explore = () => {
                       )
                     }
                   />
-                  <span>{cat}</span>
+                  <span style={{ textTransform: 'capitalize' }}>{cat.replace(/_/g, ' ')}</span>
                 </label>
-              ),
-            )}
-          </div>
-
-          <div className="sidebar-section">
-            <h4>Select Travel Experience</h4>
-            {travelExperiences.map((exp) => (
-              <label key={exp} className="sidebar-checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedExperience === exp}
-                  onChange={() =>
-                    setSelectedExperience(
-                      selectedExperience === exp ? null : exp,
-                    )
-                  }
-                />
-                <span>{exp}</span>
-              </label>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className="sidebar-section">
             <h4>Price Range</h4>
             <input
               type="range"
-              min="60"
-              max="2500"
+              min="160"
+              max="10000"
               value={priceRange}
               onChange={(e) => setPriceRange(Number(e.target.value))}
               className="price-slider"
             />
             <div className="price-range-labels">
-              <span>60$</span>
-              <span>{priceRange}$</span>
+              <span>160 EGP</span>
+              <span>{priceRange} EGP</span>
             </div>
           </div>
 
@@ -854,14 +754,6 @@ const Explore = () => {
                 </div>
               </div>
               <div className="active-filters">
-                {selectedExperience && (
-                  <span className="filter-tag">
-                    {selectedExperience}{" "}
-                    <button onClick={() => setSelectedExperience(null)}>
-                      ✕
-                    </button>
-                  </span>
-                )}
                 {showHiddenGems && (
                   <span className="filter-tag">
                     Hidden Gems{" "}
@@ -870,7 +762,7 @@ const Explore = () => {
                 )}
                 {selectedCategories.map((cat) => (
                   <span key={cat} className="filter-tag">
-                    {cat}{" "}
+                    <span style={{ textTransform: 'capitalize' }}>{cat.replace(/_/g, ' ')}</span>{" "}
                     <button
                       onClick={() =>
                         setSelectedCategories((prev) =>
@@ -891,12 +783,11 @@ const Explore = () => {
                 <button
                   className="clear-all-btn"
                   onClick={() => {
-                    setSelectedExperience(null);
                     setFilterCity([]);
                     setShowHiddenGems(false);
                     setSelectedCategories([]);
                     setTourNameSearch("");
-                    setPriceRange(2500);
+                    setPriceRange(10000);
                   }}
                 >
                   Clear all
@@ -918,20 +809,19 @@ const Explore = () => {
             </>
           ) : (
             <>
-              {/* ✅ Popular Destinations — من featured */}
               <div className="cards-header">
                 <h2>
-                  <span className="text-blue">Popular</span> Destinations
+                  <span className="text-blue">Explore</span> Destinations
                 </h2>
               </div>
               {error && <div className="fetch-error">{error}</div>}
               <div className="tours-grid">
-                {loading && !displayedPopular.length ? (
+                {loading && !displayedExplore.length ? (
                   <div className="loading-placeholder">
                     Loading destinations...
                   </div>
                 ) : (
-                  displayedPopular.map((tour) => (
+                  displayedExplore.map((tour) => (
                     <TourCard
                       key={tour.id}
                       tour={tour}
@@ -940,7 +830,7 @@ const Explore = () => {
                   ))
                 )}
               </div>
-              {!showMorePopular && popularSource.length > 6 && (
+              {!showMorePopular && exploreSource.length > 6 && (
                 <div className="show-more-wrap">
                   <button
                     className="show-more-btn"
@@ -951,32 +841,13 @@ const Explore = () => {
                 </div>
               )}
 
-              {/* ✅ Hidden Gems — من hidden_gems في الـ API */}
               {(showHiddenGems || hiddenGems.length > 0) && (
                 <div className="hidden-gems-section" id="hidden-gems-section">
-                  <div className="cards-header">
+                  <div className="cards-header" style={{ marginTop: '30px' }}>
                     <h2>Hidden Gems</h2>
                   </div>
                   <div className="tours-grid">
                     {hiddenGems.map((place, idx) => (
-                      <TourCard
-                        key={place.place_id}
-                        tour={mapPlaceToTour(place, idx)}
-                        selectedCategories={selectedCategories}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ✅ Trending Now — من trending في الـ API */}
-              {trendingAPI.length > 0 && (
-                <div className="popular-api-section">
-                  <div className="cards-header">
-                    <h2>Trending Now</h2>
-                  </div>
-                  <div className="tours-grid">
-                    {trendingAPI.map((place, idx) => (
                       <TourCard
                         key={place.place_id}
                         tour={mapPlaceToTour(place, idx)}
@@ -1032,27 +903,43 @@ const Explore = () => {
         </div>
       </div>
 
-      <div className="trending-section">
-        <h2 className="trending-title">
-          <span className="text-blue">Trending</span> Now
-        </h2>
-        <p className="trending-subtitle">Warm winter escapes.</p>
-        <div className="trending-grid">
-          {displayedTrending.map((item) => (
-            <TrendingCard key={item.id} item={item} />
-          ))}
-        </div>
-        {!showMoreTrending && trendingDestinations.length > 4 && (
-          <div className="show-more-wrap">
-            <button
-              className="show-more-btn"
-              onClick={() => setShowMoreTrending(true)}
-            >
-              Show More
-            </button>
+      {popularSource.length > 0 && (
+        <div className="trending-section">
+          <h2 className="trending-title">
+            <span className="text-blue">Trending</span> Now
+          </h2>
+          <p className="trending-subtitle">Highly Popular Right Now.</p>
+          <div className="trending-grid">
+            {displayedTrending.map((item) => (
+              <TrendingCard key={item.id} item={item} />
+            ))}
           </div>
-        )}
-      </div>
+          {!showMoreTrending && popularSource.length > 4 && (
+            <div className="show-more-wrap">
+              <button
+                className="show-more-btn"
+                onClick={() => setShowMoreTrending(true)}
+              >
+                Show More
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {popularSource.length === 0 && (
+        <div className="trending-section">
+          <h2 className="trending-title">
+            <span className="text-blue">Trending</span> Now
+          </h2>
+          <p className="trending-subtitle">Warm winter escapes.</p>
+          <div className="trending-grid">
+            {trendingDestinations.map((item) => (
+              <TrendingCard key={item.id} item={item} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <UniqueExperienceSection />
       <AIMagicSection />

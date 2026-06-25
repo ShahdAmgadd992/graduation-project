@@ -76,8 +76,6 @@
   justify-content: center;
   padding: 0 60px;
   text-align: center;
-  /* removed margin-left: 15% — centers the search bar properly */
-  /* pointer-events: none; */
 }
 
 .explore-content h1 {
@@ -86,7 +84,6 @@
   margin-bottom: 40px;
   margin-left: 160px;
   letter-spacing: -1px;
-  /* aligns to the left edge of the search bar below it */
   align-self: flex-start;
   text-align: left;
   pointer-events: none;
@@ -397,7 +394,6 @@
     font-size: 13px;
   }
 }
-/* places cards  */
 
 /* ===== Main Layout ===== */
 .explore-main {
@@ -616,7 +612,6 @@
   gap: 30px;
   margin-bottom: 20px;
   font-family: "Inter", sans-serif;
-  /* width: 700px; */
 }
 
 .filter-tag {
@@ -756,6 +751,7 @@
   filter: invert(15%) sepia(100%) saturate(700%) hue-rotate(340deg)
     brightness(120%);
 }
+
 /* Card Body */
 .tour-card-body {
   padding: 14px 14px 12px;
@@ -769,7 +765,6 @@
   margin-bottom: 8px;
   line-height: 1.4;
   display: -webkit-box;
-
   -webkit-line-clamp: 3;
   line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -802,6 +797,14 @@
 .star-icon {
   width: 14px;
   height: 14px;
+}
+
+/* Specifically structured and styled Green Price section below Meta/Reviews */
+.tour-card-price {
+  color: #28a745; 
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
 }
 
 .tour-card-duration {
@@ -841,9 +844,7 @@
   background: #4a85d4;
   transform: translateY(-1px);
 }
-.tour-card-price strong {
-  color: #5596fe;
-}
+
 /* Show More */
 .show-more-wrap {
   display: flex;
@@ -957,10 +958,6 @@
     gap: 10px;
   }
 }
-/* trending now style  */
-/* ============================================
-   ADD THESE STYLES TO THE BOTTOM OF Explore.css
-   ============================================ */
 
 /* ===== Trending Now Section ===== */
 .trending-section {
@@ -1056,7 +1053,6 @@
   margin-bottom: 10px;
 }
 
-/* Description hidden by default, fades in on hover */
 .trending-card-description {
   font-size: 13px;
   font-family: "Inter", sans-serif;
@@ -1077,7 +1073,6 @@
   transform: translateY(0);
 }
 
-/* Visit Now button */
 .trending-visit-btn {
   background: rgba(255, 255, 255, 0.15);
   border: 1.5px solid rgba(255, 255, 255, 0.7);
@@ -1149,7 +1144,6 @@
   letter-spacing: -0.3px;
 }
 
-/* ===== Carousel wrapper with arrow positioning ===== */
 .unique-exp-carousel-wrapper {
   position: relative;
   display: flex;
@@ -1162,15 +1156,14 @@
   overflow-x: auto;
   scroll-behavior: smooth;
   padding: 8px 4px 16px;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .unique-exp-carousel::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none;
 }
 
-/* ===== Arrow Buttons ===== */
 .unique-exp-arrow {
   position: absolute;
   top: 50%;
@@ -1207,7 +1200,6 @@
   right: -20px;
 }
 
-/* ===== Card ===== */
 .unique-exp-card {
   flex: 0 0 calc((100% - 60px) / 4);
   max-width: 280px;
@@ -1226,7 +1218,6 @@
   box-shadow: 0 8px 28px rgba(85, 150, 254, 0.16);
 }
 
-/* ===== Card Image ===== */
 .unique-exp-img-wrap {
   position: relative;
   width: 100%;
@@ -1247,7 +1238,6 @@
   transform: scale(1.04);
 }
 
-/* ===== Rating badge (star + number, top-right) ===== */
 .unique-exp-rating {
   position: absolute;
   top: 10px;
@@ -1262,7 +1252,6 @@
 }
 
 .unique-exp-star {
-  /* Use the same star-rate.svg but apply a golden gradient tint via filter */
   width: 16px;
   height: 16px;
   filter: brightness(0) saturate(100%) invert(72%) sepia(80%) saturate(500%)
@@ -1272,14 +1261,12 @@
 .unique-exp-rating span {
   font-size: 0.82rem;
   font-weight: 700;
-  /* Gradient text to match the blue palette of the site */
   background: linear-gradient(90deg, #5596fe 0%, #38c2f5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ===== Card Body ===== */
 .unique-exp-body {
   padding: 14px 16px 18px;
 }
@@ -1304,7 +1291,6 @@
   margin: 0 0 14px;
 }
 
-/* ===== More Details Button — gradient matching site blue ===== */
 .unique-exp-btn {
   display: block;
   width: 100%;
@@ -1352,10 +1338,8 @@
 .ai-magic-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  /* explicit row heights so cards never overflow their container */
   grid-template-rows: 300px 280px;
   gap: 30px;
-  /* removed max-height — it was clipping rows and pushing cards over the footer */
 }
 
 .ai-magic-card {
@@ -1363,7 +1347,6 @@
   overflow: hidden;
   border-radius: 22px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  /* height: 100% so the card stretches to fill its explicit grid row */
   height: 100%;
   transition:
     transform 0.25s ease,
