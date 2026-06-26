@@ -14,9 +14,9 @@ import uisCalender from "../../assets/icons/uis_calender.png";
 import pin from "../../assets/icons/pin.png";
 import tripsIcon from "../../assets/icons/trips.png";
 import searchIcon from "../../assets/icons/searchIcon.png";
+// import reviewService from "../../services/reviewService";
 import luxor from "../../assets/cities/luxor.jpg";
 import siwa from "../../assets/cities/siwa.jpg";
-import reviewService from "../../services/reviewService";
 
 // ════════════════════════════════════════════════════════════════════
 const userData = {
@@ -65,120 +65,6 @@ const interests = [
   { label: "Desert Safari", emoji: "🐪", active: false },
 ];
 
-const upcomingTrips = [
-  {
-    id: 1,
-    title: "Dahab Retreat",
-    date: "Oct 15 - Oct 20",
-    location: "South Sinai, Egypt",
-    description:
-      "A perfect blend of coastal escapes and hidden gems tailored just for you.",
-    image: dahab,
-    highlights: [
-      "Dive at the Canyon",
-      "Bedouin Dinner Under Stars",
-      "Snorkel the Blue Hole",
-    ],
-    aiPlanned: true,
-  },
-];
-
-const allTrips = [
-  {
-    id: 1,
-    title: "Aswan Golden Sun",
-    date: "16 May 2026",
-    places: 12,
-    status: "Upcoming",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 2,
-    title: "Siwa Oasis Escape",
-    date: "16 May 2026",
-    places: 12,
-    status: "Upcoming",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 3,
-    title: "Historic Cairo Walk",
-    date: "16 May 2026",
-    places: 12,
-    status: "Upcoming",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 4,
-    title: "Marsa Alam Dive",
-    date: "16 May 2026",
-    places: 12,
-    status: "Upcoming",
-    image: null,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 5,
-    title: "Alex Sea Breeze",
-    date: "16 May 2026",
-    places: 12,
-    status: "Upcoming",
-    image: null,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 6,
-    title: "Sinai Mountain Trail",
-    date: "16 May 2026",
-    places: 12,
-    status: "Upcoming",
-    image: null,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-];
-
-const draftTrips = [
-  {
-    id: 1,
-    title: "El Gouna Weekend Retreat",
-    lastEdited: "2 hours ago",
-    progress: 60,
-  },
-  {
-    id: 2,
-    title: "Abu Simbel Sun Festival",
-    lastEdited: "2 hours ago",
-    progress: 60,
-  },
-  {
-    id: 3,
-    title: "Sharm El Sheikh Vibes",
-    lastEdited: "2 hours ago",
-    progress: 60,
-  },
-  {
-    id: 4,
-    title: "Taba Heights Getaway",
-    lastEdited: "2 hours ago",
-    progress: 60,
-  },
-  {
-    id: 5,
-    title: "Sahl Hasheesh Chill",
-    lastEdited: "2 hours ago",
-    progress: 60,
-  },
-  {
-    id: 6,
-    title: "Wadi El Hitan Camp",
-    lastEdited: "2 hours ago",
-    progress: 60,
-  },
-];
-
 const reviews = [
   {
     id: 1,
@@ -203,75 +89,6 @@ const reviews = [
     date: "20 May 2026",
     text: "I wanted a full detox and the app delivered. The suggested eco-lodges were exactly my style, and the stargazing itinerary was magical.",
     image: siwa,
-  },
-];
-
-const completedTrips = [
-  {
-    id: 1,
-    title: "Siwa Oasis Retreat",
-    days: 5,
-    location: "Cairo,Giza,Luxor",
-    places: 12,
-    lastUpdated: "11/5/2026 at 5:00pm",
-    status: "Completed",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 2,
-    title: "Dahab Blue Vibe",
-    days: 5,
-    location: "Cairo,Giza,Luxor",
-    places: 12,
-    lastUpdated: "11/5/2026 at 5:00pm",
-    status: "Completed",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 3,
-    title: "Egypt Adventure",
-    days: 5,
-    location: "Cairo,Giza,Luxor",
-    places: 12,
-    lastUpdated: "11/5/2026 at 5:00pm",
-    status: "Completed",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 4,
-    title: "Aswan Wonders",
-    days: 5,
-    location: "Cairo,Giza,Luxor",
-    places: 12,
-    lastUpdated: "11/5/2026 at 5:00pm",
-    status: "Completed",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 5,
-    title: "Red Sea Escape",
-    days: 5,
-    location: "Cairo,Giza,Luxor",
-    places: 12,
-    lastUpdated: "11/5/2026 at 5:00pm",
-    status: "Completed",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
-  },
-  {
-    id: 6,
-    title: "Luxor Heritage",
-    days: 5,
-    location: "Cairo,Giza,Luxor",
-    places: 12,
-    lastUpdated: "11/5/2026 at 5:00pm",
-    status: "Completed",
-    image: dahab,
-    highlights: ["Pyramids of Giza", "Luxor Temple", "+10 more places"],
   },
 ];
 
@@ -432,43 +249,6 @@ const faqsData = [
   },
 ];
 
-// ── Adapter: يحوّل الـ dummy trips لنفس شكل بيانات الـ API ──────────
-// (tripId, destinationGovernorate, startDate, endDate, durationDays,
-//  totalBudgetEgp, days[].locations, status) عشان كروت العرض تشتغل
-// بنفس الكود بالظبط سواء الداتا حقيقية أو وهمية.
-// مجموعة الصور المتاحة عشان نلف عليها لكل كارت dummy (نفس الصور اللي
-// كانت مستخدمة في النسخة الأصلية)
-const dummyTripImages = [dahab, luxor, siwa];
-
-const buildDummyApiTrip = (t, statusLabel, idx) => ({
-  tripId: `dummy-${statusLabel}-${t.id}`,
-  destinationGovernorate: t.title,
-  startDate: "2026-05-16T00:00:00Z",
-  endDate: "2026-05-21T00:00:00Z",
-  durationDays: t.days || 5,
-  totalBudgetEgp: 8000,
-  status: statusLabel,
-  image: t.image || dummyTripImages[idx % dummyTripImages.length], // ← الصورة
-  lastUpdated: t.lastUpdated || "11/5/2026 at 5:00pm",
-  days: [
-    {
-      locations: (t.highlights || [])
-        .filter((h) => !h.startsWith("+"))
-        .map((h) => ({ nameEn: h })),
-    },
-  ],
-});
-
-const dummyApiTrips = [
-  ...allTrips.map((t, i) => buildDummyApiTrip(t, "Upcoming", i)),
-  ...draftTrips.map((t, i) => buildDummyApiTrip(t, "Planning", i)),
-  ...completedTrips.map((t, i) => buildDummyApiTrip(t, "Completed", i)),
-];
-
-// ════════════════════════════════════════════════════════════════════
-// END DUMMY DATA SECTION
-// ════════════════════════════════════════════════════════════════════
-
 const tabs = ["Overview", "My Trips", "Reviews", "Settings"];
 const tripFilters = ["ALL", "Upcoming", "Drafts", "Completed"];
 
@@ -487,6 +267,7 @@ const Profile = () => {
   });
   const [apiTrips, setApiTrips] = useState([]);
   const [tripsLoading, setTripsLoading] = useState(false);
+  const [tripsError, setTripsError] = useState(null);
   const [apiInterests, setApiInterests] = useState([]);
   const [apiReviews, setApiReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -503,6 +284,12 @@ const Profile = () => {
   // ── logout ──
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  // ── delete / rename / share trip ──
+  const [deleteTripTarget, setDeleteTripTarget] = useState(null);
+  const [deleteTripLoading, setDeleteTripLoading] = useState(false);
+  const [renameTarget, setRenameTarget] = useState(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renameLoading, setRenameLoading] = useState(false);
   // ── change-password state ──
   const [cpCurrent, setCpCurrent] = useState("");
   const [cpNew, setCpNew] = useState("");
@@ -511,6 +298,8 @@ const Profile = () => {
   const [cpError, setCpError] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [sortOrder, setSortOrder] = useState("newest");
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -528,6 +317,9 @@ const Profile = () => {
   const [activeSetting, setActiveSetting] = useState(null);
   const [faqSearch, setFaqSearch] = useState("");
   const [openFaqId, setOpenFaqId] = useState(null);
+  const upcomingRef = React.useRef(null);
+  const draftsRef = React.useRef(null);
+  const completedRef = React.useRef(null);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showProfileSavedModal, setShowProfileSavedModal] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
@@ -579,9 +371,22 @@ const Profile = () => {
 
         // GET /api/v1/trips
         setTripsLoading(true);
-        const tripsRes = await tripService.getTrips({ Page: 1, PageSize: 50 });
-        const items = tripsRes.data?.items ?? tripsRes.data ?? [];
-        setApiTrips(items);
+        try {
+          const tripsRes = await tripService.getTrips({
+            Page: 1,
+            PageSize: 50,
+          });
+          const items = tripsRes.data?.items ?? tripsRes.data ?? [];
+          setApiTrips(items);
+          setTripsError(null);
+        } catch (tripsErr) {
+          console.error("Trips fetch error:", tripsErr);
+          setTripsError(
+            tripsErr.response?.data?.message ||
+              tripsErr.message ||
+              "Failed to load trips",
+          );
+        }
         // جيب ريفيو المستخدم على كل completed trip
         setReviewsLoading(true);
         try {
@@ -592,7 +397,7 @@ const Profile = () => {
 
           const reviewResults = await Promise.allSettled(
             completedItems.map((t) =>
-              reviewService.getMyReview(t.tripId).then((res) => ({
+              tripService.getMyReview(t.tripId).then((res) => ({
                 ...res.data,
                 // بنضيف بيانات الـ trip عشان نعرضها في الكارت
                 tripTitle: t.title ?? t.destinationGovernorate ?? "Trip",
@@ -726,18 +531,16 @@ const Profile = () => {
 
   // ── Submit Review ──────────────────────────────────────────────────────────
   const handleSubmitReview = async () => {
-    if (!reviewTarget?.locationId) {
-      showToast("No location to review", "error");
+    if (!reviewTarget?.tripId) {
+      showToast("No trip to review", "error");
       return;
     }
     setReviewSaving(true);
     try {
-      // POST /api/v1/reviews — locationId comes from the trip's first location
-      const { default: apiClient } = await import("../../services/apiClient");
-      await apiClient.post("/reviews", {
-        locationId: reviewTarget.locationId,
+      // POST /api/v1/trips/{id}/review
+      await tripService.createReview(reviewTarget.tripId, {
         rating: reviewRating,
-        reviewText: reviewText || undefined,
+        comment: reviewText || undefined,
       });
       setShowReviewModal(false);
       setReviewText("");
@@ -752,7 +555,6 @@ const Profile = () => {
       setReviewSaving(false);
     }
   };
-
   // ── Delete Account ─────────────────────────────────────────────────────────
   const handleDeleteAccount = async () => {
     try {
@@ -771,52 +573,138 @@ const Profile = () => {
     }
   };
 
+  // ── Delete Trip (works for Upcoming and Draft) ──────────────────────────────
+  const handleDeleteTrip = async () => {
+    if (!deleteTripTarget?.tripId) return;
+    setDeleteTripLoading(true);
+    try {
+      // DELETE /api/v1/trips/{id}
+      await tripService.deleteTrip(deleteTripTarget.tripId);
+      setApiTrips((prev) =>
+        prev.filter((t) => t.tripId !== deleteTripTarget.tripId),
+      );
+      showToast("Trip deleted.");
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || "Failed to delete trip.",
+        "error",
+      );
+    } finally {
+      setDeleteTripLoading(false);
+      setDeleteTripTarget(null);
+    }
+  };
+
+  // ── Rename Trip ───────────────────────────────────────────────────────────
+  const handleRenameTrip = async () => {
+    if (!renameTarget?.tripId || !renameValue.trim()) return;
+    setRenameLoading(true);
+    try {
+      // PATCH /api/v1/trips/{id}/rename
+      await tripService.renameTrip(renameTarget.tripId, renameValue.trim());
+      setApiTrips((prev) =>
+        prev.map((t) =>
+          t.tripId === renameTarget.tripId
+            ? {
+                ...t,
+                destinationGovernorate: renameValue.trim(),
+                title: renameValue.trim(),
+              }
+            : t,
+        ),
+      );
+      showToast("Trip renamed!");
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || "Failed to rename trip.",
+        "error",
+      );
+    } finally {
+      setRenameLoading(false);
+      setRenameTarget(null);
+      setRenameValue("");
+    }
+  };
+
+  // ── Share Trip ────────────────────────────────────────────────────────────
+  const handleShareTrip = async (tripId) => {
+    try {
+      // POST /api/v1/trips/{id}/share
+      const res = await tripService.shareTrip(tripId);
+      const token = res.data?.shareToken || res.data?.token || res.data;
+      const url = `${window.location.origin}/trips/share/${token}`;
+      if (navigator.clipboard) await navigator.clipboard.writeText(url);
+      showToast("Share link copied!");
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || "Failed to share trip.",
+        "error",
+      );
+    }
+  };
   const showToast = (message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
   // ── Map API trips to sections ────────────────────────────────────────────────
-  // TripStatus enum: 0=Planning/Draft, 1=Upcoming, 2=Active, 3=Completed, 4=Cancelled
+  const effectiveTrips = apiTrips;
+  // helper للـ sort
+  const applySortOrder = (arr) => {
+    const sorted = [...arr];
+    if (sortOrder === "newest")
+      return sorted.sort(
+        (a, b) => new Date(b.startDate) - new Date(a.startDate),
+      );
+    if (sortOrder === "oldest")
+      return sorted.sort(
+        (a, b) => new Date(a.startDate) - new Date(b.startDate),
+      );
+    const getTitle = (t) =>
+      (t.destinationGovernorate ?? t.title ?? "").toLowerCase();
+    if (sortOrder === "az")
+      return sorted.sort((a, b) => getTitle(a).localeCompare(getTitle(b)));
+    if (sortOrder === "za")
+      return sorted.sort((a, b) => getTitle(b).localeCompare(getTitle(a)));
+    return sorted;
+  };
 
-  // ⚠️ DUMMY FALLBACK — TEMPORARY: لو الـ API رجع مفيش trips حقيقية (array فاضية)
-  // وخلصنا التحميل، بنستخدم الـ dummyApiTrips بدالها عشان نقدر نشوف شكل الصفحة.
-  // ✅ لما الباك يخلص ويتأكد إن كل اليوزرز عندهم trips حقيقية، امسحي السطر اللي
-  // فيه "effectiveTrips" واستبدليه بـ: const effectiveTrips = apiTrips;
-  const effectiveTrips =
-    !tripsLoading && apiTrips.length === 0 ? dummyApiTrips : apiTrips;
+  const upcomingFiltered = applySortOrder(
+    effectiveTrips
+      .filter(
+        (t) =>
+          t.status === "Upcoming" || t.status === "1" || t.status === "Draft",
+      )
+      .filter((t) =>
+        (t.destinationGovernorate ?? t.title ?? "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()),
+      ),
+  );
 
-  const upcomingFiltered = effectiveTrips
-    .filter(
-      (t) =>
-        t.status === "Upcoming" || t.status === "1" || t.status === "Draft",
-    )
-    .filter((t) =>
-      (t.destinationGovernorate ?? t.title ?? "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()),
-    );
+  const draftsFiltered = applySortOrder(
+    effectiveTrips
+      .filter(
+        (t) => t.status === "Planning" || t.status === "0" || t.status === 0,
+      )
+      .filter((t) =>
+        (t.destinationGovernorate ?? "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()),
+      ),
+  );
 
-  const draftsFiltered = effectiveTrips
-    .filter(
-      (t) => t.status === "Planning" || t.status === "0" || t.status === 0,
-    )
-    .filter((t) =>
-      (t.destinationGovernorate ?? "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()),
-    );
-
-  const completedFiltered = effectiveTrips
-    .filter(
-      (t) => t.status === "Completed" || t.status === "3" || t.status === 3,
-    )
-    .filter((t) =>
-      (t.destinationGovernorate ?? "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()),
-    );
-
+  const completedFiltered = applySortOrder(
+    effectiveTrips
+      .filter(
+        (t) => t.status === "Completed" || t.status === "3" || t.status === 3,
+      )
+      .filter((t) =>
+        (t.destinationGovernorate ?? "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()),
+      ),
+  );
   // helper: format API trip date
   const fmtDate = (iso) =>
     iso
@@ -1090,6 +978,60 @@ const Profile = () => {
           {/* ===== MY TRIPS TAB ===== */}
           {activeTab === "My Trips" && (
             <div className="trips-tab">
+              {tripsError && (
+                <div
+                  style={{
+                    backgroundColor: "#fee2e2",
+                    color: "#991b1b",
+                    padding: "12px 16px",
+                    borderRadius: "8px",
+                    marginBottom: "20px",
+                    fontSize: "14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  {tripsError} —{" "}
+                  <span
+                    style={{
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                    onClick={() => {
+                      setTripsError(null);
+                      setTripsLoading(true);
+                      tripService
+                        .getTrips({ Page: 1, PageSize: 50 })
+                        .then((res) => {
+                          setApiTrips(res.data?.items ?? res.data ?? []);
+                        })
+                        .catch((err) => {
+                          setTripsError(
+                            err.response?.data?.message ||
+                              "Failed to load trips",
+                          );
+                        })
+                        .finally(() => setTripsLoading(false));
+                    }}
+                  >
+                    Retry
+                  </span>
+                </div>
+              )}
               {/* Filter + Search Bar */}
               <div className="trips-toolbar">
                 <div className="trips-filters">
@@ -1129,9 +1071,48 @@ const Profile = () => {
                       className="search-input"
                     />
                   </div>
-                  <button className="search-sort-btn">
-                    <img src={searchIcon} alt="sort" width="20" height="20" />
-                  </button>
+                  // إلى:
+                  <div style={{ position: "relative" }}>
+                    <button
+                      className="search-sort-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSortMenu((prev) => !prev);
+                      }}
+                    >
+                      <img src={searchIcon} alt="sort" width="20" height="20" />
+                    </button>
+                    {showSortMenu && (
+                      <div
+                        className="trip-dropdown"
+                        style={{ right: 0, top: 40, minWidth: 160 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {[
+                          { label: "Newest First", value: "newest" },
+                          { label: "Oldest First", value: "oldest" },
+                          { label: "A → Z", value: "az" },
+                          { label: "Z → A", value: "za" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            className={`dropdown-item ${sortOrder === opt.value ? "active" : ""}`}
+                            style={
+                              sortOrder === opt.value
+                                ? { color: "#5596fe", fontWeight: 600 }
+                                : {}
+                            }
+                            onClick={() => {
+                              setSortOrder(opt.value);
+                              setShowSortMenu(false);
+                            }}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1151,10 +1132,25 @@ const Profile = () => {
               {/* ===== Upcoming Trips Section ===== */}
               {!tripsLoading &&
                 (activeFilter === "ALL" || activeFilter === "Upcoming") && (
-                  <div className="overview-section">
+                  <div className="overview-section" ref={upcomingRef}>
                     <div className="section-card-header">
                       <h4>Upcoming Trips</h4>
-                      <button className="see-all-btn">See All</button>
+                      <button
+                        className="see-all-btn"
+                        onClick={() => {
+                          setActiveFilter("Upcoming");
+                          setShowAllTrips(true);
+                          setTimeout(
+                            () =>
+                              upcomingRef.current?.scrollIntoView({
+                                behavior: "smooth",
+                              }),
+                            50,
+                          );
+                        }}
+                      >
+                        See All
+                      </button>{" "}
                     </div>
                     <div className="my-trips-grid">
                       {upcomingFiltered
@@ -1192,17 +1188,24 @@ const Profile = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenMenuId(
-                                      openMenuId === `up-${trip.id}`
+                                      openMenuId === `up-${trip.tripId}`
                                         ? null
-                                        : `up-${trip.id}`,
+                                        : `up-${trip.tripId}`,
                                     );
                                   }}
                                 >
                                   ⋮
                                 </button>
-                                {openMenuId === `up-${trip.id}` && (
+                                {openMenuId === `up-${trip.tripId}` && (
                                   <div className="trip-dropdown">
-                                    <button className="dropdown-item">
+                                    <button
+                                      className="dropdown-item"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/trips/${trip.tripId}`);
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
                                       <svg
                                         width="16"
                                         height="16"
@@ -1216,7 +1219,21 @@ const Profile = () => {
                                       </svg>
                                       Open
                                     </button>
-                                    <button className="dropdown-item">
+                                    <button
+                                      className="dropdown-item"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setRenameTarget({
+                                          tripId: trip.tripId,
+                                        });
+                                        setRenameValue(
+                                          trip.destinationGovernorate ??
+                                            trip.title ??
+                                            "",
+                                        );
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
                                       <svg
                                         width="16"
                                         height="16"
@@ -1229,7 +1246,14 @@ const Profile = () => {
                                       </svg>
                                       Rename
                                     </button>
-                                    <button className="dropdown-item">
+                                    <button
+                                      className="dropdown-item"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleShareTrip(trip.tripId);
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
                                       <svg
                                         width="16"
                                         height="16"
@@ -1244,7 +1268,19 @@ const Profile = () => {
                                       </svg>
                                       Share
                                     </button>
-                                    <button className="dropdown-item delete">
+                                    <button
+                                      className="dropdown-item delete"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeleteTripTarget({
+                                          tripId: trip.tripId,
+                                          title:
+                                            trip.destinationGovernorate ??
+                                            trip.title,
+                                        });
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
                                       <svg
                                         width="16"
                                         height="16"
@@ -1340,6 +1376,17 @@ const Profile = () => {
                           </div>
                         ))}
                     </div>
+                    {upcomingFiltered.length === 0 && (
+                      <p
+                        style={{
+                          color: "#999",
+                          fontSize: 14,
+                          padding: "12px 0",
+                        }}
+                      >
+                        No upcoming trips yet.
+                      </p>
+                    )}
                     {upcomingFiltered.length > 3 && activeFilter !== "ALL" && (
                       <div className="show-more-wrap">
                         <button
@@ -1356,16 +1403,32 @@ const Profile = () => {
               {/* ===== Drafts Section ===== */}
               {!tripsLoading &&
                 (activeFilter === "ALL" || activeFilter === "Drafts") && (
-                  <div className="overview-section">
+                  <div className="overview-section" ref={draftsRef}>
+                    {" "}
                     <div className="section-card-header">
                       <h4>Drafts</h4>
-                      <button className="see-all-btn">See All</button>
+                      <button
+                        className="see-all-btn"
+                        onClick={() => {
+                          setActiveFilter("Drafts");
+                          setShowAllDrafts(true);
+                          setTimeout(
+                            () =>
+                              draftsRef.current?.scrollIntoView({
+                                behavior: "smooth",
+                              }),
+                            50,
+                          );
+                        }}
+                      >
+                        See All
+                      </button>{" "}
                     </div>
                     <div className="my-trips-grid">
                       {draftsFiltered
                         .slice(0, showAllDrafts ? undefined : 3)
                         .map((draft) => (
-                          <div className="my-trip-card" key={draft.id}>
+                          <div className="my-trip-card" key={draft.tripId}>
                             <div className="draft-img-wrap">
                               <span className="trip-status-badge">Draft</span>
                               <div className="draft-img-placeholder">
@@ -1392,17 +1455,32 @@ const Profile = () => {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setOpenMenuId(
-                                        openMenuId === `draft-${draft.id}`
+                                        openMenuId === `draft-${draft.tripId}`
                                           ? null
-                                          : `draft-${draft.id}`,
+                                          : `draft-${draft.tripId}`,
                                       );
                                     }}
                                   >
                                     ⋮
                                   </button>
-                                  {openMenuId === `draft-${draft.id}` && (
+                                  {openMenuId === `draft-${draft.tripId}` && (
                                     <div className="trip-dropdown">
-                                      <button className="dropdown-item">
+                                      <button
+                                        className="dropdown-item"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setRenameTarget({
+                                            tripId: draft.tripId,
+                                          });
+                                          setRenameValue(
+                                            draft.title ??
+                                              draft.destinationGovernorate ??
+                                              "",
+                                          );
+                                          setOpenMenuId(null);
+                                        }}
+                                      >
+                                        {" "}
                                         <svg
                                           width="16"
                                           height="16"
@@ -1416,7 +1494,20 @@ const Profile = () => {
                                         </svg>
                                         Edit Title
                                       </button>
-                                      <button className="dropdown-item delete">
+                                      <button
+                                        className="dropdown-item delete"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setDeleteTripTarget({
+                                            tripId: draft.tripId,
+                                            title:
+                                              draft.title ??
+                                              draft.destinationGovernorate,
+                                          });
+                                          setOpenMenuId(null);
+                                        }}
+                                      >
+                                        {" "}
                                         <svg
                                           width="16"
                                           height="16"
@@ -1458,13 +1549,30 @@ const Profile = () => {
                                   />
                                 </div>
                               </div>
-                              <button className="continue-planning-btn">
+                              <button
+                                className="continue-planning-btn"
+                                onClick={() =>
+                                  navigate(`/trips/${draft.tripId}`)
+                                }
+                              >
+                                {" "}
                                 Continue Planning
                               </button>
                             </div>
                           </div>
                         ))}
                     </div>
+                    {draftsFiltered.length === 0 && (
+                      <p
+                        style={{
+                          color: "#999",
+                          fontSize: 14,
+                          padding: "12px 0",
+                        }}
+                      >
+                        No drafts yet.
+                      </p>
+                    )}
                     {draftsFiltered.length > 3 && activeFilter !== "ALL" && (
                       <div className="show-more-wrap">
                         <button
@@ -1481,10 +1589,25 @@ const Profile = () => {
               {/* ===== Completed Trips Section ===== */}
               {!tripsLoading &&
                 (activeFilter === "ALL" || activeFilter === "Completed") && (
-                  <div className="overview-section">
+                  <div className="overview-section" ref={completedRef}>
                     <div className="section-card-header">
                       <h4>Completed Trips</h4>
-                      <button className="see-all-btn">See All</button>
+                      <button
+                        className="see-all-btn"
+                        onClick={() => {
+                          setActiveFilter("Completed");
+                          setShowAllCompleted(true);
+                          setTimeout(
+                            () =>
+                              completedRef.current?.scrollIntoView({
+                                behavior: "smooth",
+                              }),
+                            50,
+                          );
+                        }}
+                      >
+                        See All
+                      </button>{" "}
                     </div>
                     <div className="my-trips-grid">
                       {completedFiltered
@@ -1500,7 +1623,97 @@ const Profile = () => {
                               <span className="trip-status-badge">
                                 {trip.status}
                               </span>
-                              <button className="trip-more-btn">⋮</button>
+                              <div style={{ position: "relative" }}>
+                                <button
+                                  className="trip-more-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(
+                                      openMenuId === `comp-${trip.tripId}`
+                                        ? null
+                                        : `comp-${trip.tripId}`,
+                                    );
+                                  }}
+                                >
+                                  ⋮
+                                </button>
+                                {openMenuId === `comp-${trip.tripId}` && (
+                                  <div className="trip-dropdown">
+                                    <button
+                                      className="dropdown-item"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/trips/${trip.tripId}`);
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                      </svg>
+                                      Open
+                                    </button>
+                                    <button
+                                      className="dropdown-item"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleShareTrip(trip.tripId);
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+                                        <polyline points="16 6 12 2 8 6" />
+                                        <line x1="12" y1="2" x2="12" y2="15" />
+                                      </svg>
+                                      Share
+                                    </button>
+                                    <button
+                                      className="dropdown-item"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setReviewTarget({
+                                          tripId: trip.tripId,
+                                          tripTitle:
+                                            trip.title ??
+                                            trip.destinationGovernorate,
+                                        });
+                                        setReviewRating(5);
+                                        setReviewText("");
+                                        setShowReviewModal(true);
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                      </svg>
+                                      Write Review
+                                    </button>
+                                  </div>
+                                )}
+                              </div>{" "}
                             </div>
                             <div className="my-trip-info">
                               <h5 className="my-trip-title">
@@ -1593,11 +1806,8 @@ const Profile = () => {
                                   border: "none",
                                 }}
                                 onClick={() => {
-                                  const locId =
-                                    trip.days?.[0]?.locations?.[0]
-                                      ?.locationId ?? null;
                                   setReviewTarget({
-                                    locationId: locId,
+                                    tripId: trip.tripId,
                                     tripTitle:
                                       trip.title ?? trip.destinationGovernorate,
                                   });
@@ -1612,6 +1822,17 @@ const Profile = () => {
                           </div>
                         ))}
                     </div>
+                    {completedFiltered.length === 0 && (
+                      <p
+                        style={{
+                          color: "#999",
+                          fontSize: 14,
+                          padding: "12px 0",
+                        }}
+                      >
+                        No completed trips yet.
+                      </p>
+                    )}
                     {completedFiltered.length > 3 && activeFilter !== "ALL" && (
                       <div className="show-more-wrap">
                         <button
@@ -1870,7 +2091,7 @@ const Profile = () => {
                         onClick={async () => {
                           if (deleteTarget.isApi) {
                             try {
-                              await reviewService.deleteReview(
+                              await tripService.deleteReview(
                                 deleteTarget.tripId,
                               );
                               setApiReviews((prev) =>
@@ -1985,13 +2206,10 @@ const Profile = () => {
                     onClick={async () => {
                       if (editTarget?.isApi) {
                         try {
-                          const updated = await reviewService.updateReview(
-                            editTarget.tripId,
-                            {
-                              rating: editTarget.rating,
-                              comment: editTarget.text,
-                            },
-                          );
+                          await tripService.updateReview(editTarget.tripId, {
+                            rating: editTarget.rating,
+                            comment: editTarget.text,
+                          });
                           setApiReviews((prev) =>
                             prev.map((r) =>
                               r.tripReviewId === editTarget.tripReviewId
@@ -3231,12 +3449,12 @@ const Profile = () => {
                 Trip: <strong>{reviewTarget.tripTitle}</strong>
               </p>
             )}
-            {!reviewTarget?.locationId && (
+            {/* {!reviewTarget?.locationId && (
               <p style={{ color: "#e53935", fontSize: 13, marginBottom: 12 }}>
                 ⚠️ This trip has no location data attached — review cannot be
                 linked to a specific place.
               </p>
-            )}
+            )} */}
             {/* Star rating */}
             <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
               {[1, 2, 3, 4, 5].map((s) => (
@@ -3282,10 +3500,10 @@ const Profile = () => {
                 className="modal-delete-btn"
                 style={{
                   background: "linear-gradient(90deg,#5596fe,#97ceff)",
-                  opacity: reviewSaving || !reviewTarget?.locationId ? 0.6 : 1,
+                  opacity: reviewSaving ? 0.6 : 1,
                 }}
                 onClick={handleSubmitReview}
-                disabled={reviewSaving || !reviewTarget?.locationId}
+                disabled={reviewSaving}
               >
                 {reviewSaving ? "Submitting..." : "Submit Review"}
               </button>
