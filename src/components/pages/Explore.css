@@ -124,9 +124,7 @@
   color: #333;
   font-weight: 500;
   cursor: pointer;
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   user-select: none;
 }
 
@@ -134,6 +132,12 @@
 .custom-select-trigger.open {
   border-color: #5596fe;
   box-shadow: 0 0 0 3px rgba(85, 150, 254, 0.1);
+}
+
+/* Placeholder style when no city selected */
+.city-placeholder {
+  color: #999;
+  font-weight: 400;
 }
 
 .chevron {
@@ -185,9 +189,7 @@
   font-size: 14px;
   color: #333;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .custom-dropdown-item:hover {
@@ -201,14 +203,8 @@
 }
 
 @keyframes fadeDown {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== Search Input ===== */
@@ -242,9 +238,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    background 0.3s ease,
-    transform 0.2s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
   white-space: nowrap;
   flex-shrink: 0;
   pointer-events: auto;
@@ -350,6 +344,7 @@
   .categories-bar {
     padding: 20px 16px;
     gap: 8px;
+    margin-left: 0;
   }
 
   .categories-list {
@@ -452,12 +447,13 @@
   color: #bbb;
 }
 
+/* City list scrollable, tall enough for all 11 cities */
 .sidebar-city-list {
-  max-height: 130px;
+  max-height: 200px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sidebar-city-list::-webkit-scrollbar {
@@ -475,7 +471,13 @@
   font-size: 13px;
   color: #444;
   cursor: pointer;
-  padding: 6px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.sidebar-checkbox:hover {
+  background: #f5f8ff;
 }
 
 .sidebar-checkbox input[type="checkbox"] {
@@ -483,6 +485,7 @@
   width: 15px;
   height: 15px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 /* Price Range */
@@ -609,7 +612,8 @@
 .active-filters {
   display: flex;
   align-items: center;
-  gap: 30px;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 20px;
   font-family: "Inter", sans-serif;
 }
@@ -622,8 +626,8 @@
   color: #5596fe;
   border: 1px solid #c0d4ff;
   border-radius: 20px;
-  padding: 8px 12px;
-  font-size: 16px;
+  padding: 6px 12px;
+  font-size: 13px;
   font-weight: 500;
   font-family: "Inter", sans-serif;
 }
@@ -662,9 +666,7 @@
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 1px solid #f0f0f0;
 }
 
@@ -729,9 +731,7 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transition:
-    transform 0.2s,
-    background 0.2s;
+  transition: transform 0.2s, background 0.2s;
   z-index: 2;
 }
 
@@ -748,8 +748,7 @@
 }
 
 .fav-btn.liked img {
-  filter: invert(15%) sepia(100%) saturate(700%) hue-rotate(340deg)
-    brightness(120%);
+  filter: invert(15%) sepia(100%) saturate(700%) hue-rotate(340deg) brightness(120%);
 }
 
 /* Card Body */
@@ -799,12 +798,14 @@
   height: 14px;
 }
 
-/* Specifically structured and styled Green Price section below Meta/Reviews */
+/* Price — GREEN, directly below the reviews / meta row */
 .tour-card-price {
-  color: #28a745; 
-  font-weight: 600;
-  font-size: 15px;
+  color: #28a745;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 2px;
   margin-bottom: 8px;
+  font-family: "Inter", sans-serif;
 }
 
 .tour-card-duration {
@@ -834,15 +835,34 @@
   font-weight: 600;
   cursor: pointer;
   margin-top: 10px;
-  transition:
-    background 0.2s,
-    transform 0.15s;
+  transition: background 0.2s, transform 0.15s;
   font-family: "Inter", sans-serif;
 }
 
 .tour-card-view-btn:hover {
   background: #4a85d4;
   transform: translateY(-1px);
+}
+
+/* Fetch error */
+.fetch-error {
+  color: #e63946;
+  font-size: 13px;
+  margin-bottom: 12px;
+  font-family: "Inter", sans-serif;
+}
+
+/* Loading placeholder */
+.loading-placeholder {
+  font-size: 14px;
+  color: #aaa;
+  padding: 20px 0;
+  font-family: "Inter", sans-serif;
+}
+
+/* Hidden gems section spacing */
+.hidden-gems-section {
+  margin-top: 36px;
 }
 
 /* Show More */
@@ -861,9 +881,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition:
-    background 0.2s,
-    color 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 
 .show-more-btn:hover {
@@ -959,7 +977,7 @@
   }
 }
 
-/* ===== Trending Now Section ===== */
+/* ===== Trending Now Section — bottom of page ===== */
 .trending-section {
   padding: 60px 120px;
   text-align: center;
@@ -982,7 +1000,7 @@
   font-family: "Inter", sans-serif;
 }
 
-/* ===== Trending Grid ===== */
+/* Trending Grid */
 .trending-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -991,7 +1009,7 @@
   margin: 0 auto;
 }
 
-/* ===== Trending Card ===== */
+/* Trending Card */
 .trending-card {
   position: relative;
   border-radius: 20px;
@@ -1053,6 +1071,7 @@
   margin-bottom: 10px;
 }
 
+/* Description: hidden by default, appears on hover */
 .trending-card-description {
   font-size: 13px;
   font-family: "Inter", sans-serif;
@@ -1062,9 +1081,7 @@
   margin-bottom: 14px;
   opacity: 0;
   transform: translateY(8px);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
 }
 
@@ -1073,6 +1090,7 @@
   transform: translateY(0);
 }
 
+/* Visit Now button */
 .trending-visit-btn {
   background: rgba(255, 255, 255, 0.15);
   border: 1.5px solid rgba(255, 255, 255, 0.7);
@@ -1084,10 +1102,7 @@
   border-radius: 30px;
   cursor: pointer;
   backdrop-filter: blur(4px);
-  transition:
-    background 0.25s ease,
-    color 0.25s ease,
-    border-color 0.25s ease;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
   white-space: nowrap;
 }
 
@@ -1097,7 +1112,7 @@
   border-color: #fff;
 }
 
-/* ===== Responsive ===== */
+/* Responsive Trending */
 @media (max-width: 900px) {
   .trending-section {
     padding: 40px 40px;
@@ -1182,9 +1197,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background 0.2s,
-    box-shadow 0.2s;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 .unique-exp-arrow:hover {
@@ -1208,9 +1221,7 @@
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .unique-exp-card:hover {
@@ -1303,9 +1314,7 @@
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.2px;
-  transition:
-    opacity 0.2s,
-    transform 0.15s;
+  transition: opacity 0.2s, transform 0.15s;
 }
 
 .unique-exp-btn:hover {
@@ -1313,6 +1322,7 @@
   transform: scale(1.01);
 }
 
+/* ===== AI Magic Section ===== */
 .ai-magic-section {
   padding: 40px 60px 60px;
   background: #fff;
@@ -1348,9 +1358,7 @@
   border-radius: 22px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   height: 100%;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .ai-magic-card:hover {
@@ -1436,9 +1444,7 @@
   font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease;
   width: fit-content;
 }
 
@@ -1462,5 +1468,107 @@
   }
   .ai-magic-card-large {
     min-height: 320px;
+  }
+}
+/* ── Trending Now Section (new) ─────────────────────────────────────────── */
+.trending-now-section {
+  padding: 0 60px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.trending-now-heading {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.trending-now-subtitle {
+  text-align: center;
+  color: #888;
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+}
+
+.trending-now-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.trending-now-card {
+  position: relative;
+  height: 220px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.trending-now-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 100%);
+  border-radius: 16px;
+}
+
+.trending-now-heart {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: transform 0.2s;
+}
+
+.trending-now-heart:hover {
+  transform: scale(1.1);
+}
+
+.trending-now-heart.liked {
+  background: rgba(255,255,255,0.95);
+}
+
+.trending-now-info {
+  position: absolute;
+  bottom: 18px;
+  left: 20px;
+  z-index: 2;
+  color: white;
+}
+
+.trending-now-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.trending-now-city {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.9);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .trending-now-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trending-now-section {
+    padding: 0 16px 30px;
   }
 }
