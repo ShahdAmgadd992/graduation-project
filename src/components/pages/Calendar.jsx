@@ -82,6 +82,7 @@ function CalendarPage() {
       .then((res) => {
         const items = res.data?.items || res.data || [];
         if (items.length > 0) {
+          // Calendar.jsx — useEffect، غيري الـ id فقط
           const mapped = items
             .filter((t) => t.startDate && t.endDate)
             .map((t, i) => {
@@ -95,14 +96,14 @@ function CalendarPage() {
                 "#3B82F6",
               ];
               return {
-                id: t.id,
-                title: t.title,
-                location: t.city || t.location || "Egypt",
+                id: t.tripId, // ← كان t.id
+                title: t.destinationGovernorate ?? t.title ?? "Trip",
+                location: t.city ?? t.destinationGovernorate ?? "Egypt",
                 startDay: start.getDate(),
                 endDay: end.getDate(),
                 month: start.getMonth(),
                 year: start.getFullYear(),
-                image: t.coverImage || dahab,
+                image: t.coverImageUrl ?? dahab, // ← coverImageUrl مش coverImage
                 color: colors[i % colors.length],
               };
             });

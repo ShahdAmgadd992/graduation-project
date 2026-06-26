@@ -16,25 +16,8 @@ import tripsIcon from "../../assets/icons/trips.png";
 import searchIcon from "../../assets/icons/searchIcon.png";
 import luxor from "../../assets/cities/luxor.jpg";
 import siwa from "../../assets/cities/siwa.jpg";
+import reviewService from "../../services/reviewService";
 
-// ════════════════════════════════════════════════════════════════════
-// ⚠️ DUMMY DATA SECTION — TEMPORARY, NOT CONNECTED TO BACKEND YET ⚠️
-// ════════════════════════════════════════════════════════════════════
-// كل البيانات من هنا لحد آخر السكشن دي (لحد ما تلاقي ينتهي بـ
-// "END DUMMY DATA SECTION") هي بيانات وهمية بس، مش جايه من الـ API.
-//
-// السبب: الـ backend لسه مش مظبط فيه save/get لرحلات اليوزر بشكل كامل.
-// لحد ما نتأكد إن الـ API بتاع التروبس شغال 100% (create/get/delete trip)
-// هنسيب البيانات دي زي ما هي عشان نقدر نكمل تصميم وعرض الصفحة.
-//
-// ✅ لما الباك يخلص ويتأكد إن الـ API شغال:
-//   1. امسحي كل الـ const اللي تحت دي (userData, interests, upcomingTrips,
-//      allTrips, draftTrips, completedTrips, reviews)
-//   2. اربطي البيانات دي بالـ apiTrips / dashboardData / apiInterests
-//      اللي بترجع من tripService و userService بدل الداتا الوهمية
-//   3. دوري في الـ JSX على كل مكان بيستخدم upcomingTrips / allTrips /
-//      draftTrips / completedTrips / reviews / userData.stats
-//      واستبدليه بالبيانات الحقيقية
 // ════════════════════════════════════════════════════════════════════
 const userData = {
   name: "Zeina Ahmed",
@@ -505,6 +488,8 @@ const Profile = () => {
   const [apiTrips, setApiTrips] = useState([]);
   const [tripsLoading, setTripsLoading] = useState(false);
   const [apiInterests, setApiInterests] = useState([]);
+  const [apiReviews, setApiReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
   // ── interests edit modal ──
   const [showInterestsModal, setShowInterestsModal] = useState(false);
   const [tempInterests, setTempInterests] = useState([]);
@@ -597,6 +582,36 @@ const Profile = () => {
         const tripsRes = await tripService.getTrips({ Page: 1, PageSize: 50 });
         const items = tripsRes.data?.items ?? tripsRes.data ?? [];
         setApiTrips(items);
+        // جيب ريفيو المستخدم على كل completed trip
+        setReviewsLoading(true);
+        try {
+          const completedItems = items.filter(
+            (t) =>
+              t.status === "Completed" || t.status === 2 || t.status === "2",
+          );
+
+          const reviewResults = await Promise.allSettled(
+            completedItems.map((t) =>
+              reviewService.getMyReview(t.tripId).then((res) => ({
+                ...res.data,
+                // بنضيف بيانات الـ trip عشان نعرضها في الكارت
+                tripTitle: t.title ?? t.destinationGovernorate ?? "Trip",
+                tripImage: t.coverImageUrl ?? null,
+                tripId: t.tripId,
+              })),
+            ),
+          );
+
+          const fetchedReviews = reviewResults
+            .filter((r) => r.status === "fulfilled" && r.value?.tripReviewId)
+            .map((r) => r.value);
+
+          setApiReviews(fetchedReviews);
+        } catch (err) {
+          console.error("Reviews fetch error:", err);
+        } finally {
+          setReviewsLoading(false);
+        }
       } catch (err) {
         console.error("Profile fetch error:", err);
         setProfileError(
@@ -773,7 +788,8 @@ const Profile = () => {
 
   const upcomingFiltered = effectiveTrips
     .filter(
-      (t) => t.status === "Upcoming" || t.status === "1" || t.status === 1,
+      (t) =>
+        t.status === "Upcoming" || t.status === "1" || t.status === "Draft",
     )
     .filter((t) =>
       (t.destinationGovernorate ?? t.title ?? "")
@@ -918,7 +934,6 @@ const Profile = () => {
 
                 <p>Ready for your next Trip?</p>
               </div>
-
               <div className="stats-grid">
                 {[
                   {
@@ -964,7 +979,6 @@ const Profile = () => {
                   </div>
                 ))}
               </div>
-
               <div className="overview-section">
                 <div className="section-card-header">
                   <h4>My Travel Interests</h4>
@@ -1021,37 +1035,52 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-
               <div className="overview-section">
                 <h4>Upcoming Trips</h4>
-                {upcomingTrips.map((trip) => (
-                  <div className="upcoming-trip-card" key={trip.id}>
+                {upcomingFiltered.length === 0 && !tripsLoading && (
+                  <p style={{ color: "#999", fontSize: 14 }}>
+                    No upcoming trips yet.
+                  </p>
+                )}
+                {upcomingFiltered.slice(0, 2).map((trip) => (
+                  <div className="upcoming-trip-card" key={trip.tripId}>
                     <img
-                      src={trip.image}
-                      alt={trip.title}
+                      src={trip.image ?? trip.coverImageUrl ?? dahab}
+                      alt={trip.destinationGovernorate}
                       className="trip-thumb"
                     />
                     <div className="trip-left">
-                      <h5 className="trip-title">{trip.title}</h5>
-                      <p className="trip-date">{trip.date}</p>
-                      <p className="trip-desc">{trip.description}</p>
-                      <button className="view-itinerary-btn">
+                      <h5 className="trip-title">
+                        {trip.destinationGovernorate ?? trip.title ?? "Trip"}
+                      </h5>
+                      <p className="trip-date">
+                        {fmtDate(trip.startDate)} – {fmtDate(trip.endDate)}
+                      </p>
+                      <p className="trip-desc">
+                        {trip.durationDays ?? "—"} days ·{" "}
+                        {trip.totalBudgetEgp?.toLocaleString() ?? "—"} EGP
+                      </p>
+                      <button
+                        className="view-itinerary-btn"
+                        onClick={() =>
+                          window.navigateToTripDetails?.(trip.tripId)
+                        }
+                      >
                         View Itinerary
                       </button>
                     </div>
                     <div className="trip-right">
                       <h6 className="trip-highlights-title">Trip Highlights</h6>
                       <div className="trip-highlights">
-                        {trip.highlights.map((h, i) => (
-                          <span key={i} className="highlight-item">
-                            • {h}
-                          </span>
-                        ))}
+                        {(trip.days?.[0]?.locations ?? [])
+                          .slice(0, 3)
+                          .map((loc, i) => (
+                            <span key={i} className="highlight-item">
+                              • {loc.nameEn ?? loc.nameAr ?? "Place"}
+                            </span>
+                          ))}
                       </div>
                     </div>
-                    {trip.aiPlanned && (
-                      <span className="ai-badge">✦ AI Planner</span>
-                    )}
                   </div>
                 ))}
               </div>
@@ -1131,7 +1160,7 @@ const Profile = () => {
                       {upcomingFiltered
                         .slice(0, showAllTrips ? undefined : 3)
                         .map((trip) => (
-                          <div className="my-trip-card" key={trip.id}>
+                          <div className="my-trip-card" key={trip.tripId}>
                             <div className="my-trip-img-wrap">
                               {trip.image ? (
                                 <img
@@ -1461,7 +1490,7 @@ const Profile = () => {
                       {completedFiltered
                         .slice(0, showAllCompleted ? undefined : 3)
                         .map((trip) => (
-                          <div className="my-trip-card" key={trip.id}>
+                          <div className="my-trip-card" key={trip.tripId}>
                             <div className="my-trip-img-wrap">
                               <img
                                 src={trip.image}
@@ -1603,113 +1632,206 @@ const Profile = () => {
             <div className="reviews-tab">
               <div className="overview-section">
                 <h4>My Reviews</h4>
+
+                {reviewsLoading && (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                      color: "#999",
+                      fontSize: 14,
+                    }}
+                  >
+                    Loading your reviews...
+                  </div>
+                )}
+
+                {!reviewsLoading && apiReviews.length === 0 && (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                      color: "#999",
+                      fontSize: 14,
+                    }}
+                  >
+                    No reviews yet. Complete a trip and share your experience!
+                  </div>
+                )}
+
                 <div className="reviews-list">
-                  {reviews
-                    .slice(0, showAllReviews ? undefined : 2)
-                    .map((review) => (
-                      <div className="review-card" key={review.id}>
-                        <img
-                          src={review.image}
-                          alt={review.place}
-                          className="review-img"
-                        />
-                        <div className="review-body">
-                          <div className="review-header">
-                            <div>
-                              <h5>{review.place}</h5>
-                              <p className="review-date">{review.date}</p>
-                              <div className="review-stars">
-                                {[1, 2, 3, 4, 5].map((s) => (
-                                  <span
-                                    key={s}
-                                    style={{
-                                      color:
-                                        s <= review.rating ? "#f5a623" : "#ddd",
-                                      fontSize: 18,
-                                    }}
-                                  >
-                                    ★
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            <div style={{ position: "relative" }}>
-                              <button
-                                className="trip-more-btn"
+                  {!reviewsLoading &&
+                    (apiReviews.length > 0
+                      ? apiReviews
+                      : showAllReviews
+                        ? reviews
+                        : reviews.slice(0, 2)
+                    )
+                      .slice(0, showAllReviews ? undefined : 2)
+                      .map((review) => {
+                        // بنتعامل مع شكلين: API shape و dummy shape
+                        const isApi = !!review.tripReviewId;
+                        const id = isApi ? review.tripReviewId : review.id;
+                        const place = isApi ? review.tripTitle : review.place;
+                        const rating = review.rating;
+                        const date = isApi
+                          ? new Date(review.createdAt).toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )
+                          : review.date;
+                        const text = isApi ? review.comment : review.text;
+                        const image = isApi ? review.tripImage : review.image;
+
+                        return (
+                          <div className="review-card" key={id}>
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={place}
+                                className="review-img"
+                              />
+                            ) : (
+                              <div
+                                className="review-img"
                                 style={{
-                                  position: "static",
-                                  background: "#f3f4f6",
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuId(
-                                    openMenuId === `rev-${review.id}`
-                                      ? null
-                                      : `rev-${review.id}`,
-                                  );
+                                  background:
+                                    "linear-gradient(135deg, #5596fe22, #97ceff44)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  minWidth: 90,
+                                  borderRadius: 10,
                                 }}
                               >
-                                ⋮
-                              </button>
-                              {openMenuId === `rev-${review.id}` && (
-                                <div
-                                  className="trip-dropdown"
-                                  style={{ right: 0, top: 36 }}
+                                <svg
+                                  width="32"
+                                  height="32"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#5596fe"
+                                  strokeWidth="1.5"
                                 >
-                                  <button
-                                    className="dropdown-item"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditTarget(review);
-                                      setOpenMenuId(null);
-                                    }}
-                                  >
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                    </svg>
-                                    Edit Review
-                                  </button>
-                                  <button
-                                    className="dropdown-item delete"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleteTarget(review);
-                                      setOpenMenuId(null);
-                                    }}
-                                  >
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <polyline points="3 6 5 6 21 6" />
-                                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                                      <path d="M10 11v6M14 11v6" />
-                                      <path d="M9 6V4h6v2" />
-                                    </svg>
-                                    Delete Review
-                                  </button>
+                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                  <circle cx="12" cy="10" r="3" />
+                                </svg>
+                              </div>
+                            )}
+                            <div className="review-body">
+                              <div className="review-header">
+                                <div>
+                                  <h5>{place}</h5>
+                                  <p className="review-date">{date}</p>
+                                  <div className="review-stars">
+                                    {[1, 2, 3, 4, 5].map((s) => (
+                                      <span
+                                        key={s}
+                                        style={{
+                                          color:
+                                            s <= rating ? "#f5a623" : "#ddd",
+                                          fontSize: 18,
+                                        }}
+                                      >
+                                        ★
+                                      </span>
+                                    ))}
+                                  </div>
                                 </div>
-                              )}
+
+                                {isApi && (
+                                  <div style={{ position: "relative" }}>
+                                    <button
+                                      className="trip-more-btn"
+                                      style={{
+                                        position: "static",
+                                        background: "#f3f4f6",
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuId(
+                                          openMenuId === `rev-${id}`
+                                            ? null
+                                            : `rev-${id}`,
+                                        );
+                                      }}
+                                    >
+                                      ⋮
+                                    </button>
+                                    {openMenuId === `rev-${id}` && (
+                                      <div
+                                        className="trip-dropdown"
+                                        style={{ right: 0, top: 36 }}
+                                      >
+                                        <button
+                                          className="dropdown-item"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditTarget({
+                                              ...review,
+                                              place,
+                                              text,
+                                              isApi: true,
+                                            });
+                                            setOpenMenuId(null);
+                                          }}
+                                        >
+                                          <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                          >
+                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                          </svg>
+                                          Edit Review
+                                        </button>
+                                        <button
+                                          className="dropdown-item delete"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDeleteTarget({
+                                              ...review,
+                                              place,
+                                              isApi: true,
+                                            });
+                                            setOpenMenuId(null);
+                                          }}
+                                        >
+                                          <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                          >
+                                            <polyline points="3 6 5 6 21 6" />
+                                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                            <path d="M10 11v6M14 11v6" />
+                                            <path d="M9 6V4h6v2" />
+                                          </svg>
+                                          Delete Review
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              <p className="review-text">{text}</p>
                             </div>
                           </div>
-                          <p className="review-text">{review.text}</p>
-                        </div>
-                      </div>
-                    ))}
+                        );
+                      })}
                 </div>
-                {reviews.length > 2 && (
+
+                {(apiReviews.length > 2 || reviews.length > 2) && (
                   <div className="show-more-wrap">
                     <button
                       className="show-more-btn"
@@ -1745,7 +1867,30 @@ const Profile = () => {
                       </button>
                       <button
                         className="modal-delete-btn"
-                        onClick={() => setDeleteTarget(null)}
+                        onClick={async () => {
+                          if (deleteTarget.isApi) {
+                            try {
+                              await reviewService.deleteReview(
+                                deleteTarget.tripId,
+                              );
+                              setApiReviews((prev) =>
+                                prev.filter(
+                                  (r) =>
+                                    r.tripReviewId !==
+                                    deleteTarget.tripReviewId,
+                                ),
+                              );
+                              showToast("Review deleted.");
+                            } catch (err) {
+                              showToast(
+                                err.response?.data?.message ||
+                                  "Failed to delete review.",
+                                "error",
+                              );
+                            }
+                          }
+                          setDeleteTarget(null);
+                        }}
                       >
                         Delete
                       </button>
@@ -1837,7 +1982,38 @@ const Profile = () => {
                     style={{
                       background: "linear-gradient(90deg, #5596fe, #97ceff)",
                     }}
-                    onClick={() => setEditTarget(null)}
+                    onClick={async () => {
+                      if (editTarget?.isApi) {
+                        try {
+                          const updated = await reviewService.updateReview(
+                            editTarget.tripId,
+                            {
+                              rating: editTarget.rating,
+                              comment: editTarget.text,
+                            },
+                          );
+                          setApiReviews((prev) =>
+                            prev.map((r) =>
+                              r.tripReviewId === editTarget.tripReviewId
+                                ? {
+                                    ...r,
+                                    rating: editTarget.rating,
+                                    comment: editTarget.text,
+                                  }
+                                : r,
+                            ),
+                          );
+                          showToast("Review updated!");
+                        } catch (err) {
+                          showToast(
+                            err.response?.data?.message ||
+                              "Failed to update review.",
+                            "error",
+                          );
+                        }
+                      }
+                      setEditTarget(null);
+                    }}
                   >
                     Save Changes
                   </button>
