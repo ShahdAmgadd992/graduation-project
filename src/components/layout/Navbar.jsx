@@ -70,11 +70,7 @@ const Navbar = ({ activePage = "home", style = {} }) => {
         ) : (
           <>
             <img
-              src={
-                ["explore", "aboutus"].includes(activePage)
-                  ? heartWhite
-                  : heartGray
-              }
+              src={activePage === "explore" ? heartWhite : heartGray}
               alt="wishlist"
               style={{
                 width: "24px",

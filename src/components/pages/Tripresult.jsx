@@ -63,14 +63,15 @@ const TIMELINE_STYLES = `
 `;
 
 // Inject once
-if (typeof document !== "undefined" && !document.getElementById("aip-timeline-css")) {
+if (
+  typeof document !== "undefined" &&
+  !document.getElementById("aip-timeline-css")
+) {
   const s = document.createElement("style");
   s.id = "aip-timeline-css";
   s.textContent = TIMELINE_STYLES;
   document.head.appendChild(s);
 }
-
-
 
 // ─── Mapbox token ─────────────────────────────────────────────────────────────
 const MAPBOX_TOKEN =
@@ -78,9 +79,16 @@ const MAPBOX_TOKEN =
 
 // Day colours — one per day (cycles if > 10 days)
 const DAY_COLORS = [
-  "#5596fe", "#22c55e", "#f97316", "#a855f7",
-  "#06b6d4", "#ec4899", "#eab308", "#14b8a6",
-  "#f43f5e", "#8b5cf6",
+  "#5596fe",
+  "#22c55e",
+  "#f97316",
+  "#a855f7",
+  "#06b6d4",
+  "#ec4899",
+  "#eab308",
+  "#14b8a6",
+  "#f43f5e",
+  "#8b5cf6",
 ];
 
 // ─── Edit caller — n8n webhook ────────────────────────────────────────────────
@@ -94,13 +102,31 @@ const callEdit = async (payload) => {
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 const IconEdit = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 const IconTrash = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
     <path d="M10 11v6M14 11v6" />
@@ -115,13 +141,31 @@ const IconDots = () => (
   </svg>
 );
 const IconHotel = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
     <polyline points="9 22 9 12 15 12 15 22" />
   </svg>
 );
 const IconCalendar = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
     <line x1="16" y1="2" x2="16" y2="6" />
     <line x1="8" y1="2" x2="8" y2="6" />
@@ -134,22 +178,46 @@ const DayMenu = ({ day, onEdit, onRemove }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, []);
   return (
     <div className="aip-day-menu-wrap" ref={ref}>
-      <button className="aip-day-menu-btn" onClick={() => setOpen((v) => !v)} aria-label="Day options">
+      <button
+        className="aip-day-menu-btn"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Day options"
+      >
         <IconDots />
       </button>
       {open && (
         <div className="aip-day-menu-dropdown">
-          <button className="aip-day-menu-item" onClick={() => { setOpen(false); onEdit(day); }}>
-            <span className="aip-day-menu-icon"><IconEdit /></span><span>Edit With AI</span>
+          <button
+            className="aip-day-menu-item"
+            onClick={() => {
+              setOpen(false);
+              onEdit(day);
+            }}
+          >
+            <span className="aip-day-menu-icon">
+              <IconEdit />
+            </span>
+            <span>Edit With AI</span>
           </button>
-          <button className="aip-day-menu-item" onClick={() => { setOpen(false); onRemove(day); }}>
-            <span className="aip-day-menu-icon"><IconTrash /></span><span>Remove Day</span>
+          <button
+            className="aip-day-menu-item"
+            onClick={() => {
+              setOpen(false);
+              onRemove(day);
+            }}
+          >
+            <span className="aip-day-menu-icon">
+              <IconTrash />
+            </span>
+            <span>Remove Day</span>
           </button>
         </div>
       )}
@@ -162,20 +230,30 @@ const HotelCard = ({ hotel }) => {
   if (!hotel) return null;
   return (
     <div className="aip-hotel-card">
-      {hotel.photoUrl && <img src={hotel.photoUrl} alt={hotel.name} className="aip-hotel-img" />}
+      {hotel.photoUrl && (
+        <img src={hotel.photoUrl} alt={hotel.name} className="aip-hotel-img" />
+      )}
       <div className="aip-hotel-info">
-        <div className="aip-hotel-label"><IconHotel /><span>Accommodation</span></div>
+        <div className="aip-hotel-label">
+          <IconHotel />
+          <span>Accommodation</span>
+        </div>
         <h3 className="aip-hotel-name">{hotel.name}</h3>
         <div className="aip-hotel-meta">
-          {hotel.city && <span className="aip-hotel-meta-item">📍 {hotel.city}</span>}
+          {hotel.city && (
+            <span className="aip-hotel-meta-item">📍 {hotel.city}</span>
+          )}
           {hotel.checkIn && hotel.checkOut && (
             <span className="aip-hotel-meta-item">
-              <IconCalendar />{hotel.checkIn} – {hotel.checkOut}
+              <IconCalendar />
+              {hotel.checkIn} – {hotel.checkOut}
               {hotel.nights ? ` · ${hotel.nights} Nights` : ""}
             </span>
           )}
         </div>
-        {hotel.price != null && <p className="aip-hotel-price">{hotel.price.toLocaleString()} EGP</p>}
+        {hotel.price != null && (
+          <p className="aip-hotel-price">{hotel.price.toLocaleString()} EGP</p>
+        )}
         {hotel.address && <p className="aip-hotel-address">{hotel.address}</p>}
       </div>
     </div>
@@ -203,7 +281,9 @@ function registerArrowIcon(map) {
   ctx.closePath();
   ctx.fillStyle = "#ffffff";
   ctx.fill();
-  map.addImage(ARROW_ICON_ID, ctx.getImageData(0, 0, size, size), { sdf: true });
+  map.addImage(ARROW_ICON_ID, ctx.getImageData(0, 0, size, size), {
+    sdf: true,
+  });
 }
 
 // ─── Professional Trip Map ────────────────────────────────────────────────────
@@ -217,26 +297,44 @@ function registerArrowIcon(map) {
 //   • Floating legend card bottom-left with day color + label
 //   • Hover tooltip on each pin (name + time-of-day slot)
 //   • Loading skeleton while map tiles load
-const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
+const TripMap = ({
+  dayDetails,
+  itinerary,
+  expandedDay,
+  checkedPlaces = {},
+}) => {
   const mapContainer = useRef(null);
-  const mapRef     = useRef(null);
+  const mapRef = useRef(null);
   const markersRef = useRef([]);
-  const [mapLoaded,  setMapLoaded]  = useState(false);
-  const [mapError,   setMapError]   = useState(false);
-  const [activePin,  setActivePin]  = useState(null); // { name, slot, x, y }
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
+  const [activePin, setActivePin] = useState(null); // { name, slot, x, y }
 
   // ── helpers ──────────────────────────────────────────────────────────────
   const dayIndexMap = {};
-  itinerary.forEach((item, i) => { dayIndexMap[item.day] = i; });
+  itinerary.forEach((item, i) => {
+    dayIndexMap[item.day] = i;
+  });
 
   const getPlacesByDay = () => {
     const result = {};
-    const days = expandedDay !== null ? [expandedDay] : itinerary.map((d) => d.day);
+    const days =
+      expandedDay !== null ? [expandedDay] : itinerary.map((d) => d.day);
     days.forEach((dayNum) => {
       const pts = [];
-      (dayDetails[dayNum] ?? []).forEach((slot) => {
-        const items = (slot.rawItems ?? (slot.activities ?? []).map((a) => ({ name: a }))).filter(Boolean);
-        items.forEach((p) => { if (p?.lat && p?.lng) pts.push({ ...p, _slot: slot.time }); });
+      (dayDetails[dayNum] ?? []).forEach((slot, slotIdx) => {
+        const items = (
+          slot.rawItems ?? (slot.activities ?? []).map((a) => ({ name: a }))
+        ).filter(Boolean);
+        items.forEach((p, placeIdx) => {
+          if (p?.lat && p?.lng)
+            pts.push({
+              ...p,
+              _slot: slot.time,
+              _slotIdx: slotIdx,
+              _placeIdx: placeIdx,
+            });
+        });
       });
       if (pts.length) result[dayNum] = pts;
     });
@@ -260,7 +358,10 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
       bootedRef.current = true;
       try {
         const mgl = window.mapboxgl;
-        if (!mgl) { setMapError(true); return; }
+        if (!mgl) {
+          setMapError(true);
+          return;
+        }
         mgl.accessToken = MAPBOX_TOKEN;
         const map = new mgl.Map({
           container: mapContainer.current,
@@ -275,8 +376,14 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
         // the container empty, even if the style hasn't finished loading
         // yet when this component unmounts.
         mapRef.current = map;
-        map.addControl(new mgl.AttributionControl({ compact: true }), "bottom-right");
-        map.addControl(new mgl.NavigationControl({ showCompass: false }), "top-right");
+        map.addControl(
+          new mgl.AttributionControl({ compact: true }),
+          "bottom-right",
+        );
+        map.addControl(
+          new mgl.NavigationControl({ showCompass: false }),
+          "top-right",
+        );
         // Disable scroll zoom so the page scrolls normally
         map.scrollZoom.disable();
         map.on("load", () => {
@@ -301,7 +408,9 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
           resizeObserver = new ResizeObserver(() => map.resize());
           resizeObserver.observe(mapContainer.current);
         }
-      } catch { setMapError(true); }
+      } catch {
+        setMapError(true);
+      }
     };
 
     if (window.mapboxgl) {
@@ -309,7 +418,8 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
     } else {
       if (!document.getElementById("mbgl-css")) {
         const l = document.createElement("link");
-        l.id = "mbgl-css"; l.rel = "stylesheet";
+        l.id = "mbgl-css";
+        l.rel = "stylesheet";
         l.href = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css";
         document.head.appendChild(l);
       }
@@ -317,10 +427,13 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
         const s = document.createElement("script");
         s.id = "mbgl-js";
         s.src = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js";
-        s.onload = boot; s.onerror = () => setMapError(true);
+        s.onload = boot;
+        s.onerror = () => setMapError(true);
         document.head.appendChild(s);
       } else {
-        document.getElementById("mbgl-js").addEventListener("load", boot, { once: true });
+        document
+          .getElementById("mbgl-js")
+          .addEventListener("load", boot, { once: true });
       }
     }
     return () => {
@@ -348,8 +461,12 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
     // remove old sources/layers (collect ids first)
     const style = map.getStyle();
     if (style) {
-      style.layers.forEach((l) => { if (l.id.startsWith("trip-")) map.removeLayer(l.id); });
-      Object.keys(style.sources).forEach((s) => { if (s.startsWith("trip-")) map.removeSource(s); });
+      style.layers.forEach((l) => {
+        if (l.id.startsWith("trip-")) map.removeLayer(l.id);
+      });
+      Object.keys(style.sources).forEach((s) => {
+        if (s.startsWith("trip-")) map.removeSource(s);
+      });
     }
 
     const byDay = getPlacesByDay();
@@ -366,36 +483,60 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
     // ── draw each day ──
     Object.entries(byDay).forEach(([dayNum, pts]) => {
       const dayIdx = dayIndexMap[Number(dayNum)] ?? 0;
-      const color  = DAY_COLORS[dayIdx % DAY_COLORS.length];
+      const color = DAY_COLORS[dayIdx % DAY_COLORS.length];
 
       if (isFocusedDay && pts.length > 1) {
-        const sid     = `trip-src-${dayNum}`;
-        const lidBg   = `trip-bg-${dayNum}`;
+        const sid = `trip-src-${dayNum}`;
+        const lidBg = `trip-bg-${dayNum}`;
         const lidLine = `trip-line-${dayNum}`;
-        const lidDir  = `trip-dir-${dayNum}`;
+        const lidDir = `trip-dir-${dayNum}`;
 
         // Route GeoJSON
         const coords = pts.map((p) => [p.lng, p.lat]);
-        map.addSource(sid, { type: "geojson", data: { type: "Feature",
-          geometry: { type: "LineString", coordinates: coords } } });
+        map.addSource(sid, {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: { type: "LineString", coordinates: coords },
+          },
+        });
 
         // 1. Soft white halo under line
-        map.addLayer({ id: lidBg, type: "line", source: sid,
-          paint: { "line-color": "#fff", "line-width": 8, "line-opacity": 0.7,
-                   "line-blur": 2 } });
+        map.addLayer({
+          id: lidBg,
+          type: "line",
+          source: sid,
+          paint: {
+            "line-color": "#fff",
+            "line-width": 8,
+            "line-opacity": 0.7,
+            "line-blur": 2,
+          },
+        });
 
         // 2. Solid colored line
-        map.addLayer({ id: lidLine, type: "line", source: sid,
+        map.addLayer({
+          id: lidLine,
+          type: "line",
+          source: sid,
           layout: { "line-join": "round", "line-cap": "round" },
-          paint: { "line-color": color, "line-width": 3.5, "line-opacity": 0.95 } });
+          paint: {
+            "line-color": color,
+            "line-width": 3.5,
+            "line-opacity": 0.95,
+          },
+        });
 
         // 3. Direction arrows along the line
         registerArrowIcon(map); // safety net in case style/images were reset
-        map.addLayer({ id: lidDir, type: "symbol", source: sid,
+        map.addLayer({
+          id: lidDir,
+          type: "symbol",
+          source: sid,
           layout: {
             "symbol-placement": "line",
             "symbol-spacing": 80,
-            "icon-image": ARROW_ICON_ID,   // custom canvas-drawn arrow (see registerArrowIcon)
+            "icon-image": ARROW_ICON_ID, // custom canvas-drawn arrow (see registerArrowIcon)
             "icon-size": 0.9,
             "icon-allow-overlap": true,
             "icon-ignore-placement": true,
@@ -408,17 +549,19 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
       pts.forEach((p, i) => {
         const isFirst = i === 0;
 
-        const badgeSize  = Math.round(28 * markerScale);
-        const fontSize   = Math.round(12 * markerScale);
-        const tipWidth   = Math.round(5 * markerScale);
-        const tipHeight  = Math.round(6 * markerScale);
+        const badgeSize = Math.round(28 * markerScale);
+        const fontSize = Math.round(12 * markerScale);
+        const tipWidth = Math.round(5 * markerScale);
+        const tipHeight = Math.round(6 * markerScale);
         const shadowBlur = isFocusedDay ? 8 : 5;
 
         // Outer wrapper — gives us the "tail" pointer-down shape
         const wrap = document.createElement("div");
         wrap.className = "aip-map-marker";
         wrap.style.cssText = [
-          "display:flex","flex-direction:column","align-items:center",
+          "display:flex",
+          "flex-direction:column",
+          "align-items:center",
           "cursor:pointer",
           `filter:drop-shadow(0 3px ${shadowBlur}px rgba(0,0,0,0.28))`,
         ].join(";");
@@ -428,39 +571,75 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
         badge.style.cssText = [
           `background:${color}`,
           "color:#fff",
-          "font-family:Poppins,sans-serif", `font-size:${fontSize}px`, "font-weight:700",
-          `min-width:${badgeSize}px`, `height:${badgeSize}px`, `border-radius:${badgeSize / 2}px`,
-          "display:flex","align-items:center","justify-content:center",
+          "font-family:Poppins,sans-serif",
+          `font-size:${fontSize}px`,
+          "font-weight:700",
+          `min-width:${badgeSize}px`,
+          `height:${badgeSize}px`,
+          `border-radius:${badgeSize / 2}px`,
+          "display:flex",
+          "align-items:center",
+          "justify-content:center",
           "padding:0 8px",
           "border:2.5px solid #fff",
-          "position:relative","z-index:2",
+          "position:relative",
+          "z-index:2",
           "white-space:nowrap",
           isFirst ? "outline:3px solid " + color + "55" : "",
         ].join(";");
         badge.textContent = String(i + 1);
 
-        // Tiny triangle pointer
+        // Tiny triangle pointer — لازم يتعمل الأول
         const tip = document.createElement("div");
         tip.style.cssText = [
-          "width:0","height:0",
+          "width:0",
+          "height:0",
           `border-left:${tipWidth}px solid transparent`,
           `border-right:${tipWidth}px solid transparent`,
           `border-top:${tipHeight}px solid ${color}`,
-          "margin-top:-1px","z-index:1",
+          "margin-top:-1px",
+          "z-index:1",
         ].join(";");
+
+        // ✅ دلوقتي تقدري تستخدمي tip
+        const dayChecks = checkedPlaces[Number(dayNum)] ?? {};
+        const isChecked = dayChecks[`${p._slotIdx}-${p._placeIdx}`] ?? false;
+        if (isChecked) {
+          badge.style.background = "#22c55e";
+          badge.style.borderColor = "#16a34a";
+          tip.style.borderTopColor = "#22c55e";
+          wrap.style.opacity = "0.75";
+        }
 
         wrap.appendChild(badge);
         wrap.appendChild(tip);
+        tip.style.cssText = [
+          "width:0",
+          "height:0",
+          `border-left:${tipWidth}px solid transparent`,
+          `border-right:${tipWidth}px solid transparent`,
+          `border-top:${tipHeight}px solid ${color}`,
+          "margin-top:-1px",
+          "z-index:1",
+        ].join(";");
 
         // Hover interaction — show tooltip via React state
         wrap.addEventListener("mouseenter", (e) => {
           const rect = mapContainer.current?.getBoundingClientRect();
           const point = mapRef.current.project([p.lng, p.lat]);
-          setActivePin({ name: p.name ?? "", slot: p._slot ?? "", x: point.x, y: point.y });
+          setActivePin({
+            name: p.name ?? "",
+            slot: p._slot ?? "",
+            x: point.x,
+            y: point.y,
+          });
         });
         wrap.addEventListener("mouseleave", () => setActivePin(null));
 
-        const marker = new window.mapboxgl.Marker({ element: wrap, anchor: "bottom" })
+        const marker = new window.mapboxgl.Marker({
+          element: wrap,
+          anchor: "bottom",
+        })
           .setLngLat([p.lng, p.lat])
           .addTo(map);
         markersRef.current.push(marker);
@@ -472,14 +651,14 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
     // the map filling its space instead of leaving dead gray margins when a
     // trip happens to span a wider or narrower area. ──
     const containerRect = mapContainer.current?.getBoundingClientRect();
-    const cw = containerRect?.width  || 600;
+    const cw = containerRect?.width || 600;
     const ch = containerRect?.height || 500;
     // Padding scales with the container so a small map and a tall map both
     // keep sensible breathing room instead of a one-size-fits-all pixel value.
-    const padSide   = Math.max(36, Math.min(70, cw * 0.1));
-    const padTop    = Math.max(36, Math.min(70, ch * 0.1));
+    const padSide = Math.max(36, Math.min(70, cw * 0.1));
+    const padTop = Math.max(36, Math.min(70, ch * 0.1));
     const padBottom = showLegendNow
-      ? Math.max(90, ch * 0.2)   // leave room for the floating legend card
+      ? Math.max(90, ch * 0.2) // leave room for the floating legend card
       : Math.max(36, ch * 0.1);
 
     if (allPts.length === 1) {
@@ -493,24 +672,29 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
       const lngs = allPts.map((p) => p.lng);
       const lats = allPts.map((p) => p.lat);
       map.fitBounds(
-        [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+        [
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
+        ],
         {
-          padding: { top: padTop, bottom: padBottom, left: padSide, right: padSide },
+          padding: {
+            top: padTop,
+            bottom: padBottom,
+            left: padSide,
+            right: padSide,
+          },
           minZoom: 3,
           maxZoom: isFocusedDay ? 16 : 14,
           duration: 700,
-        }
+        },
       );
     }
-
-  }, [mapLoaded, dayDetails, itinerary, expandedDay]);
-
-  const byDay     = getPlacesByDay();
+  }, [mapLoaded, dayDetails, itinerary, expandedDay, checkedPlaces]);
+  const byDay = getPlacesByDay();
   const showLegend = expandedDay === null && Object.keys(byDay).length > 1;
 
   return (
     <div className="aip-result-map">
-
       {/* Map frame — fixed size, sticky. The element Mapbox attaches to is
           ALWAYS mounted at full size (never display:none), because hiding
           it would give Mapbox a 0×0 container to measure at construction
@@ -519,49 +703,79 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
           state is drawn as an overlay on top instead. */}
       <div className="aip-mapbox-container" style={{ position: "relative" }}>
         {mapError ? (
-          <div className="aip-map-fallback" style={{ width: "100%", height: "100%" }}>
+          <div
+            className="aip-map-fallback"
+            style={{ width: "100%", height: "100%" }}
+          >
             <span style={{ fontSize: "2.5rem" }}>🗺️</span>
-            <p style={{ margin: "8px 0 0", color: "#9ca3af", fontSize: "0.85rem" }}>Map unavailable</p>
+            <p
+              style={{
+                margin: "8px 0 0",
+                color: "#9ca3af",
+                fontSize: "0.85rem",
+              }}
+            >
+              Map unavailable
+            </p>
           </div>
         ) : (
           <>
             <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
 
             {!mapLoaded && (
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(135deg,#e8eef7 0%,#f0f4fb 100%)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexDirection: "column", gap: "10px",
-              }}>
-                <div style={{ width: "36px", height: "36px", border: "3px solid #5596fe",
-                  borderTopColor: "transparent", borderRadius: "50%",
-                  animation: "spin 0.8s linear infinite" }} />
-                <p style={{ color: "#9ca3af", fontSize: "0.8rem", margin: 0 }}>Loading map…</p>
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(135deg,#e8eef7 0%,#f0f4fb 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    border: "3px solid #5596fe",
+                    borderTopColor: "transparent",
+                    borderRadius: "50%",
+                    animation: "spin 0.8s linear infinite",
+                  }}
+                />
+                <p style={{ color: "#9ca3af", fontSize: "0.8rem", margin: 0 }}>
+                  Loading map…
+                </p>
               </div>
             )}
 
             {/* Hover tooltip */}
             {activePin && (
-              <div style={{
-                position: "absolute",
-                left: activePin.x + 14,
-                top:  activePin.y - 36,
-                background: "#1a1a2e",
-                color: "#fff",
-                padding: "5px 10px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                fontFamily: "Poppins,sans-serif",
-                whiteSpace: "nowrap",
-                pointerEvents: "none",
-                zIndex: 10,
-                boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
-              }}>
+              <div
+                style={{
+                  position: "absolute",
+                  left: activePin.x + 14,
+                  top: activePin.y - 36,
+                  background: "#1a1a2e",
+                  color: "#fff",
+                  padding: "5px 10px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  fontFamily: "Poppins,sans-serif",
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                  zIndex: 10,
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+                }}
+              >
                 {activePin.name}
                 {activePin.slot && (
-                  <span style={{ marginLeft: "6px", opacity: 0.6, fontWeight: 400 }}>
+                  <span
+                    style={{ marginLeft: "6px", opacity: 0.6, fontWeight: 400 }}
+                  >
                     · {activePin.slot}
                   </span>
                 )}
@@ -579,11 +793,17 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
             const pts = byDay[item.day] ?? [];
             return (
               <div key={item.day} className="aip-map-legend-below-item">
-                <span className="aip-map-legend-below-dot" style={{ background: DAY_COLORS[i % DAY_COLORS.length] }} />
+                <span
+                  className="aip-map-legend-below-dot"
+                  style={{ background: DAY_COLORS[i % DAY_COLORS.length] }}
+                />
                 <span className="aip-map-legend-below-label">
                   Day {item.day}
                   {pts.length > 0 && (
-                    <span className="aip-map-legend-below-count"> · {pts.length} stops</span>
+                    <span className="aip-map-legend-below-count">
+                      {" "}
+                      · {pts.length} stops
+                    </span>
                   )}
                 </span>
               </div>
@@ -600,18 +820,41 @@ const TripMap = ({ dayDetails, itinerary, expandedDay }) => {
 
 // ─── Error Boundary — prevents white screen on any crash ─────────────────────
 class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
-  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "40px", textAlign: "center", fontFamily: "Poppins,sans-serif" }}>
+        <div
+          style={{
+            padding: "40px",
+            textAlign: "center",
+            fontFamily: "Poppins,sans-serif",
+          }}
+        >
           <p style={{ fontSize: "2rem" }}>⚠️</p>
           <h3 style={{ color: "#1a1a2e" }}>Something went wrong</h3>
-          <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>{String(this.state.error?.message ?? "")}</p>
+          <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>
+            {String(this.state.error?.message ?? "")}
+          </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
-            style={{ marginTop: "16px", padding: "10px 24px", background: "#5596fe", color: "#fff", border: "none", borderRadius: "12px", cursor: "pointer", fontFamily: "Poppins,sans-serif", fontWeight: 600 }}
+            style={{
+              marginTop: "16px",
+              padding: "10px 24px",
+              background: "#5596fe",
+              color: "#fff",
+              border: "none",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontFamily: "Poppins,sans-serif",
+              fontWeight: 600,
+            }}
           >
             Try again
           </button>
@@ -651,31 +894,94 @@ const TripResult = ({ tripPlan, user }) => {
 
   // Chatbot — removed FAB, kept component available if needed elsewhere
   const [showChatbot, setShowChatbot] = useState(false);
+  const [isLoadingTrip, setIsLoadingTrip] = useState(false);
 
-  const editSuggestions = ["Water Sports", "Relaxation", "More Activity", "Budget-Friendly"];
+  useEffect(() => {
+    if (tripPlan?.tripId && !tripPlan?.itinerary) {
+      const cached = localStorage.getItem(`tripPlan_${tripPlan.tripId}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setItinerary(parsed.itinerary ?? []);
+        setDayDetails(parsed.dayDetails ?? {});
+        return;
+      }
+      setIsLoadingTrip(true);
+      tripService
+        .getTripById(tripPlan.tripId)
+        .then((res) => {
+          const data = res.data;
+          // بناء الـ itinerary من الـ plan
+          const plan = data.plan ?? {};
+          const days = data.durationDays ?? Object.keys(plan).length;
+          const builtItinerary = Array.from({ length: days }, (_, i) => ({
+            day: i + 1,
+            description: `Day ${i + 1} in ${data.destinationGovernorate ?? ""}`,
+            img: data.coverImageUrl ?? "",
+            cost: 0,
+            tags: [],
+            stops: null,
+          }));
+          const builtDayDetails = {};
+          for (let d = 1; d <= days; d++) {
+            const dayData = plan[`day${d}`] ?? {};
+            builtDayDetails[d] = ["morning", "afternoon", "evening"].map(
+              (slot) => ({
+                time: slot.charAt(0).toUpperCase() + slot.slice(1),
+                title: slot,
+                activities: (dayData[slot] ?? []).map((p) => p?.name ?? p),
+                rawItems: dayData[slot] ?? [],
+              }),
+            );
+          }
+          setItinerary(builtItinerary);
+          setDayDetails(builtDayDetails);
+        })
+        .catch((err) => console.error("Failed to load trip:", err))
+        .finally(() => setIsLoadingTrip(false));
+    }
+  }, [tripPlan?.tripId]);
+  const editSuggestions = [
+    "Water Sports",
+    "Relaxation",
+    "More Activity",
+    "Budget-Friendly",
+  ];
   const suggestionColors = ["#C4E0F9", "#EDF9F0", "#FCE8D1", "#D7F1F3"];
   const suggestionTextColors = ["#3b82f6", "#22c55e", "#f97316", "#06b6d4"];
 
   // ── helpers ───────────────────────────────────────────────────────────────
-  const openEdit = (day) => { setEditingDay(day); setEditText(""); setEditError(""); setShowEditModal(true); };
-  const openRemoveDay = (day) => { setRemovingDay(day); setShowRemoveDayPopup(true); };
+  const openEdit = (day) => {
+    setEditingDay(day);
+    setEditText("");
+    setEditError("");
+    setShowEditModal(true);
+  };
+  const openRemoveDay = (day) => {
+    setRemovingDay(day);
+    setShowRemoveDayPopup(true);
+  };
 
   const confirmRemoveDay = () => {
     setItinerary((prev) => prev.filter((item) => item.day !== removingDay));
-    setDayDetails((prev) => { const n = { ...prev }; delete n[removingDay]; return n; });
+    setDayDetails((prev) => {
+      const n = { ...prev };
+      delete n[removingDay];
+      return n;
+    });
     if (expandedDay === removingDay) setExpandedDay(null);
     setShowRemoveDayPopup(false);
     setRemovingDay(null);
   };
 
-  const toggleExpand = (day) => setExpandedDay((prev) => (prev === day ? null : day));
+  const toggleExpand = (day) =>
+    setExpandedDay((prev) => (prev === day ? null : day));
 
   // ── checkbox + timeline ───────────────────────────────────────────────────
   const toggleCheck = (day, slotIdx, placeIdx) => {
     const key = `${slotIdx}-${placeIdx}`;
     setCheckedPlaces((prev) => ({
       ...prev,
-      [day]: { ...(prev[day] ?? {}), [key]: !(prev[day]?.[key]) },
+      [day]: { ...(prev[day] ?? {}), [key]: !prev[day]?.[key] },
     }));
   };
 
@@ -683,12 +989,15 @@ const TripResult = ({ tripPlan, user }) => {
   const getSlotProgress = (day, details) => {
     const dayChecks = checkedPlaces[day] ?? {};
     return details.map((slot, slotIdx) => {
-      const places = (slot.rawItems?.length
-        ? slot.rawItems
-        : (slot.activities ?? []).map((a) => ({ name: a }))
+      const places = (
+        slot.rawItems?.length
+          ? slot.rawItems
+          : (slot.activities ?? []).map((a) => ({ name: a }))
       ).filter(Boolean);
       if (!places.length) return 0;
-      const checkedCount = places.filter((_, pi) => dayChecks[`${slotIdx}-${pi}`]).length;
+      const checkedCount = places.filter(
+        (_, pi) => dayChecks[`${slotIdx}-${pi}`],
+      ).length;
       return checkedCount / places.length; // 0 to 1
     });
   };
@@ -697,9 +1006,10 @@ const TripResult = ({ tripPlan, user }) => {
   const getActivatedSlots = (day, details) => {
     const dayChecks = checkedPlaces[day] ?? {};
     return details.map((slot, slotIdx) => {
-      const places = (slot.rawItems?.length
-        ? slot.rawItems
-        : (slot.activities ?? []).map((a) => ({ name: a }))
+      const places = (
+        slot.rawItems?.length
+          ? slot.rawItems
+          : (slot.activities ?? []).map((a) => ({ name: a }))
       ).filter(Boolean);
       return places.some((_, pi) => dayChecks[`${slotIdx}-${pi}`]);
     });
@@ -711,7 +1021,9 @@ const TripResult = ({ tripPlan, user }) => {
     setIsEditLoading(true);
     setEditError("");
     try {
-      const existingPlanFlat = Object.values(dayDetails).flat().flatMap((slot) => (slot.rawItems ?? []).filter(Boolean));
+      const existingPlanFlat = Object.values(dayDetails)
+        .flat()
+        .flatMap((slot) => (slot.rawItems ?? []).filter(Boolean));
       const newUserTurn = { role: "user", content: editText };
       const conversationWindow = [...editConversation, newUserTurn].slice(-8);
 
@@ -729,7 +1041,13 @@ const TripResult = ({ tripPlan, user }) => {
 
       const data = response.data;
       const mode = data?.mode;
-      setEditConversation((prev) => [...prev, newUserTurn, { role: "assistant", content: data?.message ?? "" }].slice(-8));
+      setEditConversation((prev) =>
+        [
+          ...prev,
+          newUserTurn,
+          { role: "assistant", content: data?.message ?? "" },
+        ].slice(-8),
+      );
 
       if (mode === "surgical" || mode === "add") {
         const updatedRaw = data.plan;
@@ -738,30 +1056,40 @@ const TripResult = ({ tripPlan, user }) => {
           for (let d = 1; d <= tripPlan.days; d++) {
             const dayData = updatedRaw[`day${d}`];
             if (!dayData) continue;
-            newDayDetails[d] = ["morning", "afternoon", "evening"].map((slot) => {
-              const items = dayData[slot] ?? [];
-              const titles = items.map((p) => p?.name ?? p?.title ?? "").filter(Boolean);
-              return {
-                time: slot.charAt(0).toUpperCase() + slot.slice(1),
-                title: titles[0] ?? `${slot} activities`,
-                activities: titles.length ? titles : ["Explore the area"],
-                rawItems: items,
-              };
-            });
+            newDayDetails[d] = ["morning", "afternoon", "evening"].map(
+              (slot) => {
+                const items = dayData[slot] ?? [];
+                const titles = items
+                  .map((p) => p?.name ?? p?.title ?? "")
+                  .filter(Boolean);
+                return {
+                  time: slot.charAt(0).toUpperCase() + slot.slice(1),
+                  title: titles[0] ?? `${slot} activities`,
+                  activities: titles.length ? titles : ["Explore the area"],
+                  rawItems: items,
+                };
+              },
+            );
           }
           setDayDetails(newDayDetails);
         }
         setShowEditModal(false);
         setEditText("");
       } else if (mode === "remove") {
-        setEditError(`"${data?.removed_item?.name ?? "the item"}" was removed. Please describe a replacement.`);
+        setEditError(
+          `"${data?.removed_item?.name ?? "the item"}" was removed. Please describe a replacement.`,
+        );
       } else if (mode === "replan") {
         setShowEditModal(false);
       } else {
         setEditError(data?.message ?? "No changes were made.");
       }
     } catch (err) {
-      setEditError(err.response?.data?.message ?? err.message ?? "Failed to update. Please try again.");
+      setEditError(
+        err.response?.data?.message ??
+          err.message ??
+          "Failed to update. Please try again.",
+      );
     } finally {
       setIsEditLoading(false);
     }
@@ -772,52 +1100,78 @@ const TripResult = ({ tripPlan, user }) => {
     setIsSaving(true);
     setSaveError("");
     try {
+      // ✅ رتبي الأيام وأعيدي ترقيمها بدون gaps
+      const sortedDays = Object.keys(dayDetails)
+        .map(Number)
+        .sort((a, b) => a - b);
+      const actualDays = sortedDays.length;
+
       const planPayload = {};
-      Object.entries(dayDetails).forEach(([dayNum, slots]) => {
-        planPayload[`day${dayNum}`] = {};
-        slots.forEach((slot) => {
-          planPayload[`day${dayNum}`][slot.time.toLowerCase()] = slot.rawItems ?? [];
+      sortedDays.forEach((dayNum, index) => {
+        const newKey = `day${index + 1}`;
+        planPayload[newKey] = {};
+        dayDetails[dayNum].forEach((slot) => {
+          planPayload[newKey][slot.time.toLowerCase()] = slot.rawItems ?? [];
         });
       });
 
       const startDate = tripPlan.startDate
         ? new Date(tripPlan.startDate).toISOString()
         : new Date().toISOString();
-      const endDate = tripPlan.endDate
-        ? new Date(tripPlan.endDate).toISOString()
-        : new Date(Date.now() + (tripPlan.days ?? 1) * 86400000).toISOString();
 
-      await tripService.createTrip({
+      // ✅ احسبي endDate من actualDays مش من tripPlan.days
+      const endDate = new Date(
+        new Date(startDate).getTime() + actualDays * 86400000,
+      ).toISOString();
+      console.log(
+        "itinerary imgs:",
+        itinerary.map((d) => d.img),
+      );
+      const res = await tripService.createTrip({
         title: tripPlan.title ?? `${tripPlan.destination} Trip`,
         destinationGovernorate: tripPlan.governorate ?? tripPlan.destination,
         city: tripPlan.destination,
         startDate,
         endDate,
+        durationDays: actualDays,
+        coverImageUrl: itinerary[0]?.img ?? "",
         people: Math.max(1, (tripPlan.adults ?? 1) + (tripPlan.children ?? 0)),
-        totalBudgetEgp: tripPlan.budget ?? 0,
+        totalBudgetEgp: Math.max(1, tripPlan.budget ?? 1),
         budget: tripPlan.budget ?? 0,
         totalCost: itinerary.reduce((sum, item) => sum + (item.cost ?? 0), 0),
         plan: planPayload,
-        collected: tripPlan.collected ?? null,
-        sessionId: tripPlan.sessionId ?? null,
         isPublic: false,
         status: 0,
       });
 
+      const newTripId = res.data?.tripId ?? res.data?.id;
+      if (newTripId) {
+        localStorage.setItem(
+          `tripPlan_${newTripId}`,
+          JSON.stringify({ ...tripPlan, itinerary, dayDetails }),
+        );
+      }
       setIsSaved(true);
       setShowSavedPopup(true);
     } catch (err) {
-      setSaveError(err.response?.data?.message ?? err.message ?? "Failed to save trip. Please try again.");
+      setSaveError(
+        err.response?.data?.message ??
+          err.message ??
+          "Failed to save trip. Please try again.",
+      );
     } finally {
       setIsSaving(false);
     }
   };
-
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="aip-page">
       <Navbar activePage="aiplanner" />
-
+      {isLoadingTrip && (
+        <div style={{ textAlign: "center", padding: 80, color: "#999" }}>
+          Loading trip...
+        </div>
+      )}
       {/* Header */}
       <div className="aip-result-header">
         <h1 className="aip-result-title">
@@ -839,7 +1193,6 @@ const TripResult = ({ tripPlan, user }) => {
         {/* Left — day cards */}
         <div className="aip-result-left">
           <div className="aip-result-days">
-
             {tripPlan.hotel && <HotelCard hotel={tripPlan.hotel} />}
 
             {itinerary.map((item) => {
@@ -848,7 +1201,10 @@ const TripResult = ({ tripPlan, user }) => {
               const stopsCount =
                 item.stops != null
                   ? item.stops
-                  : details.reduce((acc, slot) => acc + (slot.activities?.length ?? 0), 0) || null;
+                  : details.reduce(
+                      (acc, slot) => acc + (slot.activities?.length ?? 0),
+                      0,
+                    ) || null;
               const activatedSlots = getActivatedSlots(item.day, details);
               const slotProgress = getSlotProgress(item.day, details);
 
@@ -857,12 +1213,20 @@ const TripResult = ({ tripPlan, user }) => {
                   key={item.day}
                   className={`aip-result-day-card ${isExpanded ? "aip-result-day-card--expanded" : ""}`}
                 >
-                  <img src={item.img} alt={item.description} className="aip-result-day-img" />
+                  <img
+                    src={item.img}
+                    alt={item.description}
+                    className="aip-result-day-img"
+                  />
 
                   <div className="aip-result-day-info">
                     <div className="aip-result-day-header-row">
                       <p className="aip-result-day-label">Day {item.day}</p>
-                      <DayMenu day={item.day} onEdit={openEdit} onRemove={openRemoveDay} />
+                      <DayMenu
+                        day={item.day}
+                        onEdit={openEdit}
+                        onRemove={openRemoveDay}
+                      />
                     </div>
 
                     <h3 className="aip-result-day-title">{item.description}</h3>
@@ -875,13 +1239,14 @@ const TripResult = ({ tripPlan, user }) => {
 
                     <div className="aip-result-tags">
                       {item.tags.map((tag) => (
-                        <span key={tag} className="aip-result-tag">{tag}</span>
+                        <span key={tag} className="aip-result-tag">
+                          {tag}
+                        </span>
                       ))}
                     </div>
 
                     {isExpanded && (
                       <div className="aip-day-details">
-
                         {/* Timeline — smooth progress bar per slot, moves with each checkbox */}
                         <div className="aip-timeline-bar-wrap">
                           {details.map((slot, i) => {
@@ -889,14 +1254,23 @@ const TripResult = ({ tripPlan, user }) => {
                             const isActive = activatedSlots[i];
                             return (
                               <div key={i} className="aip-timeline-segment">
-                                <div className="aip-timeline-label">{slot.time}</div>
+                                <div className="aip-timeline-label">
+                                  {slot.time}
+                                </div>
                                 <div className="aip-timeline-track">
                                   <div
                                     className="aip-timeline-fill"
-                                    style={{ width: `${prog * 100}%`, background: isActive ? "#5596fe" : "#5596fe" }}
+                                    style={{
+                                      width: `${prog * 100}%`,
+                                      background: isActive
+                                        ? "#5596fe"
+                                        : "#5596fe",
+                                    }}
                                   />
                                 </div>
-                                <div className={`aip-timeline-dot2 ${isActive ? "aip-timeline-dot2--active" : ""}`} />
+                                <div
+                                  className={`aip-timeline-dot2 ${isActive ? "aip-timeline-dot2--active" : ""}`}
+                                />
                               </div>
                             );
                           })}
@@ -905,44 +1279,73 @@ const TripResult = ({ tripPlan, user }) => {
                         {/* Slot columns */}
                         <div className="aip-day-columns">
                           {details.map((slot, slotIdx) => {
-                            const places = (slot.rawItems?.length
-                              ? slot.rawItems
-                              : (slot.activities || []).map((act) => ({ name: act }))).filter(Boolean);
+                            const places = (
+                              slot.rawItems?.length
+                                ? slot.rawItems
+                                : (slot.activities || []).map((act) => ({
+                                    name: act,
+                                  }))
+                            ).filter(Boolean);
 
                             return (
                               <div key={slotIdx} className="aip-day-column">
-                                <p className="aip-day-slot-time">{slot.time} —</p>
+                                <p className="aip-day-slot-time">
+                                  {slot.time} —
+                                </p>
                                 <ul className="aip-day-slot-list">
                                   {places.map((place, j) => {
-                                    const isStringOnly = typeof place === "string";
-                                    const placeName = isStringOnly ? place : (place.name ?? place.title ?? "Activity");
-                                    const placeCost = isStringOnly ? null : (place.cost ?? place.price ?? null);
-                                    const isHiddenGem = !isStringOnly && !!place.is_hidden_gem;
+                                    const isStringOnly =
+                                      typeof place === "string";
+                                    const placeName = isStringOnly
+                                      ? place
+                                      : (place.name ??
+                                        place.title ??
+                                        "Activity");
+                                    const placeCost = isStringOnly
+                                      ? null
+                                      : (place.cost ?? place.price ?? null);
+                                    const isHiddenGem =
+                                      !isStringOnly && !!place.is_hidden_gem;
                                     const checkKey = `${slotIdx}-${j}`;
-                                    const isChecked = checkedPlaces[item.day]?.[checkKey] ?? false;
+                                    const isChecked =
+                                      checkedPlaces[item.day]?.[checkKey] ??
+                                      false;
 
                                     return (
                                       <li
                                         key={j}
                                         className="aip-day-slot-item"
-                                        onClick={() => toggleCheck(item.day, slotIdx, j)}
+                                        onClick={() =>
+                                          toggleCheck(item.day, slotIdx, j)
+                                        }
                                         style={{ cursor: "pointer" }}
                                       >
                                         <input
                                           type="checkbox"
                                           className="aip-place-checkbox"
                                           checked={isChecked}
-                                          onChange={() => toggleCheck(item.day, slotIdx, j)}
+                                          onChange={() =>
+                                            toggleCheck(item.day, slotIdx, j)
+                                          }
                                           onClick={(e) => e.stopPropagation()}
                                         />
-                                        <span className={`aip-day-slot-name ${isChecked ? "aip-day-slot-name--checked" : ""}`}>
+                                        <span
+                                          className={`aip-day-slot-name ${isChecked ? "aip-day-slot-name--checked" : ""}`}
+                                        >
                                           {placeName}
                                         </span>
                                         {isHiddenGem && (
-                                          <span className="aip-hidden-gem-badge" title="Hidden Gem">💎 Hidden gem</span>
+                                          <span
+                                            className="aip-hidden-gem-badge"
+                                            title="Hidden Gem"
+                                          >
+                                            💎 Hidden gem
+                                          </span>
                                         )}
                                         {placeCost != null && (
-                                          <span className="aip-day-slot-cost">~{placeCost} EGP</span>
+                                          <span className="aip-day-slot-cost">
+                                            ~{placeCost} EGP
+                                          </span>
                                         )}
                                       </li>
                                     );
@@ -955,7 +1358,10 @@ const TripResult = ({ tripPlan, user }) => {
                       </div>
                     )}
 
-                    <button className="aip-result-view-btn" onClick={() => toggleExpand(item.day)}>
+                    <button
+                      className="aip-result-view-btn"
+                      onClick={() => toggleExpand(item.day)}
+                    >
                       {isExpanded ? "View less ›" : "View ›"}
                     </button>
                   </div>
@@ -970,11 +1376,19 @@ const TripResult = ({ tripPlan, user }) => {
           dayDetails={dayDetails}
           itinerary={itinerary}
           expandedDay={expandedDay}
+          checkedPlaces={checkedPlaces}
         />
       </div>
 
       {/* Save button */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0 0 40px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "0 0 40px",
+        }}
+      >
         {saveError && <p className="aip-save-error">{saveError}</p>}
         {!isSaved ? (
           <button
@@ -986,7 +1400,10 @@ const TripResult = ({ tripPlan, user }) => {
             {isSaving ? "Saving..." : "Save Trip"}
           </button>
         ) : (
-          <button className="aip-save-btn aip-manage-btn" onClick={() => setShowSavedPopup(true)}>
+          <button
+            className="aip-save-btn aip-manage-btn"
+            onClick={() => setShowSavedPopup(true)}
+          >
             Manage Trip
           </button>
         )}
@@ -994,11 +1411,28 @@ const TripResult = ({ tripPlan, user }) => {
 
       {/* POPUP — saved */}
       {showSavedPopup && (
-        <div className="aip-modal-overlay" onClick={() => setShowSavedPopup(false)}>
-          <div className="aip-popup aip-saved-popup" onClick={(e) => e.stopPropagation()}>
-            <button className="aip-popup-close" onClick={() => setShowSavedPopup(false)}>✕</button>
+        <div
+          className="aip-modal-overlay"
+          onClick={() => setShowSavedPopup(false)}
+        >
+          <div
+            className="aip-popup aip-saved-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="aip-popup-close"
+              onClick={() => setShowSavedPopup(false)}
+            >
+              ✕
+            </button>
             <p className="aip-popup-title">Trip saved to My Trip</p>
-            <button className="aip-popup-primary-btn" onClick={() => { setShowSavedPopup(false); if (window.navigateToProfile) window.navigateToProfile(); }}>
+            <button
+              className="aip-popup-primary-btn"
+              onClick={() => {
+                setShowSavedPopup(false);
+                if (window.navigateToProfile) window.navigateToProfile();
+              }}
+            >
               View in My Trips
             </button>
           </div>
@@ -1007,27 +1441,59 @@ const TripResult = ({ tripPlan, user }) => {
 
       {/* POPUP — remove day */}
       {showRemoveDayPopup && (
-        <div className="aip-modal-overlay" onClick={() => setShowRemoveDayPopup(false)}>
-          <div className="aip-popup aip-remove-popup" onClick={(e) => e.stopPropagation()}>
-            <button className="aip-popup-close" onClick={() => setShowRemoveDayPopup(false)}>✕</button>
-            <p className="aip-popup-title">Remove Day {removingDay} from your trip?</p>
-            <button className="aip-popup-outline-btn" onClick={() => setShowRemoveDayPopup(false)}>Cancel</button>
-            <button className="aip-popup-danger-btn" onClick={confirmRemoveDay}>Remove</button>
+        <div
+          className="aip-modal-overlay"
+          onClick={() => setShowRemoveDayPopup(false)}
+        >
+          <div
+            className="aip-popup aip-remove-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="aip-popup-close"
+              onClick={() => setShowRemoveDayPopup(false)}
+            >
+              ✕
+            </button>
+            <p className="aip-popup-title">
+              Remove Day {removingDay} from your trip?
+            </p>
+            <button
+              className="aip-popup-outline-btn"
+              onClick={() => setShowRemoveDayPopup(false)}
+            >
+              Cancel
+            </button>
+            <button className="aip-popup-danger-btn" onClick={confirmRemoveDay}>
+              Remove
+            </button>
           </div>
         </div>
       )}
 
       {/* MODAL — AI edit */}
       {showEditModal && (
-        <div className="aip-modal-overlay" onClick={() => !isEditLoading && setShowEditModal(false)}>
+        <div
+          className="aip-modal-overlay"
+          onClick={() => !isEditLoading && setShowEditModal(false)}
+        >
           <div className="aip-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="aip-modal-close" onClick={() => !isEditLoading && setShowEditModal(false)} disabled={isEditLoading}>✕</button>
+            <button
+              className="aip-modal-close"
+              onClick={() => !isEditLoading && setShowEditModal(false)}
+              disabled={isEditLoading}
+            >
+              ✕
+            </button>
             <h3 className="aip-modal-title">Customize Day {editingDay}</h3>
             <textarea
               className="aip-modal-textarea"
               placeholder="What would you like to change?"
               value={editText}
-              onChange={(e) => { setEditText(e.target.value); setEditError(""); }}
+              onChange={(e) => {
+                setEditText(e.target.value);
+                setEditError("");
+              }}
               disabled={isEditLoading}
             />
             <div className="aip-modal-suggestions">
@@ -1035,8 +1501,14 @@ const TripResult = ({ tripPlan, user }) => {
                 <button
                   key={s}
                   className="aip-modal-suggestion"
-                  style={{ background: suggestionColors[i], color: suggestionTextColors[i] }}
-                  onClick={() => { setEditText(s); setEditError(""); }}
+                  style={{
+                    background: suggestionColors[i],
+                    color: suggestionTextColors[i],
+                  }}
+                  onClick={() => {
+                    setEditText(s);
+                    setEditError("");
+                  }}
                   disabled={isEditLoading}
                 >
                   {s}
@@ -1050,9 +1522,19 @@ const TripResult = ({ tripPlan, user }) => {
               disabled={isEditLoading || !editText.trim()}
               style={{ opacity: isEditLoading || !editText.trim() ? 0.6 : 1 }}
             >
-              {isEditLoading ? (<span className="aip-modal-loading"><span className="aip-modal-spinner" /> Updating...</span>) : "Update Itinerary"}
+              {isEditLoading ? (
+                <span className="aip-modal-loading">
+                  <span className="aip-modal-spinner" /> Updating...
+                </span>
+              ) : (
+                "Update Itinerary"
+              )}
             </button>
-            <button className="aip-modal-cancel-btn" onClick={() => !isEditLoading && setShowEditModal(false)} disabled={isEditLoading}>
+            <button
+              className="aip-modal-cancel-btn"
+              onClick={() => !isEditLoading && setShowEditModal(false)}
+              disabled={isEditLoading}
+            >
               Cancel
             </button>
           </div>
@@ -1060,7 +1542,11 @@ const TripResult = ({ tripPlan, user }) => {
       )}
 
       {showChatbot && (
-        <ChatBot userId={user?.userId} userName={user?.displayName} onClose={() => setShowChatbot(false)} />
+        <ChatBot
+          userId={user?.userId}
+          userName={user?.displayName}
+          onClose={() => setShowChatbot(false)}
+        />
       )}
 
       <Footer />

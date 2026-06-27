@@ -1,15 +1,15 @@
-import apiClient from './apiClient';
+import apiClient from "./apiClient";
 
 const tripService = {
   // POST /api/v1/trips
   createTrip: (data) => {
-    return apiClient.post('/trips', data);
+    return apiClient.post("/trips", data);
   },
 
   // GET /api/v1/trips  — params: { Status, Page, PageSize }
   // TripStatus enum: 0=Planning, 1=Upcoming, 2=Active, 3=Completed
   getTrips: (params) => {
-    return apiClient.get('/trips', { params });
+    return apiClient.get("/trips", { params });
   },
 
   // GET /api/v1/trips/{id}
@@ -21,7 +21,9 @@ const tripService = {
   updateTripPlan: (id, data) => {
     return apiClient.put(`/trips/${id}/plan`, data);
   },
-
+  addPlaceToTrip: (id, placeData) => {
+    return apiClient.post(`/trips/${id}/places`, placeData);
+  },
   // PATCH /api/v1/trips/{id}/rename
   renameTrip: (id, title) => {
     return apiClient.patch(`/trips/${id}/rename`, { title });

@@ -18,9 +18,11 @@ import UserHome from "./components/pages/UserHome";
 import SavedPlaces from "./components/pages/SavedPlaces";
 import TripDetails from "./components/pages/TripDetails";
 import { SavedPlacesProvider } from "./context/SavedPlacesContext";
+import TripResult from "./components/pages/TripResult";
 
 function App() {
   const [exploreHiddenGems, setExploreHiddenGems] = useState(false);
+  const [currentTripPlan, setCurrentTripPlan] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(() => {
     const path = window.location.pathname;
@@ -170,7 +172,12 @@ function App() {
       setCurrentPage("tripdetails");
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
     };
-
+    window.navigateToTripResult = (tripData) => {
+      window.__tripResultData = tripData;
+      window.history.pushState({}, "", "/trip-result");
+      setCurrentPage("tripresult");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
     return () => {
       window.removeEventListener("popstate", updatePageFromPath);
       delete window.navigateToLanding;
@@ -190,6 +197,7 @@ function App() {
       delete window.navigateToInterests;
       delete window.navigateToUserHome;
       delete window.navigateToTripDetails;
+      delete window.navigateToTripResult;
       delete window.navigateToWishlist;
     };
   }, []);
@@ -211,7 +219,12 @@ function App() {
       case "resetPassword":
         return <ResetPassword />;
       case "explore":
-        return <Explore hiddenGems={exploreHiddenGems} onHiddenGemsConsumed={() => setExploreHiddenGems(false)} />;
+        return (
+          <Explore
+            hiddenGems={exploreHiddenGems}
+            onHiddenGemsConsumed={() => setExploreHiddenGems(false)}
+          />
+        );
       case "profile":
         return <Profile />;
       case "aiplanner":
@@ -228,6 +241,8 @@ function App() {
         return <SavedPlaces />;
       case "tripdetails":
         return <TripDetails place={window.__tripDetailsData} />;
+      case "tripresult":
+        return <TripResult tripPlan={window.__tripResultData} />;
       default:
         return <Landing onNavigate={setCurrentPage} />;
     }

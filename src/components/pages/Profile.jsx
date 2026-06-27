@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
@@ -255,7 +255,7 @@ const tripFilters = ["ALL", "Upcoming", "Drafts", "Completed"];
 // ===== Profile Page =====
 const Profile = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const displayName = user?.displayName || "Traveler";
   const [activeTab, setActiveTab] = useState("Overview");
   // ── real API data ──
@@ -370,14 +370,16 @@ const Profile = () => {
         if (dashRes.data) setDashboardData(dashRes.data);
 
         // GET /api/v1/trips
+        // GET /api/v1/trips
         setTripsLoading(true);
+        let loadedItems = [];
         try {
           const tripsRes = await tripService.getTrips({
             Page: 1,
             PageSize: 50,
           });
-          const items = tripsRes.data?.items ?? tripsRes.data ?? [];
-          setApiTrips(items);
+          loadedItems = tripsRes.data?.items ?? tripsRes.data ?? [];
+          setApiTrips(loadedItems);
           setTripsError(null);
         } catch (tripsErr) {
           console.error("Trips fetch error:", tripsErr);
@@ -390,11 +392,10 @@ const Profile = () => {
         // جيب ريفيو المستخدم على كل completed trip
         setReviewsLoading(true);
         try {
-          const completedItems = items.filter(
+          const completedItems = loadedItems.filter(
             (t) =>
               t.status === "Completed" || t.status === 2 || t.status === "2",
           );
-
           const reviewResults = await Promise.allSettled(
             completedItems.map((t) =>
               tripService.getMyReview(t.tripId).then((res) => ({
@@ -414,6 +415,7 @@ const Profile = () => {
           setApiReviews(fetchedReviews);
         } catch (err) {
           console.error("Reviews fetch error:", err);
+          setApiReviews([]);
         } finally {
           setReviewsLoading(false);
         }
@@ -951,7 +953,7 @@ const Profile = () => {
                       <button
                         className="view-itinerary-btn"
                         onClick={() =>
-                          window.navigateToTripDetails?.(trip.tripId)
+                          window.navigateToTripResult?.({ tripId: trip.tripId })
                         }
                       >
                         View Itinerary
@@ -1071,7 +1073,7 @@ const Profile = () => {
                       className="search-input"
                     />
                   </div>
-                  // إلى:
+
                   <div style={{ position: "relative" }}>
                     <button
                       className="search-sort-btn"
@@ -1202,7 +1204,9 @@ const Profile = () => {
                                       className="dropdown-item"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/trips/${trip.tripId}`);
+                                        window.navigateToTripResult?.({
+                                          tripId: trip.tripId,
+                                        });
                                         setOpenMenuId(null);
                                       }}
                                     >
@@ -1268,6 +1272,7 @@ const Profile = () => {
                                       </svg>
                                       Share
                                     </button>
+
                                     <button
                                       className="dropdown-item delete"
                                       onClick={(e) => {
@@ -1367,7 +1372,9 @@ const Profile = () => {
                               <button
                                 className="view-itinerary-btn"
                                 onClick={() =>
-                                  navigate(`/trips/${trip.tripId}`)
+                                  window.navigateToTripResult?.({
+                                    tripId: trip.tripId,
+                                  })
                                 }
                               >
                                 View Itinerary
@@ -1552,7 +1559,9 @@ const Profile = () => {
                               <button
                                 className="continue-planning-btn"
                                 onClick={() =>
-                                  navigate(`/trips/${draft.tripId}`)
+                                  window.navigateToTripResult?.({
+                                    tripId: trip.tripId,
+                                  })
                                 }
                               >
                                 {" "}
@@ -1643,7 +1652,9 @@ const Profile = () => {
                                       className="dropdown-item"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/trips/${trip.tripId}`);
+                                        window.navigateToTripResult?.({
+                                          tripId: trip.tripId,
+                                        });
                                         setOpenMenuId(null);
                                       }}
                                     >
@@ -3506,6 +3517,35 @@ const Profile = () => {
                 disabled={reviewSaving}
               >
                 {reviewSaving ? "Submitting..." : "Submit Review"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {deleteTripTarget && (
+        <div
+          className="modal-overlay"
+          onClick={() => setDeleteTripTarget(null)}
+        >
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Delete Trip?</h3>
+            <p className="modal-desc">
+              Are you sure you want to delete "{deleteTripTarget.title}"?
+            </p>
+            <div className="modal-actions">
+              <button
+                className="modal-cancel-btn"
+                onClick={() => setDeleteTripTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-delete-btn"
+                onClick={handleDeleteTrip}
+                disabled={deleteTripLoading}
+                style={{ opacity: deleteTripLoading ? 0.6 : 1 }}
+              >
+                {deleteTripLoading ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

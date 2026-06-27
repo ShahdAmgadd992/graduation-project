@@ -7,6 +7,7 @@ import tripService from "../../services/tripService";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useHomePlaces } from "../../services/useHomePlaces";
+import aiService from "../../services/aiService";
 
 const TripDetails = ({ place }) => {
   const [liked, setLiked] = useState(false);
@@ -17,6 +18,7 @@ const TripDetails = ({ place }) => {
   const [reviewText, setReviewText] = useState("");
   const [showAddTripModal, setShowAddTripModal] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
   const [addedToTrip, setAddedToTrip] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [addedTripName, setAddedTripName] = useState("");
@@ -77,7 +79,14 @@ const TripDetails = ({ place }) => {
           res.data?.data ||
           res.data?.trips ||
           (Array.isArray(res.data) ? res.data : []);
-        setApiTrips(items);
+        const mapped = items.map((t) => ({
+          ...t,
+          id: t.tripId,
+          title: t.title,
+          durationDays: t.durationDays,
+          coverImage: t.coverImageUrl,
+        }));
+        setApiTrips(mapped);
       })
       .catch((err) => console.error("Failed to load trips:", err));
   }, []);
@@ -198,47 +207,28 @@ const TripDetails = ({ place }) => {
 
   // ===== Fetch trips matching the place's city/governorate =====
   const fetchCityTrips = async () => {
-    if (!place?.city) {
-      setCityTrips(apiTrips);
-      return;
-    }
     setCityTripsLoading(true);
     try {
-      // Use getplaces endpoint to find places in same city, then filter trips
-      const response = await fetch("/api/v1/ai/places/getplaces", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ city: place.city, pageSize: 50 }),
-      });
-      const data = await response.json();
-      const placesInCity = data?.items || data?.data || [];
-      const cityPlaceIds = new Set(placesInCity.map((p) => p.place_id || p.id));
-
-      // Filter apiTrips to those that contain at least one place in same city
-      // OR fallback: filter by trip destination/city field if available
-      const filtered = apiTrips.filter((trip) => {
-        if (trip.city && trip.city.toLowerCase() === place.city.toLowerCase())
-          return true;
-        if (trip.destination && trip.destination.toLowerCase().includes(place.city.toLowerCase()))
-          return true;
-        // Check if trip days contain places in this city
-        if (trip.days) {
-          return trip.days.some((day) =>
-            day.locations?.some((loc) => cityPlaceIds.has(loc.place_id))
-          );
-        }
-        return false;
-      });
-
-      setCityTrips(filtered.length > 0 ? filtered : apiTrips);
+      const res = await tripService.getTrips({ Page: 1, PageSize: 20 });
+      const items =
+        res.data?.items ||
+        res.data?.data ||
+        (Array.isArray(res.data) ? res.data : []);
+      const mapped = items.map((t) => ({
+        ...t,
+        id: t.tripId,
+        title: t.title,
+        durationDays: t.durationDays,
+        coverImage: t.coverImageUrl,
+      }));
+      setCityTrips(mapped);
     } catch (err) {
-      console.error("Failed to fetch city places:", err);
-      setCityTrips(apiTrips);
+      console.error("Failed to fetch trips:", err);
+      setCityTrips([]);
     } finally {
       setCityTripsLoading(false);
     }
   };
-
   // ===== Toast helper =====
   const showToastMsg = (msg) => {
     setToastMessage(msg);
@@ -410,33 +400,59 @@ const TripDetails = ({ place }) => {
     return d > startDate && d < endDate;
   };
 
-  const handleGeneratePlan = () => {
+  const handleGeneratePlan = async () => {
     setQuickAIStep("skeleton");
     setLoadingProgress(0);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setQuickAIStep("loading");
 
+      // progress animation
       let progress = 0;
       const interval = setInterval(() => {
-        progress += Math.floor(Math.random() * 15) + 8;
-        if (progress >= 100) {
-          progress = 100;
+        progress += Math.floor(Math.random() * 10) + 5;
+        if (progress >= 90) {
           clearInterval(interval);
-          setTimeout(() => {
-            setShowQuickAIModal(false);
-            setQuickAIStep("form");
-            setAddedToTrip(true);
-            setAddedTripName("AI Trip Plan");
-            setHasOpenedManageOnce(true);
-            showToastMsg(`${data.name} added to AI Trip Plan ✅`);
-          }, 600);
+          progress = 90;
         }
         setLoadingProgress(progress);
       }, 400);
+
+      try {
+        const days =
+          startDate && endDate
+            ? Math.max(
+                1,
+                Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)),
+              )
+            : 3;
+
+        const budgetMap = { Economic: 1000, Comfortable: 3000, Luxury: 6000 };
+
+        const res = await aiService.generatePlan({
+          city: data.city || place?.city || "Cairo",
+          days,
+          budget: budgetMap[budget] || 1000,
+          people: numPeople,
+          interests: [],
+        });
+
+        clearInterval(interval);
+        setLoadingProgress(100);
+
+        setTimeout(() => {
+          setShowQuickAIModal(false);
+          setQuickAIStep("form");
+          setHasOpenedManageOnce(true);
+          window.navigateToTripResult && window.navigateToTripResult(res.data);
+        }, 500);
+      } catch (err) {
+        clearInterval(interval);
+        console.error("Generate plan failed:", err);
+        setQuickAIStep("form");
+      }
     }, 1500);
   };
-
   const loadingMessages = [
     { threshold: 0, text: "Collecting your preferences..." },
     { threshold: 30, text: "Building your itinerary..." },
@@ -966,8 +982,16 @@ const TripDetails = ({ place }) => {
             </p>
             {place?.city && (
               <p className="td-add-trip-city-filter">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#5596fe"
+                  strokeWidth="2"
+                >
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                  <circle cx="12" cy="10" r="3" />
                 </svg>
                 Showing trips in <strong>{place.city}</strong>
               </p>
@@ -1008,13 +1032,18 @@ const TripDetails = ({ place }) => {
                   <div
                     key={trip.id}
                     className={`td-trip-option ${selectedTrip === trip.id ? "selected" : ""}`}
-                    onClick={() => setSelectedTrip(trip.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("Card clicked:", trip.id);
+                      setSelectedTrip(trip.id);
+                    }}
                   >
                     <input
                       type="radio"
+                      name="trip-select"
                       className="td-trip-radio"
                       checked={selectedTrip === trip.id}
-                      onChange={() => setSelectedTrip(trip.id)}
+                      readOnly
                     />
                     <img
                       src={
@@ -1036,7 +1065,17 @@ const TripDetails = ({ place }) => {
                         <span className="td-day-select-label">
                           Day Selection :
                         </span>
-                        <select className="td-day-select">
+                        <select
+                          className="td-day-select"
+                          onChange={(e) =>
+                            setSelectedDay(
+                              e.target.value === "Auto-assign ✨"
+                                ? null
+                                : parseInt(e.target.value.replace("Day ", "")),
+                            )
+                          }
+                        >
+                          {" "}
                           <option>Auto-assign ✨</option>
                           {Array.from(
                             { length: trip.durationDays || 3 },
@@ -1066,6 +1105,11 @@ const TripDetails = ({ place }) => {
             <button
               className="td-confirm-btn"
               onClick={async () => {
+                console.log("selectedTrip:", selectedTrip, typeof selectedTrip);
+                console.log(
+                  "cityTrips:",
+                  cityTrips.map((t) => t.id),
+                );
                 if (!selectedTrip) return;
                 const trip = (
                   cityTrips.length > 0
@@ -1075,18 +1119,14 @@ const TripDetails = ({ place }) => {
                         { id: 2, title: "Egypt Adventure" },
                         { id: 3, title: "Aswan Heritage Tour" },
                       ]
-                ).find((t) => t.id === selectedTrip);
-
+                ).find((t) => String(t.id) === String(selectedTrip));
                 try {
-                  await tripService.updateTrip(selectedTrip, {
-                    placesToAdd: [
-                      {
-                        name: data.name,
-                        city: data.city,
-                        category: category,
-                        image: data.images?.[0] || "",
-                      },
-                    ],
+                  await tripService.addPlaceToTrip(selectedTrip, {
+                    name: data.name,
+                    city: data.city,
+                    category: category,
+                    image: data.images?.[0] || "",
+                    dayNumber: selectedDay || null,
                   });
                 } catch (err) {
                   console.error("Failed to add place to trip:", err);
@@ -1101,6 +1141,7 @@ const TripDetails = ({ place }) => {
                 setAddedToTrip(true);
                 setAddedTripName(trip?.title || "your trip");
                 setShowAddTripModal(false);
+                setSelectedTrip(selectedTrip);
                 setHasOpenedManageOnce(false);
                 showToastMsg(
                   `${data.name} added to ${trip?.title || "your trip"} ✅`,
@@ -1569,7 +1610,7 @@ const TripDetails = ({ place }) => {
                       ]
                   ).map((trip) => (
                     <div
-                      key={trip.id}
+                      key={trip.tripId || trip.id}
                       className={`td-mt-trip-card ${manageMoveTripId === trip.id ? "selected" : ""}`}
                       onClick={() => setManageMoveTripId(trip.id)}
                     >
@@ -1727,7 +1768,8 @@ const TripDetails = ({ place }) => {
               <button
                 className="td-toast-view"
                 onClick={() =>
-                  window.navigateToCalendar && window.navigateToCalendar()
+                  window.navigateToTripResult &&
+                  window.navigateToTripResult({ tripId: selectedTrip })
                 }
               >
                 View

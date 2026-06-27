@@ -132,7 +132,7 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
-
+      {/* 
       <section className="about-team">
         <h2 className="section-title">
           <span className="blue">Meet</span> Our Team
@@ -160,7 +160,7 @@ const AboutUs = () => {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       <section
         className="about-cta"
