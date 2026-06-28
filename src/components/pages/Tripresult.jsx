@@ -870,6 +870,7 @@ const TripResult = ({ tripPlan, user }) => {
   const [itinerary, setItinerary] = useState(tripPlan?.itinerary ?? []);
   const [dayDetails, setDayDetails] = useState(tripPlan?.dayDetails ?? {});
   const [expandedDay, setExpandedDay] = useState(null);
+  const [hotel, setHotel] = useState(tripPlan?.hotel ?? null);
 
   // Checkbox state: { [day]: { [`${slotIdx}-${placeIdx}`]: boolean } }
   const [checkedPlaces, setCheckedPlaces] = useState({});
@@ -903,6 +904,7 @@ const TripResult = ({ tripPlan, user }) => {
         const parsed = JSON.parse(cached);
         setItinerary(parsed.itinerary ?? []);
         setDayDetails(parsed.dayDetails ?? {});
+        if (parsed.hotel) setHotel(parsed.hotel);
         return;
       }
       setIsLoadingTrip(true);
@@ -910,6 +912,10 @@ const TripResult = ({ tripPlan, user }) => {
         .getTripById(tripPlan.tripId)
         .then((res) => {
           const data = res.data;
+          console.log("Trip API Response:", data);
+          if (data.hotel) {
+            setHotel(data.hotel);
+          }
           // بناء الـ itinerary من الـ plan
           const plan = data.plan ?? {};
           const days = data.durationDays ?? Object.keys(plan).length;
@@ -1193,7 +1199,7 @@ const TripResult = ({ tripPlan, user }) => {
         {/* Left — day cards */}
         <div className="aip-result-left">
           <div className="aip-result-days">
-            {tripPlan.hotel && <HotelCard hotel={tripPlan.hotel} />}
+            {hotel && <HotelCard hotel={hotel} />}
 
             {itinerary.map((item) => {
               const isExpanded = expandedDay === item.day;

@@ -427,12 +427,16 @@ const TripDetails = ({ place }) => {
               )
             : 3;
 
-        const budgetMap = { Economic: 1000, Comfortable: 3000, Luxury: 6000 };
-
         const res = await aiService.generatePlan({
+          req: `Trip to ${data.city || place?.city || "Cairo"} for ${days} days`,
           city: data.city || place?.city || "Cairo",
           days,
-          budget: budgetMap[budget] || 1000,
+          budget:
+            budget === "Economic"
+              ? 1000
+              : budget === "Comfortable"
+                ? 3000
+                : 6000,
           people: numPeople,
           interests: [],
         });

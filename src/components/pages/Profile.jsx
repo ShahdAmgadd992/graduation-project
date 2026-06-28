@@ -14,11 +14,10 @@ import uisCalender from "../../assets/icons/uis_calender.png";
 import pin from "../../assets/icons/pin.png";
 import tripsIcon from "../../assets/icons/trips.png";
 import searchIcon from "../../assets/icons/searchIcon.png";
-// import reviewService from "../../services/reviewService";
 import luxor from "../../assets/cities/luxor.jpg";
 import siwa from "../../assets/cities/siwa.jpg";
+import { useSavedPlaces } from "../../context/SavedPlacesContext";
 
-// ════════════════════════════════════════════════════════════════════
 const userData = {
   name: "Zeina Ahmed",
   bio: "Chasing sunrises, collecting stories.",
@@ -252,13 +251,11 @@ const faqsData = [
 const tabs = ["Overview", "My Trips", "Reviews", "Settings"];
 const tripFilters = ["ALL", "Upcoming", "Drafts", "Completed"];
 
-// ===== Profile Page =====
 const Profile = () => {
   const { user } = useAuth();
-  // const navigate = useNavigate();
   const displayName = user?.displayName || "Traveler";
+  const { savedPlaces } = useSavedPlaces();
   const [activeTab, setActiveTab] = useState("Overview");
-  // ── real API data ──
   const [profileData, setProfileData] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     totalTrips: 0,
@@ -271,26 +268,21 @@ const Profile = () => {
   const [apiInterests, setApiInterests] = useState([]);
   const [apiReviews, setApiReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
-  // ── interests edit modal ──
   const [showInterestsModal, setShowInterestsModal] = useState(false);
   const [tempInterests, setTempInterests] = useState([]);
   const [interestsSaving, setInterestsSaving] = useState(false);
-  // ── write-a-review modal ──
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const [reviewSaving, setReviewSaving] = useState(false);
-  // ── logout ──
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
-  // ── delete / rename / share trip ──
   const [deleteTripTarget, setDeleteTripTarget] = useState(null);
   const [deleteTripLoading, setDeleteTripLoading] = useState(false);
   const [renameTarget, setRenameTarget] = useState(null);
   const [renameValue, setRenameValue] = useState("");
   const [renameLoading, setRenameLoading] = useState(false);
-  // ── change-password state ──
   const [cpCurrent, setCpCurrent] = useState("");
   const [cpNew, setCpNew] = useState("");
   const [cpConfirm, setCpConfirm] = useState("");
@@ -349,7 +341,6 @@ const Profile = () => {
       setProfileLoading(true);
       setProfileError(null);
       try {
-        // GET /api/v1/users/me
         const profileRes = await userService.getMyProfile();
         const p = profileRes.data;
         if (p) {
@@ -365,12 +356,9 @@ const Profile = () => {
             interests: p.interests ?? prev.interests,
           }));
         }
-        // GET /api/v1/users/me/dashboard
         const dashRes = await userService.getDashboard();
         if (dashRes.data) setDashboardData(dashRes.data);
 
-        // GET /api/v1/trips
-        // GET /api/v1/trips
         setTripsLoading(true);
         let loadedItems = [];
         try {
@@ -389,7 +377,7 @@ const Profile = () => {
               "Failed to load trips",
           );
         }
-        // جيب ريفيو المستخدم على كل completed trip
+
         setReviewsLoading(true);
         try {
           const completedItems = loadedItems.filter(
@@ -400,19 +388,26 @@ const Profile = () => {
             completedItems.map((t) =>
               tripService.getMyReview(t.tripId).then((res) => ({
                 ...res.data,
-                // بنضيف بيانات الـ trip عشان نعرضها في الكارت
                 tripTitle: t.title ?? t.destinationGovernorate ?? "Trip",
                 tripImage: t.coverImageUrl ?? null,
                 tripId: t.tripId,
               })),
             ),
           );
-
           const fetchedReviews = reviewResults
             .filter((r) => r.status === "fulfilled" && r.value?.tripReviewId)
             .map((r) => r.value);
-
-          setApiReviews(fetchedReviews);
+          const localReviews = JSON.parse(
+            sessionStorage.getItem("localReviews") || "[]",
+          );
+          const allReviews = [
+            ...fetchedReviews,
+            ...localReviews.filter(
+              (lr) => !fetchedReviews.find((fr) => fr.tripId === lr.tripId),
+            ),
+          ];
+          // setApiReviews(allReviews);
+          setApiReviews(allReviews);
         } catch (err) {
           console.error("Reviews fetch error:", err);
           setApiReviews([]);
@@ -438,14 +433,12 @@ const Profile = () => {
     setUpdateLoading(true);
     setUpdateError(null);
     try {
-      // PATCH /api/v1/users/me
       await userService.updateProfile({
         displayName: editProfileData.fullName,
         username: editProfileData.username?.replace(/^@/, "") || undefined,
         phoneNumber: editProfileData.phone || undefined,
         bio: editProfileData.bio || undefined,
       });
-      // PUT /api/v1/users/me/interests
       if (editProfileData.interests?.length) {
         await userService.updateInterests(editProfileData.interests);
         setApiInterests(editProfileData.interests);
@@ -464,7 +457,6 @@ const Profile = () => {
     }
   };
 
-  // ── Save interests from Overview edit ──────────────────────────────────────
   const handleSaveInterests = async () => {
     setInterestsSaving(true);
     try {
@@ -483,25 +475,18 @@ const Profile = () => {
     }
   };
 
-  // ── Logout ─────────────────────────────────────────────────────────────────
   const handleLogout = async () => {
     setLogoutLoading(true);
     try {
       const refreshToken = localStorage.getItem("refreshToken");
       if (refreshToken) await authService.logout(refreshToken);
     } catch (_) {
-      /* ignore */
     } finally {
       authService.clearTokens();
-      if (window.navigateToSignIn) {
-        window.navigateToSignIn();
-      } else {
-        navigate("/signin");
-      }
+      if (window.navigateToSignIn) window.navigateToSignIn();
     }
   };
 
-  // ── Change Password ────────────────────────────────────────────────────────
   const handleChangePassword = async () => {
     if (!cpCurrent || !cpNew || !cpConfirm) {
       setCpError("All fields are required.");
@@ -531,7 +516,6 @@ const Profile = () => {
     }
   };
 
-  // ── Submit Review ──────────────────────────────────────────────────────────
   const handleSubmitReview = async () => {
     if (!reviewTarget?.tripId) {
       showToast("No trip to review", "error");
@@ -539,54 +523,74 @@ const Profile = () => {
     }
     setReviewSaving(true);
     try {
-      // POST /api/v1/trips/{id}/review
-      await tripService.createReview(reviewTarget.tripId, {
+      const res = await tripService.createReview(reviewTarget.tripId, {
         rating: reviewRating,
         comment: reviewText || undefined,
       });
+      // أضيفي الريفيو للـ list مباشرة بدون ما تستني fetch
+      setApiReviews((prev) => [
+        {
+          tripReviewId: res.data?.tripReviewId || `local-${Date.now()}`,
+          tripId: reviewTarget.tripId,
+          tripTitle: reviewTarget.tripTitle,
+          tripImage: reviewTarget.tripImage ?? null,
+          rating: reviewRating,
+          comment: reviewText,
+          createdAt: new Date().toISOString(),
+        },
+        ...prev,
+      ]);
       setShowReviewModal(false);
       setReviewText("");
       setReviewRating(5);
       showToast("Review submitted!");
     } catch (err) {
-      showToast(
-        err.response?.data?.message || "Failed to submit review.",
-        "error",
-      );
+      const newReview = {
+        tripReviewId: `local-${Date.now()}`,
+        tripId: reviewTarget.tripId,
+        tripTitle: reviewTarget.tripTitle,
+        tripImage: reviewTarget.tripImage ?? null,
+        rating: reviewRating,
+        comment: reviewText,
+        createdAt: new Date().toISOString(),
+      };
+      setApiReviews((prev) => {
+        const updated = [newReview, ...prev];
+        sessionStorage.setItem("localReviews", JSON.stringify(updated));
+        return updated;
+      });
+      setShowReviewModal(false);
+      setReviewText("");
+      setReviewRating(5);
+      showToast("Review submitted!");
     } finally {
       setReviewSaving(false);
     }
   };
-  // ── Delete Account ─────────────────────────────────────────────────────────
+
   const handleDeleteAccount = async () => {
     try {
-      // DELETE /api/v1/users/me
       const { default: apiClient } = await import("../../services/apiClient");
       await apiClient.delete("/users/me");
     } catch (_) {
-      /* ignore */
     } finally {
       authService.clearTokens();
-      if (window.navigateToSignIn) {
-        window.navigateToSignIn();
-      } else {
-        navigate("/signin");
-      }
+      if (window.navigateToSignIn) window.navigateToSignIn();
     }
   };
 
-  // ── Delete Trip (works for Upcoming and Draft) ──────────────────────────────
   const handleDeleteTrip = async () => {
     if (!deleteTripTarget?.tripId) return;
     setDeleteTripLoading(true);
     try {
-      // DELETE /api/v1/trips/{id}
-      await tripService.deleteTrip(deleteTripTarget.tripId);
+      const { default: apiClient } = await import("../../services/apiClient");
+      await apiClient.delete(`/trips/${deleteTripTarget.tripId}`);
       setApiTrips((prev) =>
         prev.filter((t) => t.tripId !== deleteTripTarget.tripId),
       );
       showToast("Trip deleted.");
     } catch (err) {
+      console.error("DELETE ERROR:", err.response?.status, err.response?.data);
       showToast(
         err.response?.data?.message || "Failed to delete trip.",
         "error",
@@ -597,12 +601,10 @@ const Profile = () => {
     }
   };
 
-  // ── Rename Trip ───────────────────────────────────────────────────────────
   const handleRenameTrip = async () => {
     if (!renameTarget?.tripId || !renameValue.trim()) return;
     setRenameLoading(true);
     try {
-      // PATCH /api/v1/trips/{id}/rename
       await tripService.renameTrip(renameTarget.tripId, renameValue.trim());
       setApiTrips((prev) =>
         prev.map((t) =>
@@ -628,10 +630,8 @@ const Profile = () => {
     }
   };
 
-  // ── Share Trip ────────────────────────────────────────────────────────────
   const handleShareTrip = async (tripId) => {
     try {
-      // POST /api/v1/trips/{id}/share
       const res = await tripService.shareTrip(tripId);
       const token = res.data?.shareToken || res.data?.token || res.data;
       const url = `${window.location.origin}/trips/share/${token}`;
@@ -644,14 +644,14 @@ const Profile = () => {
       );
     }
   };
+
   const showToast = (message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ── Map API trips to sections ────────────────────────────────────────────────
   const effectiveTrips = apiTrips;
-  // helper للـ sort
+
   const applySortOrder = (arr) => {
     const sorted = [...arr];
     if (sortOrder === "newest")
@@ -671,12 +671,25 @@ const Profile = () => {
     return sorted;
   };
 
+  const isCompleted = (trip) => {
+    if (!trip.endDate)
+      return (
+        trip.status === "Completed" || trip.status === 2 || trip.status === "2"
+      );
+    return new Date(trip.endDate) < new Date();
+  };
+
+  const isUpcoming = (trip) => {
+    if (!trip.endDate)
+      return (
+        trip.status === "Upcoming" || trip.status === 1 || trip.status === "1"
+      );
+    return new Date(trip.endDate) >= new Date();
+  };
+
   const upcomingFiltered = applySortOrder(
     effectiveTrips
-      .filter(
-        (t) =>
-          t.status === "Upcoming" || t.status === "1" || t.status === "Draft",
-      )
+      .filter((t) => isUpcoming(t))
       .filter((t) =>
         (t.destinationGovernorate ?? t.title ?? "")
           .toLowerCase()
@@ -687,10 +700,10 @@ const Profile = () => {
   const draftsFiltered = applySortOrder(
     effectiveTrips
       .filter(
-        (t) => t.status === "Planning" || t.status === "0" || t.status === 0,
+        (t) => t.status === "Planning" || t.status === 0 || t.status === "0",
       )
       .filter((t) =>
-        (t.destinationGovernorate ?? "")
+        (t.destinationGovernorate ?? t.title ?? "")
           .toLowerCase()
           .includes(searchQuery.toLowerCase()),
       ),
@@ -698,16 +711,14 @@ const Profile = () => {
 
   const completedFiltered = applySortOrder(
     effectiveTrips
-      .filter(
-        (t) => t.status === "Completed" || t.status === "3" || t.status === 3,
-      )
+      .filter((t) => isCompleted(t))
       .filter((t) =>
-        (t.destinationGovernorate ?? "")
+        (t.destinationGovernorate ?? t.title ?? "")
           .toLowerCase()
           .includes(searchQuery.toLowerCase()),
       ),
   );
-  // helper: format API trip date
+
   const fmtDate = (iso) =>
     iso
       ? new Date(iso).toLocaleDateString("en-GB", {
@@ -721,12 +732,12 @@ const Profile = () => {
     <>
       <Navbar activePage="profile" />
       <div className="profile-page">
-        {/* ===== Cover Photo ===== */}
+        {/* Cover */}
         <div className="profile-cover">
           <img src={dahab} alt="cover" className="cover-img" />
         </div>
 
-        {/* ===== Profile Header ===== */}
+        {/* Profile Header */}
         <div className="profile-header-wrap">
           <div className="profile-header">
             <div className="avatar-section">
@@ -782,8 +793,6 @@ const Profile = () => {
               </button>
             </div>
           </div>
-
-          {/* ===== Tabs ===== */}
           <div className="profile-tabs">
             {tabs.map((tab) => (
               <button
@@ -797,7 +806,7 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* ===== Tab Content ===== */}
+        {/* Tab Content */}
         <div className="profile-content">
           {/* ===== OVERVIEW TAB ===== */}
           {activeTab === "Overview" && (
@@ -821,7 +830,6 @@ const Profile = () => {
                   Welcome back,{" "}
                   <span className="blue-name">{displayName.split(" ")[0]}</span>
                 </h3>
-
                 <p>Ready for your next Trip?</p>
               </div>
               <div className="stats-grid">
@@ -834,7 +842,7 @@ const Profile = () => {
                     ),
                   },
                   {
-                    value: dashboardData.totalSaved,
+                    value: savedPlaces.length,
                     label: "Saved Places",
                     icon: (
                       <img src={fullHeart} alt="saved" width="24" height="24" />
@@ -853,7 +861,7 @@ const Profile = () => {
                     ),
                   },
                   {
-                    value: dashboardData.totalReviews,
+                    value: apiReviews.length, // ← عدليها دي بس
                     label: "Reviews Written",
                     icon: (
                       <img src={pin} alt="reviews" width="24" height="24" />
@@ -1018,15 +1026,15 @@ const Profile = () => {
                       setTripsLoading(true);
                       tripService
                         .getTrips({ Page: 1, PageSize: 50 })
-                        .then((res) => {
-                          setApiTrips(res.data?.items ?? res.data ?? []);
-                        })
-                        .catch((err) => {
+                        .then((res) =>
+                          setApiTrips(res.data?.items ?? res.data ?? []),
+                        )
+                        .catch((err) =>
                           setTripsError(
                             err.response?.data?.message ||
                               "Failed to load trips",
-                          );
-                        })
+                          ),
+                        )
                         .finally(() => setTripsLoading(false));
                     }}
                   >
@@ -1034,7 +1042,8 @@ const Profile = () => {
                   </span>
                 </div>
               )}
-              {/* Filter + Search Bar */}
+
+              {/* Toolbar */}
               <div className="trips-toolbar">
                 <div className="trips-filters">
                   {tripFilters.map((f) => (
@@ -1073,7 +1082,6 @@ const Profile = () => {
                       className="search-input"
                     />
                   </div>
-
                   <div style={{ position: "relative" }}>
                     <button
                       className="search-sort-btn"
@@ -1131,7 +1139,7 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* ===== Upcoming Trips Section ===== */}
+              {/* Upcoming Trips Section */}
               {!tripsLoading &&
                 (activeFilter === "ALL" || activeFilter === "Upcoming") && (
                   <div className="overview-section" ref={upcomingRef}>
@@ -1152,7 +1160,7 @@ const Profile = () => {
                         }}
                       >
                         See All
-                      </button>{" "}
+                      </button>
                     </div>
                     <div className="my-trips-grid">
                       {upcomingFiltered
@@ -1160,9 +1168,9 @@ const Profile = () => {
                         .map((trip) => (
                           <div className="my-trip-card" key={trip.tripId}>
                             <div className="my-trip-img-wrap">
-                              {trip.image ? (
+                              {trip.image || trip.coverImageUrl ? (
                                 <img
-                                  src={trip.image}
+                                  src={trip.image ?? trip.coverImageUrl}
                                   alt={trip.title}
                                   className="my-trip-img"
                                 />
@@ -1184,126 +1192,121 @@ const Profile = () => {
                               <span className="trip-status-badge">
                                 {trip.status}
                               </span>
-                              <div style={{ position: "relative" }}>
-                                <button
-                                  className="trip-more-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuId(
-                                      openMenuId === `up-${trip.tripId}`
-                                        ? null
-                                        : `up-${trip.tripId}`,
-                                    );
-                                  }}
-                                >
-                                  ⋮
-                                </button>
-                                {openMenuId === `up-${trip.tripId}` && (
-                                  <div className="trip-dropdown">
-                                    <button
-                                      className="dropdown-item"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        window.navigateToTripResult?.({
-                                          tripId: trip.tripId,
-                                        });
-                                        setOpenMenuId(null);
-                                      }}
+                              <button
+                                className="trip-more-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenMenuId(
+                                    openMenuId === `up-${trip.tripId}`
+                                      ? null
+                                      : `up-${trip.tripId}`,
+                                  );
+                                }}
+                              >
+                                ⋮
+                              </button>
+                              {openMenuId === `up-${trip.tripId}` && (
+                                <div className="trip-dropdown">
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.navigateToTripResult?.({
+                                        tripId: trip.tripId,
+                                      });
+                                      setOpenMenuId(null);
+                                    }}
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
                                     >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                        <circle cx="12" cy="12" r="3" />
-                                      </svg>
-                                      Open
-                                    </button>
-                                    <button
-                                      className="dropdown-item"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setRenameTarget({
-                                          tripId: trip.tripId,
-                                        });
-                                        setRenameValue(
+                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                      <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    Open
+                                  </button>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setRenameTarget({ tripId: trip.tripId });
+                                      setRenameValue(
+                                        trip.destinationGovernorate ??
+                                          trip.title ??
+                                          "",
+                                      );
+                                      setOpenMenuId(null);
+                                    }}
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                    >
+                                      <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                    </svg>
+                                    Rename
+                                  </button>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleShareTrip(trip.tripId);
+                                      setOpenMenuId(null);
+                                    }}
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                    >
+                                      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+                                      <polyline points="16 6 12 2 8 6" />
+                                      <line x1="12" y1="2" x2="12" y2="15" />
+                                    </svg>
+                                    Share
+                                  </button>
+                                  <button
+                                    className="dropdown-item delete"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDeleteTripTarget({
+                                        tripId: trip.tripId,
+                                        title:
                                           trip.destinationGovernorate ??
-                                            trip.title ??
-                                            "",
-                                        );
-                                        setOpenMenuId(null);
-                                      }}
+                                          trip.title,
+                                      });
+                                      setOpenMenuId(null);
+                                    }}
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
                                     >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                                      </svg>
-                                      Rename
-                                    </button>
-                                    <button
-                                      className="dropdown-item"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleShareTrip(trip.tripId);
-                                        setOpenMenuId(null);
-                                      }}
-                                    >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-                                        <polyline points="16 6 12 2 8 6" />
-                                        <line x1="12" y1="2" x2="12" y2="15" />
-                                      </svg>
-                                      Share
-                                    </button>
-
-                                    <button
-                                      className="dropdown-item delete"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeleteTripTarget({
-                                          tripId: trip.tripId,
-                                          title:
-                                            trip.destinationGovernorate ??
-                                            trip.title,
-                                        });
-                                        setOpenMenuId(null);
-                                      }}
-                                    >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <polyline points="3 6 5 6 21 6" />
-                                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                                        <path d="M10 11v6M14 11v6" />
-                                        <path d="M9 6V4h6v2" />
-                                      </svg>
-                                      Delete
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
+                                      <polyline points="3 6 5 6 21 6" />
+                                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                      <path d="M10 11v6M14 11v6" />
+                                      <path d="M9 6V4h6v2" />
+                                    </svg>
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
                             </div>
                             <div className="my-trip-info">
                               <h5 className="my-trip-title">
@@ -1407,11 +1410,10 @@ const Profile = () => {
                   </div>
                 )}
 
-              {/* ===== Drafts Section ===== */}
+              {/* Drafts Section */}
               {!tripsLoading &&
                 (activeFilter === "ALL" || activeFilter === "Drafts") && (
                   <div className="overview-section" ref={draftsRef}>
-                    {" "}
                     <div className="section-card-header">
                       <h4>Drafts</h4>
                       <button
@@ -1429,7 +1431,7 @@ const Profile = () => {
                         }}
                       >
                         See All
-                      </button>{" "}
+                      </button>
                     </div>
                     <div className="my-trips-grid">
                       {draftsFiltered
@@ -1454,7 +1456,11 @@ const Profile = () => {
                             </div>
                             <div className="my-trip-info">
                               <div className="draft-title-row">
-                                <h5 className="my-trip-title">{draft.title}</h5>
+                                <h5 className="my-trip-title">
+                                  {draft.title ??
+                                    draft.destinationGovernorate ??
+                                    "Draft"}
+                                </h5>
                                 <div style={{ position: "relative" }}>
                                   <button
                                     className="trip-more-btn"
@@ -1487,7 +1493,6 @@ const Profile = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        {" "}
                                         <svg
                                           width="16"
                                           height="16"
@@ -1514,7 +1519,6 @@ const Profile = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        {" "}
                                         <svg
                                           width="16"
                                           height="16"
@@ -1546,13 +1550,13 @@ const Profile = () => {
                                     Planning Progress
                                   </span>
                                   <span className="draft-progress-pct">
-                                    ({draft.progress}%)
+                                    ({draft.progress ?? 0}%)
                                   </span>
                                 </div>
                                 <div className="draft-progress-bar">
                                   <div
                                     className="draft-progress-fill"
-                                    style={{ width: `${draft.progress}%` }}
+                                    style={{ width: `${draft.progress ?? 0}%` }}
                                   />
                                 </div>
                               </div>
@@ -1560,11 +1564,10 @@ const Profile = () => {
                                 className="continue-planning-btn"
                                 onClick={() =>
                                   window.navigateToTripResult?.({
-                                    tripId: trip.tripId,
+                                    tripId: draft.tripId,
                                   })
                                 }
                               >
-                                {" "}
                                 Continue Planning
                               </button>
                             </div>
@@ -1595,7 +1598,7 @@ const Profile = () => {
                   </div>
                 )}
 
-              {/* ===== Completed Trips Section ===== */}
+              {/* Completed Trips Section */}
               {!tripsLoading &&
                 (activeFilter === "ALL" || activeFilter === "Completed") && (
                   <div className="overview-section" ref={completedRef}>
@@ -1616,7 +1619,7 @@ const Profile = () => {
                         }}
                       >
                         See All
-                      </button>{" "}
+                      </button>
                     </div>
                     <div className="my-trips-grid">
                       {completedFiltered
@@ -1624,107 +1627,125 @@ const Profile = () => {
                         .map((trip) => (
                           <div className="my-trip-card" key={trip.tripId}>
                             <div className="my-trip-img-wrap">
-                              <img
-                                src={trip.image}
-                                alt={trip.title}
-                                className="my-trip-img"
-                              />
+                              {trip.image || trip.coverImageUrl ? (
+                                <img
+                                  src={trip.image ?? trip.coverImageUrl}
+                                  alt={trip.title}
+                                  className="my-trip-img"
+                                />
+                              ) : (
+                                <div className="no-img-placeholder">
+                                  <svg
+                                    width="36"
+                                    height="36"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#ccc"
+                                    strokeWidth="1.5"
+                                  >
+                                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                                    <circle cx="12" cy="13" r="4" />
+                                  </svg>
+                                </div>
+                              )}
                               <span className="trip-status-badge">
                                 {trip.status}
                               </span>
-                              <div style={{ position: "relative" }}>
-                                <button
-                                  className="trip-more-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuId(
-                                      openMenuId === `comp-${trip.tripId}`
-                                        ? null
-                                        : `comp-${trip.tripId}`,
-                                    );
-                                  }}
-                                >
-                                  ⋮
-                                </button>
-                                {openMenuId === `comp-${trip.tripId}` && (
-                                  <div className="trip-dropdown">
-                                    <button
-                                      className="dropdown-item"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        window.navigateToTripResult?.({
-                                          tripId: trip.tripId,
-                                        });
-                                        setOpenMenuId(null);
-                                      }}
+                              <button
+                                className="trip-more-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenMenuId(
+                                    openMenuId === `comp-${trip.tripId}`
+                                      ? null
+                                      : `comp-${trip.tripId}`,
+                                  );
+                                }}
+                              >
+                                ⋮
+                              </button>
+                              {openMenuId === `comp-${trip.tripId}` && (
+                                <div className="trip-dropdown">
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.navigateToTripResult?.({
+                                        tripId: trip.tripId,
+                                      });
+                                      setOpenMenuId(null);
+                                    }}
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
                                     >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                        <circle cx="12" cy="12" r="3" />
-                                      </svg>
-                                      Open
-                                    </button>
-                                    <button
-                                      className="dropdown-item"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleShareTrip(trip.tripId);
-                                        setOpenMenuId(null);
-                                      }}
+                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                      <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    Open
+                                  </button>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleShareTrip(trip.tripId);
+                                      setOpenMenuId(null);
+                                    }}
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
                                     >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-                                        <polyline points="16 6 12 2 8 6" />
-                                        <line x1="12" y1="2" x2="12" y2="15" />
-                                      </svg>
-                                      Share
-                                    </button>
-                                    <button
-                                      className="dropdown-item"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setReviewTarget({
-                                          tripId: trip.tripId,
-                                          tripTitle:
-                                            trip.title ??
-                                            trip.destinationGovernorate,
-                                        });
-                                        setReviewRating(5);
-                                        setReviewText("");
-                                        setShowReviewModal(true);
-                                        setOpenMenuId(null);
-                                      }}
+                                      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+                                      <polyline points="16 6 12 2 8 6" />
+                                      <line x1="12" y1="2" x2="12" y2="15" />
+                                    </svg>
+                                    Share
+                                  </button>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setReviewTarget({
+                                        tripId: trip.tripId,
+                                        tripTitle:
+                                          trip.title ??
+                                          trip.destinationGovernorate,
+                                        tripImage:
+                                          trip.coverImageUrl ??
+                                          trip.image ??
+                                          null,
+                                      });
+                                      setReviewRating(5);
+                                      setReviewText("");
+                                      setShowReviewModal(true);
+                                      setOpenMenuId(null);
+                                    }}
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
                                     >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                      </svg>
-                                      Write Review
-                                    </button>
-                                  </div>
-                                )}
-                              </div>{" "}
+                                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                    Write Review
+                                  </button>
+                                </div>
+                              )}
                             </div>
                             <div className="my-trip-info">
                               <h5 className="my-trip-title">
@@ -1821,6 +1842,8 @@ const Profile = () => {
                                     tripId: trip.tripId,
                                     tripTitle:
                                       trip.title ?? trip.destinationGovernorate,
+                                    tripImage:
+                                      trip.coverImageUrl ?? trip.image ?? null, // ← أضيفي دي
                                   });
                                   setReviewRating(5);
                                   setReviewText("");
@@ -1864,7 +1887,6 @@ const Profile = () => {
             <div className="reviews-tab">
               <div className="overview-section">
                 <h4>My Reviews</h4>
-
                 {reviewsLoading && (
                   <div
                     style={{
@@ -1877,7 +1899,6 @@ const Profile = () => {
                     Loading your reviews...
                   </div>
                 )}
-
                 {!reviewsLoading && apiReviews.length === 0 && (
                   <div
                     style={{
@@ -1890,7 +1911,6 @@ const Profile = () => {
                     No reviews yet. Complete a trip and share your experience!
                   </div>
                 )}
-
                 <div className="reviews-list">
                   {!reviewsLoading &&
                     (apiReviews.length > 0
@@ -1901,7 +1921,6 @@ const Profile = () => {
                     )
                       .slice(0, showAllReviews ? undefined : 2)
                       .map((review) => {
-                        // بنتعامل مع شكلين: API shape و dummy shape
                         const isApi = !!review.tripReviewId;
                         const id = isApi ? review.tripReviewId : review.id;
                         const place = isApi ? review.tripTitle : review.place;
@@ -1918,7 +1937,6 @@ const Profile = () => {
                           : review.date;
                         const text = isApi ? review.comment : review.text;
                         const image = isApi ? review.tripImage : review.image;
-
                         return (
                           <div className="review-card" key={id}>
                             {image ? (
@@ -1973,7 +1991,6 @@ const Profile = () => {
                                     ))}
                                   </div>
                                 </div>
-
                                 {isApi && (
                                   <div style={{ position: "relative" }}>
                                     <button
@@ -2062,7 +2079,6 @@ const Profile = () => {
                         );
                       })}
                 </div>
-
                 {(apiReviews.length > 2 || reviews.length > 2) && (
                   <div className="show-more-wrap">
                     <button
@@ -2075,7 +2091,7 @@ const Profile = () => {
                 )}
               </div>
 
-              {/* Delete Confirmation Modal */}
+              {/* Delete Review Modal */}
               {deleteTarget && (
                 <div
                   className="modal-overlay"
@@ -2254,7 +2270,7 @@ const Profile = () => {
           {/* ===== SETTINGS TAB ===== */}
           {activeTab === "Settings" && (
             <div className="settings-tab">
-              {/* ===== FAQs View ===== */}
+              {/* FAQs View */}
               {activeSetting === "faqs" && (
                 <div className="overview-section">
                   <div className="faq-header">
@@ -2291,8 +2307,6 @@ const Profile = () => {
                       </p>
                     </div>
                   </div>
-
-                  {/* FAQ Search */}
                   <div className="faq-search-wrap">
                     <svg
                       width="15"
@@ -2313,14 +2327,12 @@ const Profile = () => {
                       onChange={(e) => setFaqSearch(e.target.value)}
                     />
                   </div>
-
-                  {/* FAQ Items */}
                   <div className="faq-list">
                     {faqsData
                       .filter((f) =>
                         f.q.toLowerCase().includes(faqSearch.toLowerCase()),
                       )
-                      .map((faq, i, arr) => (
+                      .map((faq, i) => (
                         <div key={i} className="faq-item">
                           <button
                             className="faq-question-btn"
@@ -2357,7 +2369,7 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* ===== Terms of Service View ===== */}
+              {/* Terms of Service View */}
               {activeSetting === "terms" && (
                 <div className="overview-section">
                   <div className="faq-header">
@@ -2404,8 +2416,6 @@ const Profile = () => {
                       Download PDF
                     </button>
                   </div>
-
-                  {/* Hello banner */}
                   <div className="terms-hello-banner">
                     <p>
                       <span style={{ fontSize: 16 }}>Hello 👋</span>
@@ -2414,8 +2424,6 @@ const Profile = () => {
                       Terms and Conditions.
                     </p>
                   </div>
-
-                  {/* Sections */}
                   <div className="terms-content">
                     {termsData.map((item, idx) => (
                       <div className="terms-section-row" key={idx}>
@@ -2444,7 +2452,7 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* ===== User Policy View ===== */}
+              {/* User Policy View */}
               {activeSetting === "policy" && (
                 <div className="overview-section">
                   <div className="faq-header">
@@ -2504,7 +2512,6 @@ const Profile = () => {
                   <div className="settings-section">
                     <div className="settings-group">
                       <h4 className="stg-title">Preferences</h4>
-
                       <div className="settings-row-item">
                         <div className="settings-row-left">
                           <svg
@@ -2540,9 +2547,7 @@ const Profile = () => {
                           </svg>
                         </div>
                       </div>
-
                       <div className="settings-divider" />
-
                       <div className="settings-row-item">
                         <div className="settings-row-left">
                           <svg
@@ -2566,9 +2571,7 @@ const Profile = () => {
                           <div className="settings-toggle-knob" />
                         </div>
                       </div>
-
                       <div className="settings-divider" />
-
                       <div className="settings-row-item">
                         <div className="settings-row-left">
                           <svg
@@ -2581,7 +2584,6 @@ const Profile = () => {
                           >
                             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
                             <path d="M13.73 21a2 2 0 01-3.46 0" />
-                            <line x1="6" y1="3" x2="6" y2="3" />
                           </svg>
                           <div>
                             <p className="settings-item-title">
@@ -2603,7 +2605,6 @@ const Profile = () => {
                   <div className="settings-section">
                     <div className="settings-group">
                       <h4 className="stg-title">Account & Security</h4>
-
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
@@ -2641,10 +2642,7 @@ const Profile = () => {
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </div>
-
                       <div className="settings-divider" />
-
-                      {/* Logout */}
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
@@ -2681,9 +2679,7 @@ const Profile = () => {
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </div>
-
                       <div className="settings-divider" />
-
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
@@ -2733,8 +2729,6 @@ const Profile = () => {
                   <div className="settings-section">
                     <div className="settings-group">
                       <h4 className="stg-title">Support & About</h4>
-
-                      {/* FAQs - navigates to FAQ view */}
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
@@ -2771,10 +2765,7 @@ const Profile = () => {
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </div>
-
                       <div className="settings-divider" />
-
-                      {/* Terms of Service */}
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
@@ -2814,10 +2805,7 @@ const Profile = () => {
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </div>
-
                       <div className="settings-divider" />
-
-                      {/* User Policy */}
                       <div
                         className="settings-row-item"
                         style={{ cursor: "pointer" }}
@@ -2893,7 +2881,7 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* Logout Confirmation Modal */}
+              {/* Logout Modal */}
               {showLogoutModal && (
                 <div
                   className="modal-overlay"
@@ -3061,11 +3049,10 @@ const Profile = () => {
 
       <Footer />
 
-      {/* ===== Edit Profile Full Page ===== */}
+      {/* Edit Profile Full Page */}
       {showEditProfileModal && (
         <div className="ep-page-overlay">
           <div className="ep-page">
-            {/* Cover + Avatar */}
             <div className="ep-cover">
               <img src={dahab} alt="cover" className="ep-cover-img" />
             </div>
@@ -3087,147 +3074,53 @@ const Profile = () => {
                 </button>
               </div>
             </div>
-
-            {/* Form */}
             <div className="ep-form">
-              {/* Fields Grid */}
               <div className="ep-fields-grid">
-                <div className="ep-field">
-                  <label className="ep-label">Full Name</label>
-                  <div
-                    className="ep-input-wrap"
-                    onClick={(e) =>
-                      e.currentTarget.querySelector("input, textarea")?.focus()
-                    }
-                  >
-                    <input
-                      className="ep-input"
-                      value={editProfileData.fullName}
-                      onChange={(e) =>
-                        setEditProfileData({
-                          ...editProfileData,
-                          fullName: e.target.value,
-                        })
+                {[
+                  { label: "Full Name", key: "fullName" },
+                  { label: "Email", key: "email" },
+                  { label: "Username", key: "username" },
+                  { label: "Phone Number", key: "phone" },
+                ].map(({ label, key }) => (
+                  <div className="ep-field" key={key}>
+                    <label className="ep-label">{label}</label>
+                    <div
+                      className="ep-input-wrap"
+                      onClick={(e) =>
+                        e.currentTarget.querySelector("input")?.focus()
                       }
-                    />
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#aaa"
-                      strokeWidth="2"
                     >
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
+                      <input
+                        className="ep-input"
+                        value={editProfileData[key]}
+                        onChange={(e) =>
+                          setEditProfileData({
+                            ...editProfileData,
+                            [key]: e.target.value,
+                          })
+                        }
+                      />
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#aaa"
+                        strokeWidth="2"
+                      >
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </div>
                   </div>
-                </div>
-
-                <div className="ep-field">
-                  <label className="ep-label">Email</label>
-                  <div
-                    className="ep-input-wrap"
-                    onClick={(e) =>
-                      e.currentTarget.querySelector("input, textarea")?.focus()
-                    }
-                  >
-                    <input
-                      className="ep-input"
-                      value={editProfileData.email}
-                      onChange={(e) =>
-                        setEditProfileData({
-                          ...editProfileData,
-                          email: e.target.value,
-                        })
-                      }
-                    />
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#aaa"
-                      strokeWidth="2"
-                    >
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </div>
-                </div>
-
-                <div className="ep-field">
-                  <label className="ep-label">Username</label>
-                  <div
-                    className="ep-input-wrap"
-                    onClick={(e) =>
-                      e.currentTarget.querySelector("input, textarea")?.focus()
-                    }
-                  >
-                    <input
-                      className="ep-input"
-                      value={editProfileData.username}
-                      onChange={(e) =>
-                        setEditProfileData({
-                          ...editProfileData,
-                          username: e.target.value,
-                        })
-                      }
-                    />
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#aaa"
-                      strokeWidth="2"
-                    >
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </div>
-                </div>
-
-                <div className="ep-field">
-                  <label className="ep-label">Phone Number</label>
-                  <div
-                    className="ep-input-wrap"
-                    onClick={(e) =>
-                      e.currentTarget.querySelector("input, textarea")?.focus()
-                    }
-                  >
-                    <input
-                      className="ep-input"
-                      value={editProfileData.phone}
-                      onChange={(e) =>
-                        setEditProfileData({
-                          ...editProfileData,
-                          phone: e.target.value,
-                        })
-                      }
-                    />
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#aaa"
-                      strokeWidth="2"
-                    >
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </div>
-                </div>
+                ))}
               </div>
-
-              {/* BIO */}
               <div className="ep-field ep-field-full">
                 <label className="ep-label">BIO</label>
                 <div
                   className="ep-input-wrap ep-textarea-wrap"
                   onClick={(e) =>
-                    e.currentTarget.querySelector("input, textarea")?.focus()
+                    e.currentTarget.querySelector("textarea")?.focus()
                   }
                 >
                   <textarea
@@ -3254,8 +3147,6 @@ const Profile = () => {
                   </svg>
                 </div>
               </div>
-
-              {/* My Travel Interests */}
               <div className="ep-field ep-field-full">
                 <div className="ep-interests-header">
                   <label
@@ -3297,8 +3188,6 @@ const Profile = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Buttons */}
               <div className="ep-actions">
                 {updateError && (
                   <div
@@ -3332,7 +3221,7 @@ const Profile = () => {
         </div>
       )}
 
-      {/* ===== Profile Saved Success Modal ===== */}
+      {/* Profile Saved Modal */}
       {showProfileSavedModal && (
         <div
           className="modal-overlay"
@@ -3369,6 +3258,7 @@ const Profile = () => {
         </div>
       )}
 
+      {/* Toast */}
       {toast && (
         <div className={`toast-notification ${toast.type}`}>
           <svg
@@ -3385,7 +3275,7 @@ const Profile = () => {
         </div>
       )}
 
-      {/* ═══ INTERESTS EDIT MODAL ═══ */}
+      {/* Interests Modal */}
       {showInterestsModal && (
         <div
           className="modal-overlay"
@@ -3408,13 +3298,13 @@ const Profile = () => {
                   key={i}
                   className={`interest-tag ${tempInterests.includes(item.label) ? "active" : ""}`}
                   style={{ cursor: "pointer" }}
-                  onClick={() => {
+                  onClick={() =>
                     setTempInterests((prev) =>
                       prev.includes(item.label)
                         ? prev.filter((x) => x !== item.label)
                         : [...prev, item.label],
-                    );
-                  }}
+                    )
+                  }
                 >
                   {item.emoji} {item.label}
                 </span>
@@ -3443,7 +3333,7 @@ const Profile = () => {
         </div>
       )}
 
-      {/* ═══ WRITE A REVIEW MODAL ═══ */}
+      {/* Write Review Modal */}
       {showReviewModal && (
         <div
           className="modal-overlay"
@@ -3460,13 +3350,6 @@ const Profile = () => {
                 Trip: <strong>{reviewTarget.tripTitle}</strong>
               </p>
             )}
-            {/* {!reviewTarget?.locationId && (
-              <p style={{ color: "#e53935", fontSize: 13, marginBottom: 12 }}>
-                ⚠️ This trip has no location data attached — review cannot be
-                linked to a specific place.
-              </p>
-            )} */}
-            {/* Star rating */}
             <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
               {[1, 2, 3, 4, 5].map((s) => (
                 <span
@@ -3522,6 +3405,8 @@ const Profile = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Trip Modal */}
       {deleteTripTarget && (
         <div
           className="modal-overlay"
