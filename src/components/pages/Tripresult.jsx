@@ -899,14 +899,8 @@ const TripResult = ({ tripPlan, user }) => {
 
   useEffect(() => {
     if (tripPlan?.tripId && !tripPlan?.itinerary) {
-      const cached = localStorage.getItem(`tripPlan_${tripPlan.tripId}`);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        setItinerary(parsed.itinerary ?? []);
-        setDayDetails(parsed.dayDetails ?? {});
-        if (parsed.hotel) setHotel(parsed.hotel);
-        return;
-      }
+      // ✅ FIX: حذفنا الـ localStorage cache — كان بيرجع الداتا القديمة
+      // دايمًا نجيب أحدث نسخة من الـ API عشان الأماكن المضافة تظهر فورًا
       setIsLoadingTrip(true);
       tripService
         .getTripById(tripPlan.tripId)
@@ -916,17 +910,8 @@ const TripResult = ({ tripPlan, user }) => {
           if (data.hotel) {
             setHotel(data.hotel);
           }
-          // بناء الـ itinerary من الـ plan
           const plan = data.plan ?? {};
           const days = data.durationDays ?? Object.keys(plan).length;
-          const builtItinerary = Array.from({ length: days }, (_, i) => ({
-            day: i + 1,
-            description: `Day ${i + 1} in ${data.destinationGovernorate ?? ""}`,
-            img: data.coverImageUrl ?? "",
-            cost: 0,
-            tags: [],
-            stops: null,
-          }));
           const builtDayDetails = {};
           for (let d = 1; d <= days; d++) {
             const dayData = plan[`day${d}`] ?? {};
@@ -939,12 +924,111 @@ const TripResult = ({ tripPlan, user }) => {
               }),
             );
           }
+          // ✅ FIX: cost وصورة وtags من الـ plan لكل يوم — مش صورة واحدة للكل و cost=0
+          const builtItinerary = Array.from({ length: days }, (_, i) => {
+            const d = i + 1;
+            const dayData = plan[`day${d}`] ?? {};
+            const allPlaces = [
+              ...(dayData.morning ?? []),
+              ...(dayData.afternoon ?? []),
+              ...(dayData.evening ?? []),
+            ];
+            const dayCost = allPlaces.reduce(
+              (sum, p) => sum + (Number(p?.cost) || Number(p?.price) || 0), 0,
+            );
+            const dayImg =
+              allPlaces.find((p) => p?.photo_url)?.photo_url ??
+              allPlaces.find((p) => p?.image_urls?.[0])?.image_urls?.[0] ??
+              data.coverImageUrl ?? "";
+            const tagSet = new Set();
+            allPlaces.forEach((p) => {
+              if (p?.category) tagSet.add(p.category);
+              (p?.interests ?? []).forEach((t) => tagSet.add(t));
+            });
+            return {
+              day: d,
+              description: `Day ${d} in ${data.destinationGovernorate ?? data.city ?? ""}`,
+              img: dayImg,
+              cost: dayCost,
+              tags: [...tagSet].slice(0, 3),
+              stops: allPlaces.length || null,
+            };
+          });
           setItinerary(builtItinerary);
           setDayDetails(builtDayDetails);
         })
         .catch((err) => console.error("Failed to load trip:", err))
         .finally(() => setIsLoadingTrip(false));
     }
+  }, [tripPlan?.tripId]);
+
+  // ✅ NEW: Listen for plan updates fired by useAddToTrip (when user adds/moves/removes
+  // a place from TripDetails). Only fires a re-fetch when this component is showing
+  // a saved trip (tripPlan.tripId exists). The generate-plan flow (no tripId) is
+  // completely unaffected — this handler simply won't match.
+  useEffect(() => {
+    const tripId = tripPlan?.tripId;
+    if (!tripId) return; // نوع "generate plan" — مش بنلمسه
+
+    const handlePlanUpdated = (e) => {
+      if (e.detail?.tripId && e.detail.tripId !== tripId) return; // مش تريبنا
+      console.log("[TripResult] tripPlanUpdated → re-fetching trip", tripId);
+      tripService
+        .getTripById(tripId)
+        .then((res) => {
+          const data = res.data;
+          const plan = data.plan ?? {};
+          const days = data.durationDays ?? Object.keys(plan).length;
+          const builtDayDetails = {};
+          for (let d = 1; d <= days; d++) {
+            const dayData = plan[`day${d}`] ?? {};
+            builtDayDetails[d] = ["morning", "afternoon", "evening"].map(
+              (slot) => ({
+                time: slot.charAt(0).toUpperCase() + slot.slice(1),
+                title: slot,
+                activities: (dayData[slot] ?? []).map((p) => p?.name ?? p),
+                rawItems: dayData[slot] ?? [],
+              }),
+            );
+          }
+          const builtItinerary = Array.from({ length: days }, (_, i) => {
+            const d = i + 1;
+            const dayData = plan[`day${d}`] ?? {};
+            const allPlaces = [
+              ...(dayData.morning ?? []),
+              ...(dayData.afternoon ?? []),
+              ...(dayData.evening ?? []),
+            ];
+            const dayCost = allPlaces.reduce(
+              (sum, p) => sum + (Number(p?.cost) || Number(p?.price) || 0), 0,
+            );
+            const dayImg =
+              allPlaces.find((p) => p?.photo_url)?.photo_url ??
+              allPlaces.find((p) => p?.image_urls?.[0])?.image_urls?.[0] ??
+              data.coverImageUrl ?? "";
+            const tagSet = new Set();
+            allPlaces.forEach((p) => {
+              if (p?.category) tagSet.add(p.category);
+              (p?.interests ?? []).forEach((t) => tagSet.add(t));
+            });
+            return {
+              day: d,
+              description: `Day ${d} in ${data.destinationGovernorate ?? data.city ?? ""}`,
+              img: dayImg,
+              cost: dayCost,
+              tags: [...tagSet].slice(0, 3),
+              stops: allPlaces.length || null,
+            };
+          });
+          setItinerary(builtItinerary);
+          setDayDetails(builtDayDetails);
+          if (data.hotel) setHotel(data.hotel);
+        })
+        .catch((err) => console.error("[TripResult] re-fetch failed:", err));
+    };
+
+    window.addEventListener("tripPlanUpdated", handlePlanUpdated);
+    return () => window.removeEventListener("tripPlanUpdated", handlePlanUpdated);
   }, [tripPlan?.tripId]);
   const editSuggestions = [
     "Water Sports",
@@ -1125,9 +1209,10 @@ const TripResult = ({ tripPlan, user }) => {
         ? new Date(tripPlan.startDate).toISOString()
         : new Date().toISOString();
 
-      // ✅ احسبي endDate من actualDays مش من tripPlan.days
+      // ✅ FIX: endDate = startDate + (actualDays - 1) days
+      // e.g. 3-day trip starting Jul 16 → ends Jul 18 (not Jul 19)
       const endDate = new Date(
-        new Date(startDate).getTime() + actualDays * 86400000,
+        new Date(startDate).getTime() + (actualDays - 1) * 86400000,
       ).toISOString();
       console.log(
         "itinerary imgs:",
@@ -1283,7 +1368,14 @@ const TripResult = ({ tripPlan, user }) => {
                         </div>
 
                         {/* Slot columns */}
-                        <div className="aip-day-columns">
+                        <div
+                          className="aip-day-columns"
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr 1fr",
+                            gap: "12px",
+                          }}
+                        >
                           {details.map((slot, slotIdx) => {
                             const places = (
                               slot.rawItems?.length

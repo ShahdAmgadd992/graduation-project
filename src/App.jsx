@@ -23,6 +23,8 @@ import TripResult from "./components/pages/TripResult";
 function App() {
   const [exploreHiddenGems, setExploreHiddenGems] = useState(false);
   const [currentTripPlan, setCurrentTripPlan] = useState(null);
+  // ✅ FIX: key بيتغير كل ما الـ plan يتحدث → بيخلي TripResult يعمل re-mount ويجيب أحدث داتا
+  const [tripResultKey, setTripResultKey] = useState(0);
 
   const [currentPage, setCurrentPage] = useState(() => {
     const path = window.location.pathname;
@@ -173,13 +175,27 @@ function App() {
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
     };
     window.navigateToTripResult = (tripData) => {
+      // ✅ FIX: نحفظ الداتا ونعمل bump للـ key عشان TripResult يعمل fresh fetch
       window.__tripResultData = tripData;
       window.history.pushState({}, "", "/trip-result");
       setCurrentPage("tripresult");
+      setTripResultKey((k) => k + 1); // force re-mount → fresh API fetch
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
+    // ✅ FIX: لما useAddToTrip يطلق tripPlanUpdated (بعد add/move/remove)،
+    // لو المستخدم راجع لـ TripResult نعمل re-mount تاني عشان يجيب الداتا الجديدة
+    const handleTripPlanUpdated = (e) => {
+      const updatedTripId = e.detail?.tripId;
+      const currentTripId = window.__tripResultData?.tripId;
+      if (updatedTripId && currentTripId && updatedTripId === currentTripId) {
+        setTripResultKey((k) => k + 1);
+      }
+    };
+    window.addEventListener("tripPlanUpdated", handleTripPlanUpdated);
     return () => {
       window.removeEventListener("popstate", updatePageFromPath);
+      window.removeEventListener("tripPlanUpdated", handleTripPlanUpdated);
       delete window.navigateToLanding;
       delete window.navigateToHome;
       delete window.navigateToDashboard;
@@ -242,7 +258,7 @@ function App() {
       case "tripdetails":
         return <TripDetails place={window.__tripDetailsData} />;
       case "tripresult":
-        return <TripResult tripPlan={window.__tripResultData} />;
+        return <TripResult key={tripResultKey} tripPlan={window.__tripResultData} />;
       default:
         return <Landing onNavigate={setCurrentPage} />;
     }

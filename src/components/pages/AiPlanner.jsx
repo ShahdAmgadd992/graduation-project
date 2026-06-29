@@ -103,7 +103,6 @@ const AiPlanner = () => {
 
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
-  const [apiMinBudget, setApiMinBudget] = useState(300);
 
   const [showChatbot, setShowChatbot] = useState(false);
 
@@ -216,7 +215,7 @@ const AiPlanner = () => {
     return diff >= 0 ? diff + 1 : 1;
   };
 
-  const basicPrice = apiMinBudget;
+  const basicPrice = 1850 * (getTripDays() || 1);
   const standardPrice = Math.ceil(basicPrice * 1.5);
   const comfortPrice = Math.ceil(standardPrice * 1.5);
   const premiumPrice = Math.ceil(comfortPrice * 1.5);
@@ -237,28 +236,12 @@ const AiPlanner = () => {
     return 0;
   };
 
-  const extractBudgetFloor = (data, peopleCount) => {
-    if (!data) return null;
-    const errorMsg = data?.budget_validation?.message || data?.message || "";
-    if (
-      data?.status === "budget_unfeasible" ||
-      data?.budget_validation?.status === "budget_unfeasible" ||
-      errorMsg.includes("floor")
-    ) {
-      const match = errorMsg.match(/use at least ([\d,.]+)/);
-      if (match) {
-        const totalMin = parseFloat(match[1].replace(/,/g, ""));
-        return Math.ceil(totalMin / peopleCount);
-      }
-    }
-    return null;
-  };
 
   const handleContinue = () => {
     if (step < 4) {
       setStep((s) => s + 1);
     } else if (step === 4) {
-      fetchMinimumBudget();
+      setStep(5);
     } else if (step === 5) {
       handleGeneratePlan();
     }
@@ -278,46 +261,7 @@ const AiPlanner = () => {
     }
   };
 
-  const fetchMinimumBudget = async () => {
-    setIsLoading(true);
-    setLoadingText("Calculating best prices...");
-    setPlanError(null);
 
-    const days = getTripDays();
-    const peopleCount = Math.max(1, adults + children);
-    const requestPayload = {
-      city: selectedDest,
-      days: Math.min(days, 7),
-      budget: 1,
-      people: peopleCount,
-      interests: selectedInterests.length > 0 ? selectedInterests : ["Cafe"],
-      mustInclude: "",
-    };
-
-    try {
-      const response = await withRetry(() =>
-        aiService.generatePlan(requestPayload),
-      );
-      const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
-      setApiMinBudget(floorPerPerson ?? 300);
-    } catch (err) {
-      // On 503 after all retries — still extract floor if present, else use 300
-      const floorPerPerson = extractBudgetFloor(
-        err.response?.data,
-        peopleCount,
-      );
-      setApiMinBudget(floorPerPerson ?? 300);
-      if (err.response?.status === 503) {
-        setPlanError(
-          "AI service is busy. Budget estimates may not be accurate — you can still try generating.",
-        );
-      }
-    } finally {
-      setStep(5);
-      setIsLoading(false);
-      setLoadingText("Mindy is working his magic...");
-    }
-  };
 
   const handleGeneratePlan = async () => {
     setIsLoading(true);
@@ -342,17 +286,6 @@ const AiPlanner = () => {
         aiService.generatePlan(requestPayload),
       );
 
-      const floorPerPerson = extractBudgetFloor(response.data, peopleCount);
-      if (floorPerPerson) {
-        setApiMinBudget(floorPerPerson);
-        setSelectedBudget(null);
-        setCustomAmount("");
-        setPlanError(
-          `The AI calculated a new minimum floor: ${floorPerPerson} EGP per person. Please adjust.`,
-        );
-        setIsLoading(false);
-        return;
-      }
 
       const rawData = Array.isArray(response.data)
         ? response.data[0]
@@ -494,7 +427,7 @@ const AiPlanner = () => {
       if (!hasBudget) return false;
       if (customAmount) {
         const val = parseFloat(customAmount);
-        if (apiMinBudget && val < basicPrice) return false;
+        if (val < basicPrice) return false;
       }
       return true;
     }

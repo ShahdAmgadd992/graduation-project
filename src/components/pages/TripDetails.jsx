@@ -1,51 +1,52 @@
 /**
- * TripDetails.jsx  – Refactored
+ * TripDetails.jsx  – Final Fixed Version
  *
- * Task 1 – "Add to Trip" flow (existing trip + new quick-AI trip)
- * Task 2 – "Manage Trip" flow (move day / move trip / remove)
- * Task 3 – Dynamic data mapping:
- *   • Pricing label → "avg / person"
- *   • Cuisine label → conditional (restaurant / cafe / food only)
- *   • Reviews       → dynamic from API via usePlaceReviews
+ * Bugs fixed vs previous version:
+ *  1. ✅ Submit Review: wired to submitReview() from usePlaceReviews
+ *  2. ✅ Heart / Favorites: calls POST /api/v1/favorites/places & DELETE on toggle
+ *  3. ✅ Rating shown even with 0 reviews: always uses place.rating (not reviews array)
+ *  4. ✅ aiService.editPlan → aiService.edit (correct method name)
+ *  5. ✅ generate-plan 503: graceful fallback in useAddToTrip (trip shell saved anyway)
+ *  6. ✅ "No reviews" state is shown correctly without hiding the rating block
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import Navbar from "../layout/Navbar";
-import Footer from "../layout/Footer";
+import Navbar    from "../layout/Navbar";
+import Footer    from "../layout/Footer";
 import ReviewsIcon from "../../assets/icons/ReviewsIcon.png";
 import "./TripDetails.css";
-import tripService from "../../services/tripService";
-import mapboxgl from "mapbox-gl";
+import apiClient from "../../services/apiClient";
+import mapboxgl   from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useHomePlaces } from "../../services/useHomePlaces";
+import { useHomePlaces }    from "../../services/useHomePlaces";
 import { useAddToTrip, calcBudget } from "../../services/useAddToTrip";
-import { usePlaceReviews } from "../../services/usePlaceReviews";
+import { usePlaceReviews }  from "../../services/usePlaceReviews";
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const FOOD_CATEGORIES = ["restaurant", "cafe", "food", "dining", "eatery"];
 
 const isFoodPlace = (place) => {
-  const cat = (place?.category || "").toLowerCase();
-  const type = (place?.type || "").toLowerCase();
+  const cat  = (place?.category || "").toLowerCase();
+  const type = (place?.type     || "").toLowerCase();
   return FOOD_CATEGORIES.some((f) => cat.includes(f) || type.includes(f));
 };
 
-// ─── Calendar helpers (pure functions) ───────────────────────────────────────
+// ─── Calendar helpers ─────────────────────────────────────────────────────────
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
 ];
-const getDaysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+const getDaysInMonth    = (y, m) => new Date(y, m + 1, 0).getDate();
 const getFirstDayOfMonth = (y, m) => new Date(y, m, 1).getDay();
 const formatDate = (d) => {
   if (!d) return "";
   return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
 };
 
-// ─── Small shared components ──────────────────────────────────────────────────
+// ─── Shared small components ──────────────────────────────────────────────────
 const CloseBtn = ({ onClick }) => (
   <button className="td-modal-close" onClick={onClick}>✕</button>
 );
-
 const BackBtn = ({ onClick }) => (
   <button className="td-qai-back-btn" onClick={onClick}>
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5">
@@ -54,35 +55,30 @@ const BackBtn = ({ onClick }) => (
   </button>
 );
 
-// ─── Calendar component ───────────────────────────────────────────────────────
+// ─── Calendar ─────────────────────────────────────────────────────────────────
 const Calendar = ({
-  month,
-  onMonthChange,
-  startDate,
-  endDate,
+  month, onMonthChange,
+  startDate, endDate,
   onDayClick,
-  highlightedDays = [],          // array of day numbers (for manage-day mode)
-  selectedSingleDay = null,      // Date object (for manage-day mode)
+  highlightedDays = [],
+  selectedSingleDay = null,
   rangeMode = true,
 }) => {
   const year = month.getFullYear();
-  const mon = month.getMonth();
-  const totalDays = getDaysInMonth(year, mon);
-  const firstDay = getFirstDayOfMonth(year, mon);
+  const mon  = month.getMonth();
+  const totalDays    = getDaysInMonth(year, mon);
+  const firstDay     = getFirstDayOfMonth(year, mon);
   const prevMonthDays = getDaysInMonth(year, mon - 1);
 
   const cells = [];
-  for (let i = 0; i < firstDay; i++) {
+  for (let i = 0; i < firstDay; i++)
     cells.push({ day: prevMonthDays - firstDay + 1 + i, inactive: true });
-  }
-  for (let d = 1; d <= totalDays; d++) {
+  for (let d = 1; d <= totalDays; d++)
     cells.push({ day: d, inactive: false });
-  }
 
   const isSameDay = (d, date) => {
     if (!date) return false;
-    const cand = new Date(year, mon, d);
-    return cand.toDateString() === date.toDateString();
+    return new Date(year, mon, d).toDateString() === date.toDateString();
   };
   const isInRange = (d) => {
     if (!startDate || !endDate) return false;
@@ -104,37 +100,33 @@ const Calendar = ({
           <div key={i} className="td-cal-weekday">{d}</div>
         ))}
         {cells.map((cell, i) => {
-          if (cell.inactive) {
+          if (cell.inactive)
             return <div key={i} className="td-cal-day td-cal-day-inactive">{cell.day}</div>;
-          }
 
           const isHighlighted = highlightedDays.includes(cell.day);
-          const isSingle = isSameDay(cell.day, selectedSingleDay);
-          const isStart = rangeMode && isSameDay(cell.day, startDate);
-          const isEnd = rangeMode && isSameDay(cell.day, endDate);
-          const inRange = rangeMode && isInRange(cell.day);
+          const isSingle  = isSameDay(cell.day, selectedSingleDay);
+          const isStart   = rangeMode && isSameDay(cell.day, startDate);
+          const isEnd     = rangeMode && isSameDay(cell.day, endDate);
+          const inRange   = rangeMode && isInRange(cell.day);
 
           const classes = [
             "td-cal-day",
-            isStart || isEnd ? "td-cal-day-selected" : "",
-            isStart && endDate ? "td-cal-day-range-start" : "",
-            isEnd && startDate ? "td-cal-day-range-end" : "",
-            inRange ? "td-cal-day-range" : "",
-            isSingle ? "td-cal-day-selected-solid" : "",
-            !isHighlighted && highlightedDays.length > 0 && !isSingle ? "td-cal-day-disabled" : "",
+            isStart || isEnd ? "td-cal-day-selected"       : "",
+            isStart && endDate   ? "td-cal-day-range-start" : "",
+            isEnd   && startDate ? "td-cal-day-range-end"   : "",
+            inRange              ? "td-cal-day-range"       : "",
+            isSingle             ? "td-cal-day-selected-solid" : "",
+            !isHighlighted && highlightedDays.length > 0 && !isSingle
+              ? "td-cal-day-disabled" : "",
           ].filter(Boolean).join(" ");
 
           return (
-            <div
-              key={i}
-              className={classes}
+            <div key={i} className={classes}
               onClick={() => {
                 if (highlightedDays.length > 0 && !isHighlighted) return;
                 onDayClick(cell.day);
               }}
-            >
-              {cell.day}
-            </div>
+            >{cell.day}</div>
           );
         })}
       </div>
@@ -142,83 +134,100 @@ const Calendar = ({
   );
 };
 
-// ─── Trip card for selection lists ───────────────────────────────────────────
-const TripCard = ({ trip, selected, onClick, children }) => (
-  <div
-    className={`td-trip-option ${selected ? "selected" : ""}`}
-    onClick={onClick}
-  >
-    <img
-      src={trip.coverImage || trip.coverImageUrl || "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200"}
-      alt={trip.title}
-      className="td-trip-img"
-    />
-    <div className="td-trip-info">
-      <span className="td-trip-name">{trip.title}</span>
-      <span className="td-trip-meta">
-        {trip.durationDays || "—"} days · {trip.placesCount ?? "—"} places
-      </span>
-    </div>
-    {children}
-  </div>
-);
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 const TripDetails = ({ place }) => {
-  // ── UI state ──
-  const [liked, setLiked] = useState(false);
+  // ── UI state ──────────────────────────────────────────────────────────────
   const [showFullOverview, setShowFullOverview] = useState(false);
-  const [showMapModal, setShowMapModal] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewRating, setReviewRating] = useState(4);
-  const [reviewText, setReviewText] = useState("");
+  const [showMapModal,     setShowMapModal]     = useState(false);
+
+  // ── Toast — must be declared BEFORE any useCallback that uses it ──────────
   const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const [showToast,    setShowToast]    = useState(false);
+  const showToastMsg = useCallback((msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 4500);
+  }, []);
 
-  // ── Add-to-Trip modal state ──
+  // ── ✅ FIX: Heart / Favorites ─────────────────────────────────────────────
+  const [liked,        setLiked]        = useState(false);
+  const [likeLoading,  setLikeLoading]  = useState(false);
+
+  const handleHeartClick = useCallback(async () => {
+    if (likeLoading) return;
+    // ✅ FIX: Places from Cloudinary/MindTrip may have null place_id — can't favorite them
+    if (!place?.place_id) {
+      showToastMsg("Favourites aren't available for this place yet.");
+      return;
+    }
+    setLikeLoading(true);
+    try {
+      if (!liked) {
+        await apiClient.post("/favorites/places", { placeId: place.place_id });
+        setLiked(true);
+      } else {
+        await apiClient.delete(`/favorites/places/${place.place_id}`);
+        setLiked(false);
+      }
+    } catch (err) {
+      console.error("Favorite toggle failed:", err);
+      setLiked((v) => !v);
+    } finally {
+      setLikeLoading(false);
+    }
+  }, [liked, likeLoading, place?.place_id, showToastMsg]);
+
+  // ── ✅ FIX: Review modal + submit ─────────────────────────────────────────
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating,    setReviewRating]    = useState(4);
+  const [reviewText,      setReviewText]      = useState("");
+  const [reviewSuccess,   setReviewSuccess]   = useState(false);
+
+  // ── Add-to-Trip modal ─────────────────────────────────────────────────────
   const [showAddTripModal, setShowAddTripModal] = useState(false);
-  const [selectedTripId, setSelectedTripId] = useState(null);
-  const [selectedDay, setSelectedDay] = useState(null); // null = auto-assign
+  const [selectedTripId,   setSelectedTripId]   = useState(null);
+  const [selectedDay,      setSelectedDay]       = useState(null);
 
-  // ── Quick-AI new-trip modal state ──
+  // ── Quick-AI modal ────────────────────────────────────────────────────────
   const [showQuickAIModal, setShowQuickAIModal] = useState(false);
-  const [quickAIStep, setQuickAIStep] = useState("form"); // form | calendar | skeleton | loading
-  const [calendarTarget, setCalendarTarget] = useState(null); // "start" | "end"
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [calendarMonth, setCalendarMonth] = useState(new Date());
-  const [budgetTier, setBudgetTier] = useState("Economic");
-  const [numPeople, setNumPeople] = useState(1);
-  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [quickAIStep,      setQuickAIStep]      = useState("form");
+  const [calendarTarget,   setCalendarTarget]   = useState(null);
+  const [startDate,        setStartDate]        = useState(null);
+  const [endDate,          setEndDate]          = useState(null);
+  const [calendarMonth,    setCalendarMonth]    = useState(new Date());
+  const [budgetTier,       setBudgetTier]       = useState("Economic");
+  const [numPeople,        setNumPeople]        = useState(1);
+  const [loadingProgress,  setLoadingProgress]  = useState(0);
 
-  // ── Manage-Trip modal state ──
-  const [showManageTripModal, setShowManageTripModal] = useState(false);
-  const [manageTripStep, setManageTripStep] = useState("menu"); // menu | moveDay | moveTrip | remove
-  const [manageDayMonth, setManageDayMonth] = useState(new Date());
-  const [manageSelectedDay, setManageSelectedDay] = useState(null);
-  const [manageDestTripId, setManageDestTripId] = useState(null);
+  // ── Manage-Trip modal ─────────────────────────────────────────────────────
+  const [showManageTripModal,  setShowManageTripModal]  = useState(false);
+  const [manageTripStep,       setManageTripStep]       = useState("menu");
+  const [manageSelectedDayNum, setManageSelectedDayNum] = useState(null);
+  const [manageDestTripId,     setManageDestTripId]     = useState(null);
+  const [tripDurationDays,     setTripDurationDays]     = useState(null);
 
-  // ── Map ──
+  // ── Map ───────────────────────────────────────────────────────────────────
   const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
+  const mapRef          = useRef(null);
 
-  // ─── Custom hooks ───────────────────────────────────────────────────────────
+  // ── Custom hooks ──────────────────────────────────────────────────────────
   const {
-    trips,
-    tripsLoading,
-    actionLoading,
-    fetchTrips,
-    addToExistingTrip,
-    createTripWithPlan,
-    moveToAnotherDay,
-    moveToAnotherTrip,
-    removeFromTrip,
-    isAddedToTrip,
-    addedTripId,
-    addedTripTitle,
-  } = useAddToTrip(place);
+    trips, tripsLoading, actionLoading,
+    fetchTrips, addToExistingTrip, createTripWithPlan,
+    moveToAnotherDay, moveToAnotherTrip, removeFromTrip,
+    isAddedToTrip, addedTripId, addedTripTitle,
+  } = useAddToTrip(place, {
+    // ✅ FIX: called after every successful plan PUT — triggers re-fetch in TripResult
+    onPlanUpdated: ({ tripId }) => {
+      // Fire a DOM event so TripResult page (if open in the same tab or via shared state)
+      // can listen and call its own fetchTrip(). Works cross-component without prop drilling.
+      window.dispatchEvent(new CustomEvent("tripPlanUpdated", { detail: { tripId } }));
+    },
+  });
 
-  const { reviews, reviewsLoading } = usePlaceReviews(place, addedTripId);
+  // ✅ FIX: pass both place and addedTripId; hook returns submitReview now
+  const { reviews, reviewsLoading, submitReview, submitLoading } =
+    usePlaceReviews(place, addedTripId);
 
   const { featured: nearbyFromAPI, loading: nearbyLoading } = useHomePlaces(
     place?.city || "Cairo"
@@ -232,77 +241,72 @@ const TripDetails = ({ place }) => {
       image: p.photo_url,
     }));
 
-  // ─── Toast helper ───────────────────────────────────────────────────────────
-  const showToastMsg = useCallback((msg) => {
-    setToastMessage(msg);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 4500);
-  }, []);
-
-  // ─── Derived data ───────────────────────────────────────────────────────────
+  // ── Derived data ──────────────────────────────────────────────────────────
   const category = (place?.category || "attraction").toLowerCase();
-  const isFood = isFoodPlace(place);
+  const isFood   = isFoodPlace(place);
 
-  // Task 3 – Pricing label fix: "avg / person" instead of "avg / meal"
   const avgPrice = (() => {
     if (!place) return "—";
-    if (category === "hotel") return `${place.price ?? "—"} EGP / Night`;
+    if (category === "hotel")      return `${place.price ?? "—"} EGP / Night`;
     if (category === "attraction") return `Entry ${place.price ?? "—"} EGP`;
-    // Restaurant / café / food → "avg / person" (NOT "avg / meal")
     return `Avg. ${place.price ?? "—"} EGP / person`;
   })();
 
-  // Task 3 – Visit info: conditional Cuisine field
   const visitLabels = (() => {
-    if (category === "hotel") {
-      return {
-        label1: "Check-In",      val1: place?.openingHours || "02:00 PM",
-        label2: "Check-Out",     val2: place?.closingHours || "12:00 PM",
-        label3: "Best For",      val3: "Friends · Families",
-        label4: "Suggested Visit", val4: "Morning",
-      };
-    }
-    if (isFood) {
-      return {
-        label1: "Opening Hours", val1: place?.openingHours || place?.opening_hours?.split("-")[0] || "10:00 AM",
-        label2: "Closing Hours", val2: place?.closingHours || place?.opening_hours?.split("-")[1] || "12:00 AM",
-        // Task 3 – Only show Cuisine for food places
-        label3: "Cuisine",       val3: place?.cuisine || place?.tags?.[0] || "Local",
-        label4: "Suggested Visit", val4: "Morning",
-      };
-    }
-    // Attraction / museum / historical site → NO cuisine field
+    if (category === "hotel") return {
+      label1: "Check-In",       val1: place?.openingHours || "02:00 PM",
+      label2: "Check-Out",      val2: place?.closingHours || "12:00 PM",
+      label3: "Best For",       val3: "Friends · Families",
+      label4: "Suggested Visit",val4: "Morning",
+    };
+    if (isFood) return {
+      label1: "Opening Hours", val1: place?.openingHours || place?.opening_hours?.split("-")[0] || "10:00 AM",
+      label2: "Closing Hours", val2: place?.closingHours || place?.opening_hours?.split("-")[1] || "12:00 AM",
+      label3: "Cuisine",       val3: place?.cuisine || place?.tags?.[0] || "Local",
+      label4: "Suggested Visit",val4: "Morning",
+    };
     return {
-      label1: "Opening Hours", val1: place?.opening_hours?.split("-")[0] || "08:00 AM",
-      label2: "Closing Hours", val2: place?.opening_hours?.split("-")[1] || "06:00 PM",
-      label3: "Entry Fee",     val3: place?.price ? `${place.price} EGP` : "Free",
-      label4: "Best Time",     val4: "Oct – Apr",
+      label1: "Opening Hours",val1: place?.opening_hours?.split("-")[0] || "08:00 AM",
+      label2: "Closing Hours",val2: place?.opening_hours?.split("-")[1] || "06:00 PM",
+      label3: "Entry Fee",    val3: place?.price ? `${place.price} EGP` : "Free",
+      label4: "Best Time",    val4: "Oct – Apr",
     };
   })();
 
   const data = {
-    name: place?.title || place?.name || "Place",
-    city: place?.city || "Egypt",
-    rating: place?.rating ?? 0,
-    reviewCount: place?.reviews_count ?? place?.reviews ?? 0,
+    name:         place?.title || place?.name || "Place",
+    city:         place?.city  || "Egypt",
+    // ✅ FIX: rating always comes from place prop, NOT from reviews length
+    rating:       place?.rating ?? 0,
+    reviewCount:  place?.reviews_count ?? place?.reviews ?? 0,
     avgPrice,
-    images: place?.image_urls?.length
-      ? place.image_urls
-      : [place?.photo_url || place?.image].filter(Boolean),
+    images:
+      place?.image_urls?.length
+        ? place.image_urls
+        : [place?.photo_url || place?.image].filter(Boolean),
     overview:
       place?.description ||
       `${place?.title || "This place"} is one of Egypt's top destinations in ${place?.city || "Egypt"}.`,
-    overallRating: place?.rating ?? 0,
     lat: place?.lat ?? 29.9792,
     lng: place?.lng ?? 31.1342,
-    nearbyPlaces,
   };
 
   const overviewText = showFullOverview
     ? data.overview
     : data.overview.slice(0, 120) + "…";
 
-  // ─── Mapbox ─────────────────────────────────────────────────────────────────
+  // ✅ FIX: Listen for plan-updated events fired by useAddToTrip after every PUT.
+  // This lets TripResult pages in the same session know they should re-fetch.
+  // TripResult should also add: window.addEventListener("tripPlanUpdated", () => fetchTrip())
+  useEffect(() => {
+    const handler = (e) => {
+      console.log("[TripDetails] tripPlanUpdated event received:", e.detail);
+    };
+    window.addEventListener("tripPlanUpdated", handler);
+    return () => window.removeEventListener("tripPlanUpdated", handler);
+  }, []);
+
+  // ── Mapbox ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
@@ -310,28 +314,25 @@ const TripDetails = ({ place }) => {
     mapboxgl.accessToken =
       "pk.eyJ1IjoieG1vaGFtZWR4IiwiYSI6ImNtcG1zZ25kbTB4eTkydHNidXZ2cnR2ajkifQ.CugdwmFa8ME2UU4rDEAJug";
 
-    const lat = data.lat;
-    const lng = data.lng;
-
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [lng, lat],
+      center: [data.lng, data.lat],
       zoom: 13,
     });
-
     mapRef.current.on("load", () => {
       const el = document.createElement("div");
       el.style.cssText =
         "width:28px;height:28px;background:#5596fe;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);";
-      new mapboxgl.Marker({ element: el }).setLngLat([lng, lat]).addTo(mapRef.current);
+      new mapboxgl.Marker({ element: el })
+        .setLngLat([data.lng, data.lat])
+        .addTo(mapRef.current);
     });
-
     mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
     return () => { mapRef.current?.remove(); mapRef.current = null; };
-  }, [place]);
+  }, [place]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── Loading messages for Quick AI ──────────────────────────────────────────
+  // ── Loading messages ──────────────────────────────────────────────────────
   const loadingMessages = [
     { threshold: 0,  text: "Collecting your preferences…" },
     { threshold: 30, text: "Building your itinerary…" },
@@ -341,15 +342,11 @@ const TripDetails = ({ place }) => {
   const currentLoadingMsg =
     loadingMessages.filter((m) => loadingProgress >= m.threshold).at(-1)?.text || "Loading…";
 
-  // ─── Quick-AI: generate plan handler ────────────────────────────────────────
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleGeneratePlan = async () => {
-    if (!startDate || !endDate) {
-      showToastMsg("Please select start and end dates.");
-      return;
-    }
+    if (!startDate || !endDate) { showToastMsg("Please select start and end dates."); return; }
     setQuickAIStep("skeleton");
     setLoadingProgress(0);
-
     await new Promise((r) => setTimeout(r, 1000));
     setQuickAIStep("loading");
 
@@ -363,16 +360,12 @@ const TripDetails = ({ place }) => {
       const result = await createTripWithPlan({ startDate, endDate, budgetTier, people: numPeople });
       clearInterval(interval);
       setLoadingProgress(100);
-
       await new Promise((r) => setTimeout(r, 500));
       setShowQuickAIModal(false);
       setQuickAIStep("form");
-
-      if (result.success) {
-        showToastMsg(`Trip created: ${result.tripTitle} ✅`);
-      } else {
-        showToastMsg("Failed to generate trip. Please try again.");
-      }
+      showToastMsg(result.success
+        ? `Trip created: ${result.tripTitle} ✅`
+        : "Trip created but plan generation is temporarily unavailable. Try the AI Planner.");
     } catch (err) {
       clearInterval(interval);
       console.error(err);
@@ -381,46 +374,32 @@ const TripDetails = ({ place }) => {
     }
   };
 
-  // ─── Add to existing trip handler (Confirm button) ──────────────────────────
   const handleConfirmAddToTrip = async () => {
     if (!selectedTripId) return;
     setShowAddTripModal(false);
-
     const result = await addToExistingTrip(selectedTripId, selectedDay);
-    if (result.success) {
-      showToastMsg(`${data.name} added to ${result.tripTitle} ✅`);
-    } else {
-      showToastMsg("Failed to add place. Please try again.");
-    }
+    if (result.success) showToastMsg(`${data.name} added to ${result.tripTitle} ✅`);
+    else showToastMsg("Failed to add place. Please try again.");
   };
 
-  // ─── Move to another day handler ────────────────────────────────────────────
   const handleMoveDay = async () => {
-    if (!manageSelectedDay) return;
-    // We highlight trip's valid days (1..durationDays) – here we use the calendar day number
-    const dayNum = manageSelectedDay.getDate(); // simplified: use date number as day index
-    const result = await moveToAnotherDay(dayNum);
+    if (!manageSelectedDayNum) return;
+    const result = await moveToAnotherDay(manageSelectedDayNum);
     setShowManageTripModal(false);
     setManageTripStep("menu");
-    setManageSelectedDay(null);
+    setManageSelectedDayNum(null);
     showToastMsg(result.success ? "Day updated successfully ✅" : "Failed to update day.");
   };
 
-  // ─── Move to another trip handler ───────────────────────────────────────────
   const handleMoveTrip = async () => {
     if (!manageDestTripId) return;
     const result = await moveToAnotherTrip(manageDestTripId);
     setShowManageTripModal(false);
     setManageTripStep("menu");
     setManageDestTripId(null);
-    showToastMsg(
-      result.success
-        ? `Place moved to ${result.destTripTitle} ✅`
-        : "Failed to move place."
-    );
+    showToastMsg(result.success ? `Place moved to ${result.destTripTitle} ✅` : "Failed to move place.");
   };
 
-  // ─── Remove from trip handler ────────────────────────────────────────────────
   const handleRemoveFromTrip = async () => {
     const result = await removeFromTrip();
     setShowManageTripModal(false);
@@ -428,12 +407,16 @@ const TripDetails = ({ place }) => {
     showToastMsg(result.success ? "Place removed from trip ✅" : "Failed to remove place.");
   };
 
-  // ─── Open Add-to-Trip modal ──────────────────────────────────────────────────
   const handleMainButtonClick = () => {
     if (isAddedToTrip) {
       setManageTripStep("menu");
-      setManageSelectedDay(null);
+      setManageSelectedDayNum(null);
       setManageDestTripId(null);
+      // fetch trips to get duration of the current trip
+      fetchTrips().then((allTrips) => {
+        const current = allTrips.find((t) => t.id === addedTripId);
+        setTripDurationDays(current?.durationDays || null);
+      });
       setShowManageTripModal(true);
     } else {
       fetchTrips();
@@ -443,15 +426,37 @@ const TripDetails = ({ place }) => {
     }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ✅ FIX: Submit review handler – wired to submitReview from hook
+  const handleSubmitReview = async () => {
+    if (!addedTripId) {
+      showToastMsg("Add this place to a trip first to leave a review.");
+      setShowReviewModal(false);
+      return;
+    }
+    const result = await submitReview({ rating: reviewRating, comment: reviewText });
+    if (result.success) {
+      setReviewSuccess(true);
+      setReviewText("");
+      setReviewRating(4);
+      showToastMsg("Review submitted! ✅");
+      setTimeout(() => {
+        setShowReviewModal(false);
+        setReviewSuccess(false);
+      }, 1500);
+    } else {
+      showToastMsg(result.error || "Failed to submit review.");
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
   // RENDER
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
       <Navbar activePage="explore" />
-
       <div className="td-wrapper">
         <div className="td-page">
+
           {/* Title */}
           <h1 className="td-place-title">{data.name}</h1>
 
@@ -473,7 +478,6 @@ const TripDetails = ({ place }) => {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
                 <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
               </svg>
-              {/* Task 3: Dynamic price label */}
               {data.avgPrice}
             </span>
           </div>
@@ -488,10 +492,16 @@ const TripDetails = ({ place }) => {
                 <div key={i} className="td-side-img-wrap">
                   <img src={img} alt={`${data.name} ${i + 1}`} />
                   {i === 0 && (
+                    // ✅ FIX: Heart calls API + shows red when liked, gray when not
                     <button
                       className={`td-heart-btn ${liked ? "liked" : ""}`}
-                      onClick={() => setLiked(!liked)}
-                    >❤️</button>
+                      onClick={handleHeartClick}
+                      disabled={likeLoading}
+                      style={{ opacity: likeLoading ? 0.6 : 1 }}
+                      title={liked ? "Remove from favourites" : "Add to favourites"}
+                    >
+                      {liked ? "❤️" : "🩶"}
+                    </button>
                   )}
                 </div>
               ))}
@@ -500,8 +510,10 @@ const TripDetails = ({ place }) => {
 
           {/* Content grid */}
           <div className="td-content">
+
             {/* ─ Left column ─ */}
             <div className="td-left">
+
               {/* Overview */}
               <div className="td-section">
                 <h2 className="td-section-title">Overview</h2>
@@ -520,16 +532,12 @@ const TripDetails = ({ place }) => {
                   {nearbyLoading ? (
                     <p style={{ color: "#888", fontSize: "14px" }}>Loading nearby places…</p>
                   ) : (
-                    data.nearbyPlaces.map((np, i) => (
+                    nearbyPlaces.map((np, i) => (
                       <div
                         key={i}
                         className="td-nearby-card"
                         style={{ cursor: "pointer" }}
-                        onClick={() =>
-                          np.place_id &&
-                          window.navigateToTripDetails &&
-                          window.navigateToTripDetails(np)
-                        }
+                        onClick={() => np.place_id && window.navigateToTripDetails?.(np)}
                       >
                         <img src={np.image} alt={np.name} className="td-nearby-img" />
                         <p className="td-nearby-name">{np.name}</p>
@@ -548,37 +556,58 @@ const TripDetails = ({ place }) => {
                 </div>
               </div>
 
-              {/* Task 3 – Dynamic Reviews */}
+              {/* Reviews */}
               <div className="td-section">
                 <h2 className="td-section-title">
                   Reviews{" "}
-                  <span className="td-review-edit" onClick={() => setShowReviewModal(true)} style={{ cursor: "pointer" }}>
-                    <img src={ReviewsIcon} alt="edit" style={{ width: "20px", height: "20px" }} />
+                  {/* ✅ FIX: pencil icon opens the review modal */}
+                  <span
+                    className="td-review-edit"
+                    onClick={() => { setShowReviewModal(true); setReviewSuccess(false); }}
+                    style={{ cursor: "pointer" }}
+                    title="Write a review"
+                  >
+                    <img src={ReviewsIcon} alt="write review" style={{ width: "20px", height: "20px" }} />
                   </span>
                 </h2>
+
+                {/* ✅ FIX: Rating block always visible (from place.rating, not reviews) */}
                 <div className="td-rating-summary">
                   <div className="td-overall">
-                    <span className="td-overall-num">{data.overallRating}</span>
+                    <span className="td-overall-num">{data.rating}</span>
                     <div className="td-stars">
-                      {"★".repeat(Math.floor(data.overallRating))}
-                      {"☆".repeat(5 - Math.floor(data.overallRating))}
+                      {"★".repeat(Math.floor(data.rating))}
+                      {"☆".repeat(Math.max(0, 5 - Math.floor(data.rating)))}
                     </div>
+                    <span style={{ fontSize: "12px", color: "#999" }}>
+                      from {data.reviewCount} visitors
+                    </span>
                   </div>
                   <div className="td-rating-bars">
                     {[85, 70, 30].map((w, i) => (
                       <div key={i} className="td-bar-row">
                         <div className="td-bar">
-                          <div className={`td-bar-fill${i === 2 ? " td-bar-fill-light" : ""}`} style={{ width: `${w}%` }} />
+                          <div className={`td-bar-fill${i === 2 ? " td-bar-fill-light" : ""}`}
+                            style={{ width: `${w}%` }} />
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
+                {/* ✅ FIX: Dynamic reviews list; "No reviews" doesn't hide rating */}
                 {reviewsLoading ? (
                   <p style={{ color: "#888", fontSize: "14px" }}>Loading reviews…</p>
                 ) : reviews.length === 0 ? (
-                  <p style={{ color: "#aaa", fontSize: "14px" }}>No reviews yet. Be the first!</p>
+                  <p style={{ color: "#aaa", fontSize: "14px", marginTop: "12px" }}>
+                    No reviews yet.{" "}
+                    <span
+                      style={{ color: "#5596fe", cursor: "pointer" }}
+                      onClick={() => setShowReviewModal(true)}
+                    >
+                      Be the first!
+                    </span>
+                  </p>
                 ) : (
                   <div className="td-reviews-grid">
                     {reviews.map((rev) => (
@@ -587,7 +616,7 @@ const TripDetails = ({ place }) => {
                         <div className="td-review-info">
                           <span className="td-reviewer-name">{rev.name}</span>
                           <div className="td-review-stars">{"★".repeat(rev.rating)}</div>
-                          <p className="td-review-text">{rev.text || "A wonderful experience!"}</p>
+                          <p className="td-review-text">{rev.text}</p>
                         </div>
                       </div>
                     ))}
@@ -604,7 +633,7 @@ const TripDetails = ({ place }) => {
                   {[
                     [visitLabels.label1, visitLabels.val1],
                     [visitLabels.label2, visitLabels.val2],
-                    // Task 3: Cuisine only rendered when it's a food place
+                    // ✅ Cuisine only for food places
                     isFood || visitLabels.label3 !== "Cuisine"
                       ? [visitLabels.label3, visitLabels.val3]
                       : null,
@@ -621,7 +650,8 @@ const TripDetails = ({ place }) => {
 
                 <h3 className="td-visit-title" style={{ marginTop: "24px" }}>Location</h3>
                 <div className="td-map-placeholder">
-                  <div ref={mapContainerRef} style={{ width: "100%", height: "200px", borderRadius: "12px", overflow: "hidden" }} />
+                  <div ref={mapContainerRef}
+                    style={{ width: "100%", height: "200px", borderRadius: "12px", overflow: "hidden" }} />
                 </div>
                 <a className="td-open-map-btn" onClick={() => setShowMapModal(true)} style={{ cursor: "pointer" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
@@ -632,17 +662,12 @@ const TripDetails = ({ place }) => {
                   Open full map
                 </a>
 
-                {/* Main CTA button */}
                 <button
                   className={isAddedToTrip ? "td-manage-trip-btn" : "td-add-trip-btn"}
                   onClick={handleMainButtonClick}
                   disabled={actionLoading}
                 >
-                  {actionLoading
-                    ? "Loading…"
-                    : isAddedToTrip
-                    ? "Manage your trip"
-                    : "Add to your trip"}
+                  {actionLoading ? "Loading…" : isAddedToTrip ? "Manage your trip" : "Add to your trip"}
                 </button>
               </div>
             </div>
@@ -650,28 +675,20 @@ const TripDetails = ({ place }) => {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          MAP MODAL
-      ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════ MAP MODAL ══════════════════ */}
       {showMapModal && (
         <div className="td-modal-overlay" onClick={() => setShowMapModal(false)}>
           <div className="td-modal-map" onClick={(e) => e.stopPropagation()}>
             <CloseBtn onClick={() => setShowMapModal(false)} />
-            <iframe
-              title="full-map"
-              width="100%"
-              height="100%"
-              style={{ border: 0, borderRadius: "16px" }}
-              loading="lazy"
+            <iframe title="full-map" width="100%" height="100%"
+              style={{ border: 0, borderRadius: "16px" }} loading="lazy"
               src={`https://maps.google.com/maps?q=${data.lat},${data.lng}&z=14&output=embed`}
             />
           </div>
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          ADD TO TRIP MODAL  (Task 1)
-      ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════ ADD TO TRIP MODAL ══════════════════ */}
       {showAddTripModal && (
         <div className="td-modal-overlay" onClick={() => setShowAddTripModal(false)}>
           <div className="td-modal-add-trip" onClick={(e) => e.stopPropagation()}>
@@ -691,8 +708,7 @@ const TripDetails = ({ place }) => {
             <div className="td-add-trip-list">
               {tripsLoading ? (
                 <div className="td-trips-loading">
-                  <div className="td-trips-spinner" />
-                  <span>Loading trips…</span>
+                  <div className="td-trips-spinner" /><span>Loading trips…</span>
                 </div>
               ) : trips.length === 0 ? (
                 <p style={{ color: "#aaa", padding: "16px 0", fontSize: "14px" }}>
@@ -705,17 +721,11 @@ const TripDetails = ({ place }) => {
                     className={`td-trip-option ${selectedTripId === trip.id ? "selected" : ""}`}
                     onClick={() => { setSelectedTripId(trip.id); setSelectedDay(null); }}
                   >
-                    <input
-                      type="radio"
-                      name="trip-select"
-                      className="td-trip-radio"
-                      checked={selectedTripId === trip.id}
-                      readOnly
-                    />
+                    <input type="radio" name="trip-select" className="td-trip-radio"
+                      checked={selectedTripId === trip.id} readOnly />
                     <img
                       src={trip.coverImage || "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200"}
-                      alt={trip.title}
-                      className="td-trip-img"
+                      alt={trip.title} className="td-trip-img"
                     />
                     <div className="td-trip-info">
                       <span className="td-trip-name">{trip.title}</span>
@@ -723,14 +733,10 @@ const TripDetails = ({ place }) => {
                         {trip.durationDays || "—"} days · {trip.placesCount ?? "—"} places
                       </span>
                     </div>
-
-                    {/* Day selector appears for the selected trip */}
                     {selectedTripId === trip.id && (
                       <div className="td-day-select-wrap" onClick={(e) => e.stopPropagation()}>
                         <span className="td-day-select-label">Day Selection:</span>
-                        <select
-                          className="td-day-select"
-                          defaultValue="auto"
+                        <select className="td-day-select" defaultValue="auto"
                           onChange={(e) => {
                             const v = e.target.value;
                             setSelectedDay(v === "auto" ? null : parseInt(v, 10));
@@ -747,14 +753,8 @@ const TripDetails = ({ place }) => {
                 ))
               )}
 
-              {/* Create a new trip via Quick AI */}
-              <div
-                className="td-trip-option td-create-new"
-                onClick={() => {
-                  setShowAddTripModal(false);
-                  setShowQuickAIModal(true);
-                  setQuickAIStep("form");
-                }}
+              <div className="td-trip-option td-create-new"
+                onClick={() => { setShowAddTripModal(false); setShowQuickAIModal(true); setQuickAIStep("form"); }}
               >
                 <div className="td-create-plus">+</div>
                 <div className="td-trip-info">
@@ -764,8 +764,7 @@ const TripDetails = ({ place }) => {
               </div>
             </div>
 
-            <button
-              className="td-confirm-btn"
+            <button className="td-confirm-btn"
               disabled={!selectedTripId || actionLoading}
               onClick={handleConfirmAddToTrip}
             >
@@ -775,16 +774,13 @@ const TripDetails = ({ place }) => {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          QUICK AI TRIP PLANNING MODAL  (Task 1 – Path B)
-      ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════ QUICK AI MODAL ══════════════════ */}
       {showQuickAIModal && (
-        <div
-          className="td-modal-overlay"
+        <div className="td-modal-overlay"
           onClick={() => { if (quickAIStep !== "loading") setShowQuickAIModal(false); }}
         >
           <div className="td-modal-quick-ai" onClick={(e) => e.stopPropagation()}>
-            {/* ── Form step ── */}
+
             {quickAIStep === "form" && (
               <>
                 <CloseBtn onClick={() => setShowQuickAIModal(false)} />
@@ -794,10 +790,8 @@ const TripDetails = ({ place }) => {
                     <h2 className="td-qai-title">Quick AI Trip Planning</h2>
                     <p className="td-qai-subtitle">
                       This is a quick overview. For a detailed itinerary, return to the{" "}
-                      <span
-                        className="td-qai-link"
-                        onClick={() => { setShowQuickAIModal(false); window.navigateToAiPlanner?.(); }}
-                      >
+                      <span className="td-qai-link"
+                        onClick={() => { setShowQuickAIModal(false); window.navigateToAiPlanner?.(); }}>
                         AI trip planner
                       </span>.
                     </p>
@@ -810,10 +804,8 @@ const TripDetails = ({ place }) => {
                     {[["Start date :", "start", startDate], ["End date :", "end", endDate]].map(([lbl, target, val]) => (
                       <div key={target} className="td-qai-date-col">
                         <label className="td-qai-date-label">{lbl}</label>
-                        <div
-                          className="td-qai-date-input"
-                          onClick={() => { setCalendarTarget(target); setQuickAIStep("calendar"); }}
-                        >
+                        <div className="td-qai-date-input"
+                          onClick={() => { setCalendarTarget(target); setQuickAIStep("calendar"); }}>
                           <span>{val ? formatDate(val) : (target === "start" ? "Select start" : "Select end")}</span>
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5596fe" strokeWidth="2">
                             <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -835,18 +827,16 @@ const TripDetails = ({ place }) => {
                   <h3 className="td-qai-section-label">Budget</h3>
                   <div className="td-qai-budget-row">
                     {["Economic", "Comfortable", "Luxury"].map((b) => (
-                      <button
-                        key={b}
+                      <button key={b}
                         className={`td-qai-budget-btn ${budgetTier === b ? "active" : ""}`}
-                        onClick={() => setBudgetTier(b)}
-                      >
-                        {b}
-                      </button>
+                        onClick={() => setBudgetTier(b)}>{b}</button>
                     ))}
                   </div>
                   {startDate && endDate && (
                     <p style={{ fontSize: "12px", color: "#888", marginTop: "6px" }}>
-                      ≈ {calcBudget(budgetTier, Math.max(1, Math.ceil((endDate - startDate) / 86400000)), numPeople).toLocaleString()} EGP total
+                      ≈ {calcBudget(budgetTier,
+                          Math.max(1, Math.ceil((endDate - startDate) / 86400000)),
+                          numPeople).toLocaleString()} EGP total
                     </p>
                   )}
                 </div>
@@ -854,39 +844,31 @@ const TripDetails = ({ place }) => {
                 <div className="td-qai-section">
                   <h3 className="td-qai-section-label">Number of people</h3>
                   <div className="td-qai-people-input">
-                    <button type="button" className="td-qai-people-btn" onClick={() => setNumPeople((p) => Math.max(1, p - 1))}>−</button>
-                    <input
-                      type="number"
-                      min="1"
-                      className="td-qai-people-field"
+                    <button type="button" className="td-qai-people-btn"
+                      onClick={() => setNumPeople((p) => Math.max(1, p - 1))}>−</button>
+                    <input type="number" min="1" className="td-qai-people-field"
                       value={numPeople}
-                      onChange={(e) => setNumPeople(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    />
-                    <button type="button" className="td-qai-people-btn" onClick={() => setNumPeople((p) => p + 1)}>+</button>
+                      onChange={(e) => setNumPeople(Math.max(1, parseInt(e.target.value, 10) || 1))} />
+                    <button type="button" className="td-qai-people-btn"
+                      onClick={() => setNumPeople((p) => p + 1)}>+</button>
                   </div>
                 </div>
 
-                <button
-                  className="td-qai-generate-btn"
+                <button className="td-qai-generate-btn"
                   onClick={handleGeneratePlan}
-                  disabled={!startDate || !endDate}
-                >
+                  disabled={!startDate || !endDate}>
                   Generate Plan
                 </button>
               </>
             )}
 
-            {/* ── Calendar step ── */}
             {quickAIStep === "calendar" && (
               <>
                 <CloseBtn onClick={() => setShowQuickAIModal(false)} />
                 <BackBtn onClick={() => setQuickAIStep("form")} />
                 <Calendar
-                  month={calendarMonth}
-                  onMonthChange={setCalendarMonth}
-                  startDate={startDate}
-                  endDate={endDate}
-                  rangeMode
+                  month={calendarMonth} onMonthChange={setCalendarMonth}
+                  startDate={startDate} endDate={endDate} rangeMode
                   onDayClick={(day) => {
                     const selected = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
                     if (calendarTarget === "start") setStartDate(selected);
@@ -897,7 +879,6 @@ const TripDetails = ({ place }) => {
               </>
             )}
 
-            {/* ── Skeleton step ── */}
             {quickAIStep === "skeleton" && (
               <div className="td-qai-skeleton">
                 <div className="td-qai-skeleton-header" />
@@ -918,7 +899,6 @@ const TripDetails = ({ place }) => {
               </div>
             )}
 
-            {/* ── Loading step ── */}
             {quickAIStep === "loading" && (
               <div className="td-qai-loading">
                 <div className="td-qai-spinner" />
@@ -932,62 +912,49 @@ const TripDetails = ({ place }) => {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          MANAGE TRIP MODAL  (Task 2)
-      ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════ MANAGE TRIP MODAL ══════════════════ */}
       {showManageTripModal && (
         <div className="td-modal-overlay" onClick={() => setShowManageTripModal(false)}>
           <div className="td-modal-manage-trip" onClick={(e) => e.stopPropagation()}>
 
-            {/* ── Menu ── */}
             {manageTripStep === "menu" && (
               <>
                 <CloseBtn onClick={() => setShowManageTripModal(false)} />
                 <h2 className="td-mt-title">Manage Trip</h2>
                 <p className="td-mt-subtitle">Update where this place is saved</p>
-
                 {[
                   {
                     id: "moveDay",
-                    icon: (
-                      <svg className="td-mt-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                      </svg>
-                    ),
-                    title: "Move to Another Day",
-                    sub: "Choose a different day",
-                    danger: false,
+                    icon: <svg className="td-mt-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>,
+                    title: "Move to Another Day", sub: "Choose a different day", danger: false,
                   },
                   {
                     id: "moveTrip",
-                    icon: (
-                      <svg className="td-mt-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
-                        <rect x="2" y="7" width="20" height="14" rx="2"/>
-                        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
-                      </svg>
-                    ),
-                    title: "Move to Another Trip",
-                    sub: "Move this destination to another trip",
-                    danger: false,
+                    icon: <svg className="td-mt-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
+                      <rect x="2" y="7" width="20" height="14" rx="2"/>
+                      <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+                    </svg>,
+                    title: "Move to Another Trip", sub: "Move this destination to another trip", danger: false,
                   },
                   {
                     id: "remove",
-                    icon: (
-                      <svg className="td-mt-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e02424" strokeWidth="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                        <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                      </svg>
-                    ),
-                    title: "Remove from Trip",
-                    sub: "Remove this destination from your itinerary",
-                    danger: true,
+                    icon: <svg className="td-mt-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e02424" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                    </svg>,
+                    title: "Remove from Trip", sub: "Remove this destination from your itinerary", danger: true,
                   },
                 ].map((opt, i, arr) => (
                   <div key={opt.id}>
-                    <div className="td-mt-option" onClick={() => setManageTripStep(opt.id)}>
+                    <div className="td-mt-option" onClick={() => {
+                      if (opt.id === "moveTrip") fetchTrips();
+                      setManageTripStep(opt.id);
+                    }}>
                       {opt.icon}
                       <div className="td-mt-option-text">
                         <span className={`td-mt-option-title${opt.danger ? " td-mt-option-danger" : ""}`}>
@@ -1002,7 +969,6 @@ const TripDetails = ({ place }) => {
               </>
             )}
 
-            {/* ── Move to Another Day ── */}
             {manageTripStep === "moveDay" && (
               <>
                 <CloseBtn onClick={() => setShowManageTripModal(false)} />
@@ -1010,29 +976,32 @@ const TripDetails = ({ place }) => {
                   <BackBtn onClick={() => setManageTripStep("menu")} />
                   <div>
                     <h2 className="td-mt-title">Select New Day</h2>
-                    <p className="td-mt-subtitle">Update your schedule</p>
+                    <p className="td-mt-subtitle">Choose a day for this place</p>
                   </div>
                 </div>
-                <Calendar
-                  month={manageDayMonth}
-                  onMonthChange={setManageDayMonth}
-                  rangeMode={false}
-                  selectedSingleDay={manageSelectedDay}
-                  onDayClick={(day) => {
-                    setManageSelectedDay(new Date(manageDayMonth.getFullYear(), manageDayMonth.getMonth(), day));
-                  }}
-                />
-                <button
-                  className="td-mt-submit-btn"
-                  disabled={!manageSelectedDay || actionLoading}
-                  onClick={handleMoveDay}
-                >
+                <div className="td-mt-day-grid">
+                  {Array.from({ length: tripDurationDays || 3 }, (_, i) => {
+                    const dayNum = i + 1;
+                    const isSelected = manageSelectedDayNum === dayNum;
+                    return (
+                      <button
+                        key={dayNum}
+                        className={`td-mt-day-btn${isSelected ? " td-mt-day-btn--selected" : ""}`}
+                        onClick={() => setManageSelectedDayNum(dayNum)}
+                      >
+                        Day {dayNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button className="td-mt-submit-btn"
+                  disabled={!manageSelectedDayNum || actionLoading}
+                  onClick={handleMoveDay}>
                   {actionLoading ? "Updating…" : "Update Date"}
                 </button>
               </>
             )}
 
-            {/* ── Move to Another Trip ── */}
             {manageTripStep === "moveTrip" && (
               <>
                 <CloseBtn onClick={() => setShowManageTripModal(false)} />
@@ -1043,46 +1012,37 @@ const TripDetails = ({ place }) => {
                     <p className="td-mt-subtitle">Choose which trip to move this place to.</p>
                   </div>
                 </div>
-
                 <div className="td-mt-trip-list">
                   {tripsLoading ? (
                     <div className="td-trips-loading"><div className="td-trips-spinner" /><span>Loading…</span></div>
                   ) : (
-                    trips
-                      .filter((t) => t.id !== addedTripId) // exclude current trip
-                      .map((trip) => (
-                        <div
-                          key={trip.id}
-                          className={`td-mt-trip-card ${manageDestTripId === trip.id ? "selected" : ""}`}
-                          onClick={() => setManageDestTripId(trip.id)}
-                        >
-                          <img
-                            src={trip.coverImage || "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200"}
-                            alt={trip.title}
-                            className="td-mt-trip-img"
-                          />
-                          <div className="td-trip-info">
-                            <span className="td-trip-name">{trip.title}</span>
-                            <span className="td-trip-meta">
-                              {trip.durationDays || "—"} days · {trip.placesCount ?? "—"} places
-                            </span>
-                          </div>
+                    trips.filter((t) => t.id !== addedTripId).map((trip) => (
+                      <div key={trip.id}
+                        className={`td-mt-trip-card ${manageDestTripId === trip.id ? "selected" : ""}`}
+                        onClick={() => setManageDestTripId(trip.id)}
+                      >
+                        <img
+                          src={trip.coverImage || "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200"}
+                          alt={trip.title} className="td-mt-trip-img"
+                        />
+                        <div className="td-trip-info">
+                          <span className="td-trip-name">{trip.title}</span>
+                          <span className="td-trip-meta">
+                            {trip.durationDays || "—"} days · {trip.placesCount ?? "—"} places
+                          </span>
                         </div>
-                      ))
+                      </div>
+                    ))
                   )}
                 </div>
-
-                <button
-                  className="td-mt-submit-btn"
+                <button className="td-mt-submit-btn"
                   disabled={!manageDestTripId || actionLoading}
-                  onClick={handleMoveTrip}
-                >
+                  onClick={handleMoveTrip}>
                   {actionLoading ? "Moving…" : "Move Trip"}
                 </button>
               </>
             )}
 
-            {/* ── Remove Confirmation ── */}
             {manageTripStep === "remove" && (
               <>
                 <CloseBtn onClick={() => setShowManageTripModal(false)} />
@@ -1096,11 +1056,8 @@ const TripDetails = ({ place }) => {
                 <button className="td-mt-cancel-btn" onClick={() => setManageTripStep("menu")}>
                   Cancel
                 </button>
-                <button
-                  className="td-mt-confirm-btn"
-                  onClick={handleRemoveFromTrip}
-                  disabled={actionLoading}
-                >
+                <button className="td-mt-confirm-btn"
+                  onClick={handleRemoveFromTrip} disabled={actionLoading}>
                   {actionLoading ? "Removing…" : "Confirm"}
                 </button>
               </>
@@ -1109,53 +1066,95 @@ const TripDetails = ({ place }) => {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          REVIEW MODAL
-      ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════ REVIEW MODAL ══════════════════ */}
       {showReviewModal && (
         <div className="td-modal-overlay" onClick={() => setShowReviewModal(false)}>
           <div className="td-modal-review" onClick={(e) => e.stopPropagation()}>
             <CloseBtn onClick={() => setShowReviewModal(false)} />
-            <h2 className="td-review-modal-title">Rate your experience</h2>
-            <p className="td-review-modal-sub">How was your visit to {data.name}?</p>
-            <div className="td-review-modal-stars">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  className={`td-modal-star ${star <= reviewRating ? "active" : ""}`}
-                  onClick={() => setReviewRating(star)}
-                >★</span>
-              ))}
-            </div>
-            <textarea
-              className="td-review-modal-textarea"
-              placeholder="Share your thoughts…"
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-            />
-            <button className="td-review-modal-submit">Submit Review</button>
-            <button className="td-review-modal-cancel" onClick={() => setShowReviewModal(false)}>Cancel</button>
+            {reviewSuccess ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <div style={{ fontSize: "48px" }}>✅</div>
+                <h3 style={{ color: "#22c55e", marginTop: "12px" }}>Review submitted!</h3>
+              </div>
+            ) : (
+              <>
+                <h2 className="td-review-modal-title">Rate your experience</h2>
+                <p className="td-review-modal-sub">How was your visit to {data.name}?</p>
+                <div className="td-review-modal-stars">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span key={star}
+                      className={`td-modal-star ${star <= reviewRating ? "active" : ""}`}
+                      onClick={() => setReviewRating(star)}>★</span>
+                  ))}
+                </div>
+                <textarea
+                  className="td-review-modal-textarea"
+                  placeholder="Share your thoughts…"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                />
+                {/* ✅ FIX: Submit button now calls handleSubmitReview */}
+                <button
+                  className="td-review-modal-submit"
+                  onClick={handleSubmitReview}
+                  disabled={submitLoading}
+                >
+                  {submitLoading ? "Submitting…" : "Submit Review"}
+                </button>
+                <button className="td-review-modal-cancel"
+                  onClick={() => setShowReviewModal(false)}>Cancel</button>
+              </>
+            )}
           </div>
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          TOAST
-      ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════ TOAST ══════════════════ */}
       {showToast && (
         <div className="td-toast">
           <span>{toastMessage}</span>
           {isAddedToTrip && !toastMessage.includes("removed") && !toastMessage.includes("moved") && (
-            <button
-              className="td-toast-view"
-              onClick={() => window.navigateToTripResult?.({ tripId: addedTripId })}
-            >
+            <button className="td-toast-view"
+              onClick={() => window.navigateToTripResult?.({ tripId: addedTripId })}>
               View
             </button>
           )}
         </div>
       )}
 
+
+      {/* Day-grid styles for moveDay modal */}
+      <style>{`
+        .td-mt-day-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+          margin: 16px 0 24px;
+        }
+        .td-mt-day-btn {
+          padding: 12px 8px;
+          border-radius: 12px;
+          border: 2px solid #e5e7eb;
+          background: #f9fafb;
+          color: #6b7280;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.18s;
+          font-family: Poppins, sans-serif;
+        }
+        .td-mt-day-btn:hover {
+          border-color: #5596fe;
+          color: #5596fe;
+          background: #eff6ff;
+        }
+        .td-mt-day-btn--selected {
+          background: #5596fe;
+          border-color: #5596fe;
+          color: #fff;
+          font-weight: 700;
+        }
+      `}</style>
       <Footer />
     </>
   );
