@@ -14,7 +14,7 @@ import Landing from "./components/pages/landing";
 import CalendarPage from "./components/pages/Calendar";
 import AboutUs from "./components/pages/AboutUs.jsx";
 import Interests from "./components/pages/Interests";
-import UserHome from "./components/pages/UserHome";
+import UserHome from "./components/pages/Userhome";
 import SavedPlaces from "./components/pages/SavedPlaces";
 import TripDetails from "./components/pages/TripDetails";
 import { SavedPlacesProvider } from "./context/SavedPlacesContext";

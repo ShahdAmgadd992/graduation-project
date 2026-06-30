@@ -1549,7 +1549,6 @@ const TripResult = ({ tripPlan, user }) => {
           {adults} Adults
           {children > 0 ? `, ${children} Kid` : ""}
           {tripPlan?.pets > 0 ? `, ${tripPlan.pets} Pet` : ""}
-          &nbsp;|&nbsp; Est. {budget ?? "—"} EGP / person
           &nbsp;|&nbsp; Total: {grandTotal.toLocaleString()} EGP
         </p>
       </div>

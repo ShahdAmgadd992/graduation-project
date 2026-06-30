@@ -1,13 +1,19 @@
 /**
- * useAddToTrip.js  – Final Fixed Version (v5 - Slot Preservation Fix)
+ * useAddToTrip.js  – Final Fixed Version (v6 - AI Resilience + Confirmed Persist Fix)
  *
  * Bug fixes:
  * 1. ✅ Data Structure Mismatch Fixed
  * 2. ✅ formatPlanForBackend: فلتر بـ _slot بس — مش بـ indexOf (كان بيبوظ الترتيب)
  * 3. ✅ Auto-assign fallback: لو الـ AI edit فشل يرجع لـ findBestDay
- * 4. ✅ generatePlan 503: لو السيرفر بيعطي 503 نحفظ التريب بدون plan ونكمّل
+ * 4. ✅ generatePlan 503/format errors: retry بـ backoff قبل ما نرجع لـ fallback، وفالييديشن
+ *    على شكل الـ response قبل ما نبعتها لـ parsePlan
  * 5. ✅ 400 Validation Error: buildPlaceItem بيعمل Number()/String() coercion صريح لكل الحقول
  * 6. ✅ putPlan() helper: بيلف كل نداء PUT بصيغة { plan: {...} } الصحيحة وبيطبعها
+ * 7. ✅ mustInclude بقى List<MustIncludePlace> مش string (نفس فيكس AiPlanner.jsx)
+ * 8. ✅ Empty-trip fix: لو الـ AI فشل/رجع 0 places، المكان بيتحط force في Day 1
+ * 9. ✅ Confirmed persist: بعد أي putPlan (create أو add-to-existing) بنعمل
+ *    getTripById تاني ونرجّع الـ trip الحقيقي من السيرفر (فيه الـ accommodation/hotel)
+ *    بدل م نعتمد على الـ local state
  */
 
 import { useState, useCallback } from "react";
@@ -55,14 +61,22 @@ const parsePlan = (rawPlan) => {
     }
   });
 
-  return planArray.sort((a, b) => a.day - b.day);
+  planArray.sort((a, b) => a.day - b.day);
+  // ✅ FIX: rawPlan.accommodation (the hotel) was silently dropped here because
+  // this loop only ever looked at "day*" keys. Every downstream putPlan() call
+  // then PUT a plan object with no accommodation field, and since the backend
+  // replaces the whole plan rather than merging, the hotel (and its price)
+  // disappeared from the trip after any add/move/remove-from-trip action.
+  // Stash it on the array so callers can carry it through to putPlan().
+  planArray.accommodation = rawPlan.accommodation ?? [];
+  return planArray;
 };
 
 // ✅ FIX: Convert internal Array back to Backend Object format before API calls.
 // Filters ONLY by _slot tag — never by index (index-based filtering broke slot order
 // whenever a new place was prepended to the array, shifting all indices).
 // Places with no _slot fallback to morning.
-const formatPlanForBackend = (planArray) => {
+const formatPlanForBackend = (planArray, accommodation) => {
   const formatted = {};
   planArray.forEach((dayObj) => {
     const dayKey = `day${dayObj.day}`;
@@ -74,6 +88,9 @@ const formatPlanForBackend = (planArray) => {
 
     formatted[dayKey] = { morning, afternoon, evening };
   });
+  // ✅ FIX: carry the hotel through — falls back to whatever parsePlan() stashed
+  // on planArray.accommodation if the caller didn't pass one explicitly.
+  formatted.accommodation = accommodation ?? planArray.accommodation ?? [];
   return formatted;
 };
 
@@ -146,6 +163,10 @@ const sanitizePlanForApi = (rawPlan) => {
       places: places.map((p) => sanitizePlaceFromAi(p, dayNumber)),
     };
   });
+  // ✅ FIX: same .map()-drops-accommodation issue as elsewhere in this file —
+  // a freshly AI-generated plan's hotel was lost here before the very first
+  // putPlan() on a newly created trip.
+  sanitized.accommodation = rawPlan.accommodation ?? [];
   console.log("Sanitized AI plan (Array format):", sanitized);
   return sanitized;
 };
@@ -158,8 +179,55 @@ const resolveInterests = (explicitInterests, place) => {
   return [];
 };
 
-const putPlan = (tripId, planArray) => {
-  const formattedPlan = formatPlanForBackend(planArray);
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// ✅ FIX: generate-plan was failing intermittently with 503 ("Service Unavailable")
+// or with a malformed body that broke parsePlan() downstream ("Service returned
+// an unexpected response format"). Previously a single 503 permanently killed the
+// AI plan for that request even though the AI service is usually back up within a
+// couple seconds. We now retry transient failures (503/502/504, or no response at
+// all e.g. timeout) with backoff before giving up and falling back to the
+// place-only plan.
+const isRetryableAiError = (err) => {
+  const status = err?.response?.status;
+  if (status === 503 || status === 502 || status === 504) return true;
+  if (!err?.response) return true; // network error / timeout, no HTTP response at all
+  return false;
+};
+
+const withAiRetry = async (fn, { attempts = 3, baseDelayMs = 800 } = {}) => {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (!isRetryableAiError(err) || i === attempts - 1) throw err;
+      await sleep(baseDelayMs * Math.pow(2, i)); // 800ms, then 1600ms
+    }
+  }
+  throw lastErr;
+};
+
+// ✅ FIX: validate the AI response actually looks like a plan (object/array)
+// before handing it to parsePlan(). Previously a malformed/empty body was
+// silently treated as a valid "0 places" plan instead of a failure, which is
+// what produced the empty-trip bug. Now it's explicitly rejected and falls
+// through to the same place-only fallback as a network/503 failure.
+const extractAiPlanOrThrow = (planRes) => {
+  const rawAiPlan = planRes?.data?.plan ?? planRes?.data;
+  const looksValid =
+    rawAiPlan &&
+    (Array.isArray(rawAiPlan) ||
+      (typeof rawAiPlan === "object" && Object.keys(rawAiPlan).length > 0));
+  if (!looksValid) {
+    throw new Error("Service returned an unexpected response format.");
+  }
+  return rawAiPlan;
+};
+
+const putPlan = (tripId, planArray, accommodation) => {
+  const formattedPlan = formatPlanForBackend(planArray, accommodation);
   const payload = { plan: formattedPlan };
   console.log("Final PUT Payload:", payload);
   return tripService.updateTripPlan(tripId, payload);
@@ -245,14 +313,26 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
 
         await putPlan(tripId, plan);
 
+        // ✅ FIX: refetch from the server after the PUT instead of trusting the
+        // locally-built `tripData` — guarantees the returned trip (and what we
+        // store in state) reflects exactly what's persisted, including the
+        // accommodation/hotel block, even though this path never modifies it.
+        let finalTripData = tripData;
+        try {
+          const finalRes = await tripService.getTripById(tripId);
+          finalTripData = finalRes.data;
+        } catch (fetchErr) {
+          console.warn("Could not refetch trip after adding place:", fetchErr);
+        }
+
         setCurrentDayNumber(targetDay);
         setAddedTripId(tripId);
-        setAddedTripTitle(tripData.title || "your trip");
+        setAddedTripTitle(finalTripData.title || "your trip");
 
         onPlanUpdated?.({ tripId, day: targetDay });
         window.dispatchEvent(new CustomEvent("tripPlanUpdated", { detail: { tripId, day: targetDay } }));
 
-        return { success: true, tripTitle: tripData.title, day: targetDay };
+        return { success: true, tripTitle: finalTripData.title, day: targetDay, trip: finalTripData };
       } catch (err) {
         const serverMsg =
           err?.response?.data?.detail ||
@@ -294,34 +374,95 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
         if (!newTripId) throw new Error("No tripId returned from create");
 
         let hasPlan = false;
+        let workingPlan = [];
+
         try {
           const resolvedInterests = resolveInterests(interests, place);
-          const planRes = await aiService.generatePlan({
-            city,
-            days,
-            budget,
-            people,
-            interests:   resolvedInterests,
-            mustInclude: place?.title || place?.name || "",
-          });
+          const mustIncludeName = place?.title || place?.name || "";
+          // ✅ FIX: backend expects mustInclude as List<MustIncludePlace>, not a
+          // plain string — sending a string caused a 400 Validation error:
+          // "$.mustInclude: The JSON value could not be converted to
+          // List`1[...MustIncludePlace]" (same root cause already fixed in
+          // AiPlanner.jsx's handleGeneratePlan()).
+          const planRes = await withAiRetry(() =>
+            aiService.generatePlan({
+              city,
+              days,
+              budget,
+              people,
+              interests:   resolvedInterests,
+              mustInclude: mustIncludeName
+                ? [{ name: mustIncludeName, placeId: place?.place_id || null }]
+                : [],
+            })
+          );
 
-          const generatedPlan = parsePlan(planRes.data?.plan || planRes.data);
-          const sanitizedPlan = sanitizePlanForApi(generatedPlan);
-          const totalPlaces = sanitizedPlan.reduce((sum, d) => sum + (d.places?.length || 0), 0);
-
-          if (totalPlaces > 0) {
-            await putPlan(newTripId, sanitizedPlan);
-            hasPlan = true;
-          } else {
-            console.warn("AI returned a plan with 0 places — trip shell saved without itinerary.");
-          }
+          const rawAiPlan = extractAiPlanOrThrow(planRes);
+          const generatedPlan = parsePlan(rawAiPlan);
+          workingPlan = sanitizePlanForApi(generatedPlan);
         } catch (planErr) {
-          console.warn("generate-plan failed, trip shell saved without plan:", planErr?.response?.data || planErr);
+          console.warn("generate-plan failed after retries, will save trip with the selected place only:", planErr?.response?.data || planErr?.message || planErr);
+          workingPlan = [];
         }
 
+        // ✅ FIX: the whole point of "create trip with this place" is that the
+        // place ends up in the trip. Previously, if the AI call 503'd, returned
+        // 0 places, or just silently ignored mustInclude, the trip was saved as
+        // a completely empty shell (no place, no plan) — which is exactly the
+        // bug shown in the report (3 days created, 0 stops, ~0 EGP everywhere).
+        // We now force-insert the triggering place into Day 1 regardless of
+        // what the AI did, the same way addToExistingTrip() already guarantees
+        // it for existing trips. This does not touch the move/remove logic.
+        const placeName = place?.title || place?.name;
+        const placeId   = place?.place_id;
+
+        let day1 = workingPlan.find((d) => Number(d.day) === 1);
+        if (!day1) {
+          day1 = { day: 1, places: [] };
+          workingPlan.push(day1);
+        }
+
+        const alreadyIncluded = (day1.places || []).some((p) =>
+          (placeId && p.place_id) ? p.place_id === placeId : p.name === placeName
+        );
+
+        if (!alreadyIncluded) {
+          day1.places = [
+            { ...buildPlaceItem(place, 1), _slot: "morning" },
+            ...(day1.places || []),
+          ];
+        }
+
+        try {
+          await putPlan(newTripId, workingPlan);
+          hasPlan = true;
+        } catch (putErr) {
+          console.warn("putPlan failed while saving trip plan:", putErr?.response?.data || putErr);
+        }
+
+        // ✅ FIX: don't just trust local state — refetch the trip from the
+        // server so the caller (UI) gets back exactly what was persisted,
+        // including the accommodation/hotel block. This is what guarantees the
+        // trip "comes back complete" once the AI/server call succeeds, instead
+        // of the UI assuming success from values it built locally.
+        let finalTripData = null;
+        try {
+          const finalRes = await tripService.getTripById(newTripId);
+          finalTripData = finalRes.data;
+        } catch (fetchErr) {
+          console.warn("Could not refetch trip after creation:", fetchErr);
+        }
+
+        const finalTitle = finalTripData?.title || `Trip to ${city}`;
         setAddedTripId(newTripId);
-        setAddedTripTitle(`Trip to ${city}`);
-        return { success: true, tripId: newTripId, tripTitle: `Trip to ${city}`, hasPlan };
+        setAddedTripTitle(finalTitle);
+        return {
+          success: true,
+          tripId: newTripId,
+          tripTitle: finalTitle,
+          hasPlan,
+          trip: finalTripData,
+        };
       } catch (err) {
         setError("Failed to create trip.");
         console.error(err);
@@ -342,6 +483,9 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
       try {
         const tripRes = await tripService.getTripById(addedTripId);
         let   plan    = parsePlan(tripRes.data.plan);
+        // ✅ FIX: .map() below returns a brand-new array, which loses the
+        // .accommodation stashed by parsePlan(). Capture it first.
+        const accommodation = plan.accommodation ?? [];
 
         plan = plan.map((d) => ({
           ...d,
@@ -361,7 +505,7 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
           { ...buildPlaceItem(place, newDayNumber), _slot: "morning" },
         ];
 
-        await putPlan(addedTripId, plan);
+        await putPlan(addedTripId, plan, accommodation);
         setCurrentDayNumber(newDayNumber);
         onPlanUpdated?.({ tripId: addedTripId, day: newDayNumber });
         window.dispatchEvent(new CustomEvent("tripPlanUpdated", { detail: { tripId: addedTripId } }));
@@ -386,6 +530,9 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
       try {
         const currentRes = await tripService.getTripById(addedTripId);
         let   currentPlan = parsePlan(currentRes.data.plan);
+        // ✅ FIX: same .map() issue as moveToAnotherDay — grab the source
+        // trip's accommodation before it's dropped by the new array.
+        const currentAccommodation = currentPlan.accommodation ?? [];
         currentPlan = currentPlan.map((d) => ({
           ...d,
           places: (d.places || []).filter(
@@ -393,7 +540,7 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
                    p.name    !== (place?.title || place?.name)
           ),
         }));
-        await putPlan(addedTripId, currentPlan);
+        await putPlan(addedTripId, currentPlan, currentAccommodation);
 
         const destRes  = await tripService.getTripById(destinationTripId);
         let   destPlan = parsePlan(destRes.data.plan);
@@ -434,6 +581,8 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
     try {
       const tripRes = await tripService.getTripById(addedTripId);
       let   plan    = parsePlan(tripRes.data.plan);
+      // ✅ FIX: same .map() issue — capture accommodation before it's dropped.
+      const accommodation = plan.accommodation ?? [];
       plan = plan.map((d) => ({
         ...d,
         places: (d.places || []).filter(
@@ -441,7 +590,7 @@ export function useAddToTrip(place, { onPlanUpdated } = {}) {
                  p.name    !== (place?.title || place?.name)
         ),
       }));
-      await putPlan(addedTripId, plan);
+      await putPlan(addedTripId, plan, accommodation);
       onPlanUpdated?.({ tripId: addedTripId });
       window.dispatchEvent(new CustomEvent("tripPlanUpdated", { detail: { tripId: addedTripId } }));
       setAddedTripId(null);

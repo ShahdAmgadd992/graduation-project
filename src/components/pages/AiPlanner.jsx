@@ -429,6 +429,14 @@ const AiPlanner = () => {
         children,
         pets,
         budget: perPersonBudget,
+        // ✅ FIX: without this, Tripresult.jsx's totalBudgetEgp fallback
+        // (tripPlan?.totalBudgetEgp ?? tripMeta.totalBudgetEgp ?? budget)
+        // had nothing to land on but the per-person `budget` above, which is
+        // smaller than the trip's real total cost — so on Save, resolvedBudget
+        // = Math.max(perPersonBudget, computedTotalCost, 1) always picked
+        // computedTotalCost, silently overwriting the real total budget the
+        // user picked.
+        totalBudgetEgp: totalBudget,
         itinerary,
         dayDetails,
         hotel,

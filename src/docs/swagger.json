@@ -99,6 +99,37 @@
         }
       }
     },
+    "/api/v1/ai/places/home": {
+      "post": {
+        "tags": [
+          "Ai"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HomeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HomeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/HomeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/v1/ai/places/recommend": {
       "post": {
         "tags": [
@@ -119,6 +150,68 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/RecommendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/places/search": {
+      "post": {
+        "tags": [
+          "Ai"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchPlacesRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchPlacesRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchPlacesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/places/nearby": {
+      "post": {
+        "tags": [
+          "Ai"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NearbyRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NearbyRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NearbyRequest"
               }
             }
           }
@@ -161,7 +254,7 @@
         }
       }
     },
-    "/api/v1/ai/places/random": {
+    "/api/v1/ai/places/getplaces": {
       "post": {
         "tags": [
           "Ai"
@@ -170,48 +263,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RandomRequest"
+                "$ref": "#/components/schemas/GetPlacesRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/RandomRequest"
+                "$ref": "#/components/schemas/GetPlacesRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/RandomRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/ai/places/search": {
-      "post": {
-        "tags": [
-          "Ai"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SearchRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SearchRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SearchRequest"
+                "$ref": "#/components/schemas/GetPlacesRequest"
               }
             }
           }
@@ -958,189 +1020,10 @@
         }
       }
     },
-    "/api/v1/trips/{tripId}/budget": {
-      "get": {
-        "tags": [
-          "Budgets"
-        ],
-        "parameters": [
-          {
-            "name": "tripId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Budgets"
-        ],
-        "parameters": [
-          {
-            "name": "tripId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AllocateBudgetRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AllocateBudgetRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/AllocateBudgetRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/trips/{tripId}/budget/actual-spent": {
-      "patch": {
-        "tags": [
-          "Budgets"
-        ],
-        "parameters": [
-          {
-            "name": "tripId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateActualSpentRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateActualSpentRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateActualSpentRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/itineraries": {
-      "get": {
-        "tags": [
-          "Itineraries"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Itineraries"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveItineraryRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveItineraryRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveItineraryRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created"
-          }
-        }
-      }
-    },
-    "/api/v1/itineraries/{id}": {
+    "/api/v1/auth/admin/users": {
       "delete": {
         "tags": [
-          "Itineraries"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/api/v1/itineraries/share/{token}": {
-      "get": {
-        "tags": [
-          "Itineraries"
-        ],
-        "parameters": [
-          {
-            "name": "token",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
+          "Auth"
         ],
         "responses": {
           "200": {
@@ -1149,188 +1032,23 @@
         }
       }
     },
-    "/api/v1/locations": {
+    "/api/v1/favorites/places": {
       "get": {
         "tags": [
-          "Locations"
+          "Favorites"
         ],
         "parameters": [
           {
-            "name": "Governorate",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Category",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocationCategory"
-            }
-          },
-          {
-            "name": "HiddenGemsOnly",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "MaxPriceEgp",
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "format": "double"
-            }
-          },
-          {
-            "name": "MinRating",
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "format": "float"
-            }
-          },
-          {
-            "name": "Search",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/locations/{id}": {
-      "get": {
-        "tags": [
-          "Locations"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/locations/hidden-gems": {
-      "get": {
-        "tags": [
-          "Locations"
-        ],
-        "parameters": [
-          {
-            "name": "governorate",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/locations/recommended": {
-      "get": {
-        "tags": [
-          "Locations"
-        ],
-        "parameters": [
-          {
-            "name": "count",
+            "name": "page",
             "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32",
-              "default": 10
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LocationResponse"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LocationResponse"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LocationResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/locations/popular": {
-      "get": {
-        "tags": [
-          "Locations"
-        ],
-        "parameters": [
-          {
-            "name": "governorate",
-            "in": "query",
-            "schema": {
-              "type": "string"
+              "default": 1
             }
           },
           {
-            "name": "count",
+            "name": "pageSize",
             "in": "query",
             "schema": {
               "type": "integer",
@@ -1341,80 +1059,29 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LocationResponse"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LocationResponse"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LocationResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/reviews/location/{locationId}": {
-      "get": {
-        "tags": [
-          "Reviews"
-        ],
-        "parameters": [
-          {
-            "name": "locationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
             "description": "Success"
           }
         }
-      }
-    },
-    "/api/v1/reviews": {
+      },
       "post": {
         "tags": [
-          "Reviews"
+          "Favorites"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddReviewRequest"
+                "$ref": "#/components/schemas/FavoritePlaceRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddReviewRequest"
+                "$ref": "#/components/schemas/FavoritePlaceRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddReviewRequest"
+                "$ref": "#/components/schemas/FavoritePlaceRequest"
               }
             }
           }
@@ -1426,135 +1093,48 @@
         }
       }
     },
-    "/api/v1/reviews/{id}/vote": {
-      "post": {
+    "/api/v1/favorites/places/{placeId}": {
+      "delete": {
         "tags": [
-          "Reviews"
+          "Favorites"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "placeId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "isHelpful",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/reviews/{id}/report": {
-      "post": {
-        "tags": [
-          "Reviews"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/v1/tour-packages": {
-      "get": {
-        "tags": [
-          "TourPackages"
-        ],
-        "parameters": [
-          {
-            "name": "Governorate",
-            "in": "query",
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "MinDays",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "MaxDays",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "MaxPricePerPerson",
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "format": "double"
-            }
-          },
-          {
-            "name": "Page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TourPackageResponsePagedResult"
-                }
-              }
-            }
+            "description": "Success"
           }
         }
       }
     },
-    "/api/v1/tour-packages/{id}": {
+    "/api/v1/favorites/trips": {
       "get": {
         "tags": [
-          "TourPackages"
+          "Favorites"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/favorites/trips/{tripId}": {
+      "post": {
+        "tags": [
+          "Favorites"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "tripId",
             "in": "path",
             "required": true,
             "schema": {
@@ -1565,14 +1145,28 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TourPackageResponse"
-                }
-              }
+            "description": "Success"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Favorites"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
           }
         }
       }
@@ -1637,9 +1231,27 @@
             }
           },
           {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "pattern": "^(updatedAt|createdAt|startDate)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Order",
+            "in": "query",
+            "schema": {
+              "pattern": "^(asc|desc)$",
+              "type": "string"
+            }
+          },
+          {
             "name": "Page",
             "in": "query",
             "schema": {
+              "maximum": 10000,
+              "minimum": 1,
               "type": "integer",
               "format": "int32"
             }
@@ -1648,6 +1260,8 @@
             "name": "PageSize",
             "in": "query",
             "schema": {
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer",
               "format": "int32"
             }
@@ -1716,7 +1330,30 @@
           }
         }
       },
-      "patch": {
+      "delete": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/trips/{id}/plan": {
+      "put": {
         "tags": [
           "Trips"
         ],
@@ -1772,8 +1409,10 @@
             }
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/api/v1/trips/{id}/rename": {
+      "patch": {
         "tags": [
           "Trips"
         ],
@@ -1788,9 +1427,45 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameTripRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameTripRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameTripRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "204": {
-            "description": "No Content"
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1835,6 +1510,294 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TripResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trips/{id}/share": {
+      "post": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/trips/share/{token}": {
+      "get": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trips/{id}/review": {
+      "post": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripReviewRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripReviewRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripReviewRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripReviewRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/trips/{id}/reviews": {
+      "get": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TripReviewWithUserResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TripReviewWithUserResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TripReviewWithUserResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trips/{id}/review/me": {
+      "get": {
+        "tags": [
+          "Trips"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripReviewResponse"
                 }
               }
             }
@@ -2041,108 +2004,22 @@
           }
         }
       }
+    },
+    "/api/v1/users/me/reviews": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "AddReviewRequest": {
-        "required": [
-          "locationId",
-          "rating"
-        ],
-        "type": "object",
-        "properties": {
-          "locationId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "rating": {
-            "maximum": 5,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "reviewText": {
-            "maxLength": 2000,
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "visitedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "AllocateBudgetRequest": {
-        "required": [
-          "totalBudgetEgp"
-        ],
-        "type": "object",
-        "properties": {
-          "totalBudgetEgp": {
-            "maximum": 10000000,
-            "minimum": 1,
-            "type": "number",
-            "format": "double"
-          },
-          "accommodationWeight": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "foodWeight": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "transportWeight": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "BudgetSummary": {
-        "type": "object",
-        "properties": {
-          "total": {
-            "type": "number",
-            "format": "double"
-          },
-          "accommodation": {
-            "type": "number",
-            "format": "double"
-          },
-          "food": {
-            "type": "number",
-            "format": "double"
-          },
-          "transport": {
-            "type": "number",
-            "format": "double"
-          },
-          "activities": {
-            "type": "number",
-            "format": "double"
-          },
-          "actualSpent": {
-            "type": "number",
-            "format": "double"
-          },
-          "variancePct": {
-            "type": "number",
-            "format": "float"
-          }
-        },
-        "additionalProperties": false
-      },
       "ChangePasswordRequest": {
         "required": [
           "confirmNewPassword",
@@ -2152,82 +2029,53 @@
         "type": "object",
         "properties": {
           "currentPassword": {
-            "minLength": 1,
+            "maxLength": 128,
+            "minLength": 8,
             "type": "string"
           },
           "newPassword": {
+            "maxLength": 128,
             "minLength": 8,
             "type": "string"
           },
           "confirmNewPassword": {
-            "minLength": 1,
+            "maxLength": 128,
+            "minLength": 8,
             "type": "string"
           }
         },
         "additionalProperties": false
       },
-      "ChatRequest": {
-        "required": [
-          "messagePrompt",
-          "sessionId",
-          "userId"
-        ],
+      "ChatCardAnswersRequest": {
         "type": "object",
         "properties": {
-          "userId": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "sessionId": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "messagePrompt": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "initialPreferences": {
-            "nullable": true
-          },
-          "cardAnswers": {
-            "nullable": true
-          },
-          "chatHistory": {
-            "type": "array",
-            "items": { },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateTripRequest": {
-        "required": [
-          "destinationGovernorate",
-          "endDate",
-          "startDate",
-          "totalBudgetEgp"
-        ],
-        "type": "object",
-        "properties": {
-          "destinationGovernorate": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "startDate": {
+          "destination": {
             "type": "string",
-            "format": "date-time"
+            "nullable": true
           },
-          "endDate": {
-            "type": "string",
-            "format": "date-time"
+          "days": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
-          "totalBudgetEgp": {
-            "maximum": 10000000,
-            "minimum": 1,
-            "type": "number",
-            "format": "double"
+          "budget": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "people": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "must_include": {
             "type": "array",
             "items": {
               "type": "string"
@@ -2237,34 +2085,225 @@
         },
         "additionalProperties": false
       },
-      "EditRequest": {
+      "ChatCollected": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "days": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "budget": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "people": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "mustInclude": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChatRequest": {
         "required": [
-          "currentItinerary",
-          "editInstruction",
-          "sessionId",
-          "userId"
+          "message",
+          "sessionId"
         ],
         "type": "object",
         "properties": {
-          "userId": {
-            "minLength": 1,
-            "type": "string"
-          },
           "sessionId": {
+            "maxLength": 100,
             "minLength": 1,
             "type": "string"
           },
-          "editInstruction": {
+          "message": {
+            "maxLength": 2000,
             "minLength": 1,
             "type": "string"
           },
-          "currentItinerary": { },
-          "conversation": {
-            "type": "array",
-            "items": { },
+          "collected": {
+            "$ref": "#/components/schemas/ChatCollected"
+          },
+          "cardAnswers": {
+            "$ref": "#/components/schemas/ChatCardAnswersRequest"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConversationTurn": {
+        "required": [
+          "content",
+          "role"
+        ],
+        "type": "object",
+        "properties": {
+          "role": {
+            "minLength": 1,
+            "pattern": "^(user|assistant)$",
+            "type": "string"
+          },
+          "content": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTripRequest": {
+        "required": [
+          "endDate",
+          "startDate",
+          "totalBudgetEgp"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "maxLength": 200,
+            "type": "string",
             "nullable": true
           },
-          "editContext": {
+          "destinationGovernorate": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "people": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalBudgetEgp": {
+            "maximum": 100000000,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCost": {
+            "maximum": 100000000,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "plan": {
+            "nullable": true
+          },
+          "collected": {
+            "nullable": true
+          },
+          "sessionId": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "isPublic": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EditRequest": {
+        "required": [
+          "budget",
+          "days",
+          "destination",
+          "interests",
+          "people",
+          "targetChange"
+        ],
+        "type": "object",
+        "properties": {
+          "targetChange": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "destination": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "days": {
+            "maximum": 7,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "budget": {
+            "maximum": 10000000,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "people": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "existingPlan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanItemRequest"
+            },
+            "nullable": true
+          },
+          "places": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanItemRequest"
+            },
+            "nullable": true
+          },
+          "conversation": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversationTurn"
+            },
             "nullable": true
           }
         },
@@ -2277,6 +2316,20 @@
         "type": "object",
         "properties": {
           "accessToken": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FavoritePlaceRequest": {
+        "required": [
+          "placeId"
+        ],
+        "type": "object",
+        "properties": {
+          "placeId": {
+            "maxLength": 200,
             "minLength": 1,
             "type": "string"
           }
@@ -2302,16 +2355,18 @@
           "budget",
           "city",
           "days",
+          "interests",
           "people"
         ],
         "type": "object",
         "properties": {
           "city": {
+            "maxLength": 100,
             "minLength": 1,
             "type": "string"
           },
           "days": {
-            "maximum": 30,
+            "maximum": 7,
             "minimum": 1,
             "type": "integer",
             "format": "int32"
@@ -2319,11 +2374,11 @@
           "budget": {
             "maximum": 10000000,
             "minimum": 1,
-            "type": "number",
-            "format": "double"
+            "type": "integer",
+            "format": "int32"
           },
           "people": {
-            "maximum": 100,
+            "maximum": 50,
             "minimum": 1,
             "type": "integer",
             "format": "int32"
@@ -2332,15 +2387,91 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "mustInclude": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetPlacesRequest": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "nullable": true
           },
-          "mustInclude": {
+          "category": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MustIncludePlace"
+              "type": "string"
             },
             "nullable": true
+          },
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "minRating": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "maxRating": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "minPrice": {
+            "maximum": 100000,
+            "minimum": 0,
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "maxPrice": {
+            "maximum": 100000,
+            "minimum": 0,
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "hiddenGem": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "sortBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "type": "string",
+            "nullable": true
+          },
+          "page": {
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "limit": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -2358,97 +2489,16 @@
         },
         "additionalProperties": false
       },
-      "LocationCategory": {
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "LocationResponse": {
+      "HomeRequest": {
         "type": "object",
         "properties": {
-          "locationId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nameEn": {
+          "city": {
             "type": "string",
             "nullable": true
           },
-          "nameAr": {
-            "type": "string",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "nullable": true
-          },
-          "governorate": {
-            "type": "string",
-            "nullable": true
-          },
-          "latitude": {
-            "type": "number",
-            "format": "double"
-          },
-          "longitude": {
-            "type": "number",
-            "format": "double"
-          },
-          "descriptionEn": {
-            "type": "string",
-            "nullable": true
-          },
-          "descriptionAr": {
-            "type": "string",
-            "nullable": true
-          },
-          "entryFeeEgp": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "avgPricePerNightEgp": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "avgMealPriceEgp": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "openingHours": {
-            "type": "string",
-            "nullable": true
-          },
-          "isHiddenGem": {
-            "type": "boolean"
-          },
-          "popularityScore": {
-            "type": "number",
-            "format": "float"
-          },
-          "avgRating": {
-            "type": "number",
-            "format": "float"
-          },
-          "hiddenGemStory": {
-            "type": "string",
+          "seed": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -2487,7 +2537,8 @@
             "format": "email"
           },
           "password": {
-            "minLength": 1,
+            "maxLength": 128,
+            "minLength": 8,
             "type": "string"
           },
           "rememberMe": {
@@ -2519,15 +2570,36 @@
         },
         "additionalProperties": false
       },
-      "MustIncludePlace": {
-        "required": [
-          "name"
-        ],
+      "NearbyRequest": {
         "type": "object",
         "properties": {
-          "name": {
-            "minLength": 1,
-            "type": "string"
+          "userLat": {
+            "type": "number",
+            "format": "float"
+          },
+          "userLng": {
+            "type": "number",
+            "format": "float"
+          },
+          "radiusKm": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "filters": {
+            "$ref": "#/components/schemas/PlaceFiltersRequest"
+          },
+          "page": {
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "limit": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -2546,46 +2618,177 @@
         },
         "additionalProperties": false
       },
-      "RandomRequest": {
+      "PlaceFiltersRequest": {
         "type": "object",
         "properties": {
-          "filters": {
+          "city_en": {
+            "type": "string",
             "nullable": true
           },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "seed": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "RecommendRequest": {
-        "type": "object",
-        "properties": {
-          "selectedCategories": {
+          "category": {
             "type": "array",
             "items": {
               "type": "string"
             },
             "nullable": true
           },
-          "filters": {
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
             "nullable": true
           },
+          "min_rating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "max_rating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "min_price": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "max_price": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "hidden_gem": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "sort_by": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlanItemRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "place_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "day": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cost": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "city_en": {
+            "type": "string",
+            "nullable": true
+          },
+          "lat": {
+            "type": "number",
+            "format": "float"
+          },
+          "lng": {
+            "type": "number",
+            "format": "float"
+          },
+          "rating": {
+            "type": "number",
+            "format": "float"
+          },
+          "reviews_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "photo_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "image_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "maps_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecommendRequest": {
+        "required": [
+          "selectedCategories"
+        ],
+        "type": "object",
+        "properties": {
+          "selectedCategories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filters": {
+            "$ref": "#/components/schemas/PlaceFiltersRequest"
+          },
           "page": {
+            "maximum": 10000,
+            "minimum": 1,
             "type": "integer",
             "format": "int32"
           },
           "limit": {
+            "maximum": 50,
+            "minimum": 1,
             "type": "integer",
             "format": "int32"
           },
@@ -2593,6 +2796,12 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "poolSize": {
+            "maximum": 500,
+            "minimum": 10,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -2622,6 +2831,7 @@
           "displayName": {
             "maxLength": 100,
             "minLength": 1,
+            "pattern": "^[^<>{}]*$",
             "type": "string"
           },
           "email": {
@@ -2632,15 +2842,31 @@
             "format": "email"
           },
           "password": {
+            "maxLength": 128,
             "minLength": 8,
             "type": "string"
           },
           "confirmPassword": {
-            "minLength": 1,
+            "maxLength": 128,
+            "minLength": 8,
             "type": "string"
           },
           "rememberMe": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RenameTripRequest": {
+        "required": [
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -2678,11 +2904,13 @@
             "type": "string"
           },
           "newPassword": {
+            "maxLength": 128,
             "minLength": 8,
             "type": "string"
           },
           "confirmNewPassword": {
-            "minLength": 1,
+            "maxLength": 128,
+            "minLength": 8,
             "type": "string"
           }
         },
@@ -2698,34 +2926,26 @@
         },
         "additionalProperties": false
       },
-      "SaveItineraryRequest": {
+      "SearchPlacesRequest": {
         "type": "object",
         "properties": {
-          "tripId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "customName": {
+          "query": {
+            "maxLength": 500,
             "type": "string",
             "nullable": true
           },
-          "isFavorite": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "SearchRequest": {
-        "type": "object",
-        "properties": {
           "filters": {
-            "nullable": true
+            "$ref": "#/components/schemas/PlaceFiltersRequest"
           },
           "page": {
+            "maximum": 10000,
+            "minimum": 1,
             "type": "integer",
             "format": "int32"
           },
           "limit": {
+            "maximum": 50,
+            "minimum": 1,
             "type": "integer",
             "format": "int32"
           }
@@ -2784,206 +3004,19 @@
         "type": "object",
         "properties": {
           "filters": {
-            "nullable": true
+            "$ref": "#/components/schemas/PlaceFiltersRequest"
           },
           "page": {
+            "maximum": 10000,
+            "minimum": 1,
             "type": "integer",
             "format": "int32"
           },
           "limit": {
+            "maximum": 50,
+            "minimum": 1,
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TourPackageLocationResponse": {
-        "type": "object",
-        "properties": {
-          "locationId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nameEn": {
-            "type": "string",
-            "nullable": true
-          },
-          "nameAr": {
-            "type": "string",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "nullable": true
-          },
-          "dayNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "sequenceOrder": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "latitude": {
-            "type": "number",
-            "format": "double"
-          },
-          "longitude": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TourPackageResponse": {
-        "type": "object",
-        "properties": {
-          "tourPackageId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nameEn": {
-            "type": "string",
-            "nullable": true
-          },
-          "nameAr": {
-            "type": "string",
-            "nullable": true
-          },
-          "descriptionEn": {
-            "type": "string",
-            "nullable": true
-          },
-          "descriptionAr": {
-            "type": "string",
-            "nullable": true
-          },
-          "governorate": {
-            "type": "string",
-            "nullable": true
-          },
-          "durationDays": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pricePerPersonEgp": {
-            "type": "number",
-            "format": "double"
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "avgRating": {
-            "type": "number",
-            "format": "float"
-          },
-          "locations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TourPackageLocationResponse"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "TourPackageResponsePagedResult": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TourPackageResponse"
-            },
-            "nullable": true
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32",
-            "readOnly": true
-          },
-          "hasNext": {
-            "type": "boolean",
-            "readOnly": true
-          },
-          "hasPrev": {
-            "type": "boolean",
-            "readOnly": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "TripDayResponse": {
-        "type": "object",
-        "properties": {
-          "dayNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "locations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TripLocationResponse"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "TripLocationResponse": {
-        "type": "object",
-        "properties": {
-          "locationId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nameEn": {
-            "type": "string",
-            "nullable": true
-          },
-          "nameAr": {
-            "type": "string",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "nullable": true
-          },
-          "timeSlot": {
-            "type": "string",
-            "nullable": true
-          },
-          "durationMinutes": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "latitude": {
-            "type": "number",
-            "format": "double"
-          },
-          "longitude": {
-            "type": "number",
-            "format": "double"
-          },
-          "isHiddenGem": {
-            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -2995,9 +3028,18 @@
             "type": "string",
             "format": "uuid"
           },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
           "destinationGovernorate": {
             "type": "string",
             "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
           },
           "startDate": {
             "type": "string",
@@ -3011,9 +3053,17 @@
             "type": "integer",
             "format": "int32"
           },
+          "people": {
+            "type": "integer",
+            "format": "int32"
+          },
           "totalBudgetEgp": {
-            "type": "number",
-            "format": "double"
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCost": {
+            "type": "integer",
+            "format": "int32"
           },
           "status": {
             "type": "string",
@@ -3026,14 +3076,36 @@
           "isPublic": {
             "type": "boolean"
           },
-          "budget": {
-            "$ref": "#/components/schemas/BudgetSummary"
+          "sessionId": {
+            "type": "string",
+            "nullable": true
           },
-          "days": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TripDayResponse"
-            },
+          "collectedJson": {
+            "type": "string",
+            "nullable": true
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "placesCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "progressPercent": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "plan": {
             "nullable": true
           }
         },
@@ -3065,14 +3137,86 @@
             "type": "integer",
             "format": "int32",
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TripReviewRequest": {
+        "required": [
+          "rating"
+        ],
+        "type": "object",
+        "properties": {
+          "rating": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           },
-          "hasNext": {
-            "type": "boolean",
-            "readOnly": true
+          "comment": {
+            "maxLength": 1000,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TripReviewResponse": {
+        "type": "object",
+        "properties": {
+          "tripReviewId": {
+            "type": "string",
+            "format": "uuid"
           },
-          "hasPrev": {
-            "type": "boolean",
-            "readOnly": true
+          "tripId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TripReviewWithUserResponse": {
+        "type": "object",
+        "properties": {
+          "tripReviewId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tripId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -3081,9 +3225,7 @@
         "enum": [
           0,
           1,
-          2,
-          3,
-          4
+          2
         ],
         "type": "integer",
         "format": "int32"
@@ -3109,23 +3251,9 @@
         "type": "object",
         "properties": {
           "password": {
-            "minLength": 1,
+            "maxLength": 128,
+            "minLength": 8,
             "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateActualSpentRequest": {
-        "required": [
-          "actualSpentEgp"
-        ],
-        "type": "object",
-        "properties": {
-          "actualSpentEgp": {
-            "maximum": 10000000,
-            "minimum": 0,
-            "type": "number",
-            "format": "double"
           }
         },
         "additionalProperties": false
@@ -3155,11 +3283,13 @@
           },
           "username": {
             "maxLength": 50,
+            "pattern": "^[a-zA-Z0-9_]{3,50}$",
             "type": "string",
             "nullable": true
           },
           "phoneNumber": {
             "maxLength": 20,
+            "pattern": "^\\+?[0-9]{8,15}$",
             "type": "string",
             "nullable": true
           },
@@ -3189,7 +3319,18 @@
       "UpdateTripRequest": {
         "type": "object",
         "properties": {
+          "title": {
+            "maxLength": 200,
+            "type": "string",
+            "nullable": true
+          },
           "destinationGovernorate": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "maxLength": 100,
             "type": "string",
             "nullable": true
           },
@@ -3203,11 +3344,36 @@
             "format": "date-time",
             "nullable": true
           },
-          "totalBudgetEgp": {
-            "maximum": 10000000,
+          "people": {
+            "maximum": 50,
             "minimum": 1,
-            "type": "number",
-            "format": "double",
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalBudgetEgp": {
+            "maximum": 100000000,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCost": {
+            "maximum": 100000000,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "plan": {
+            "nullable": true
+          },
+          "collected": {
+            "nullable": true
+          },
+          "sessionId": {
+            "maxLength": 100,
+            "type": "string",
             "nullable": true
           },
           "isPublic": {
