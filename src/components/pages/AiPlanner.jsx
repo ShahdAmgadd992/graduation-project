@@ -6,7 +6,7 @@ import searchIcon from "../../assets/icons/search.png";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { useAuth } from "../../context/useAuth";
-import ChatBot from "./ChatBot";
+import ChatBot from "./Chatbot";
 import TripResult from "./Tripresult";
 import "./AiPlanner.css";
 import aiService from "../../services/aiService";
