@@ -48,20 +48,24 @@ const userData = {
 };
 
 const interests = [
-  { label: "Nature & Oasis", emoji: "🌿", active: true },
-  { label: "Islamic Architecture & Arts", emoji: "🕌", active: false },
-  { label: "Mountains & Highs", emoji: "⛺", active: false },
-  { label: "Hidden Gems", emoji: "💎", active: true },
-  { label: "Historical Sites & Ruins", emoji: "🏛️", active: false },
-  { label: "Coastal Escapes", emoji: "🏖️", active: false },
-  { label: "Shopping & Nightlife", emoji: "🛍️", active: true },
-  { label: "Local Culture & Folklore", emoji: "🌐", active: false },
-  { label: "Diving & Marine Life", emoji: "🤿", active: false },
-  { label: "Family Friendly", emoji: "👨‍👩‍👧", active: true },
-  { label: "Relaxation & Wellness", emoji: "🧘", active: true },
-  { label: "Adventure & Sports", emoji: "🏋️", active: false },
-  { label: "Local Cuisine", emoji: "🍽️", active: true },
-  { label: "Desert Safari", emoji: "🐪", active: false },
+  { label: "Nature", emoji: "🌿", active: true },
+  { label: "History & Antiquities", emoji: "🏛️", active: false },
+  { label: "Outdoor", emoji: "⛺", active: false },
+  { label: "Tourism", emoji: "💎", active: true },
+  { label: "Beaches & Water", emoji: "🏖️", active: false },
+  { label: "Waterfront", emoji: "🌊", active: false },
+  { label: "Shopping", emoji: "🛍️", active: true },
+  { label: "Nightlife", emoji: "🌃", active: false },
+  { label: "Arts & Crafts", emoji: "🎨", active: false },
+  { label: "Mosques & Churches", emoji: "🕌", active: true },
+  { label: "Music", emoji: "🎵", active: false },
+  { label: "Entertainment", emoji: "🎭", active: false },
+  { label: "Restaurants", emoji: "🍽️", active: true },
+  { label: "Cafe", emoji: "☕", active: false },
+  { label: "Bakery", emoji: "🥐", active: false },
+  { label: "Street Food", emoji: "🌮", active: false },
+  { label: "Seafood", emoji: "🦞", active: false },
+  { label: "Park", emoji: "🌳", active: false },
 ];
 
 const reviews = [
@@ -588,6 +592,10 @@ const Profile = () => {
       setApiTrips((prev) =>
         prev.filter((t) => t.tripId !== deleteTripTarget.tripId),
       );
+      setDashboardData((prev) => ({
+        ...prev,
+        totalTrips: Math.max(0, (prev.totalTrips ?? 1) - 1),
+      }));
       showToast("Trip deleted.");
     } catch (err) {
       console.error("DELETE ERROR:", err.response?.status, err.response?.data);
@@ -719,15 +727,29 @@ const Profile = () => {
       ),
   );
 
-  const fmtDate = (iso) =>
-    iso
-      ? new Date(iso).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          timeZone: "UTC",
-        })
-      : "";
+  // ✅ FIX: Previously `new Date(iso)` was used before formatting with
+  // timeZone: "UTC". If the backend sends a date-only/zone-less string
+  // (e.g. "2026-07-20T00:00:00", no trailing "Z"), JS Date parses that as
+  // LOCAL time first, then formatting with timeZone:"UTC" reconverts it —
+  // shifting the displayed day back by one for any timezone ahead of UTC
+  // (e.g. Egypt, UTC+2/+3). We avoid that double-conversion entirely by
+  // extracting the Y-M-D digits straight from the string and building the
+  // date as UTC midnight, so no timezone math ever touches the calendar day.
+  const fmtDate = (iso) => {
+    if (!iso) return "";
+    const match = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return "";
+    const [, year, month, day] = match;
+    const utcDate = new Date(
+      Date.UTC(Number(year), Number(month) - 1, Number(day)),
+    );
+    return utcDate.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  };
 
   return (
     <>

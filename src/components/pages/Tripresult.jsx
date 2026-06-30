@@ -872,6 +872,47 @@ const TripResult = ({ tripPlan, user }) => {
   const [expandedDay, setExpandedDay] = useState(null);
   const [hotel, setHotel] = useState(tripPlan?.hotel ?? null);
 
+  // ✅ FIX: when this component is opened from "My Trips" (profile flow),
+  // the `tripPlan` prop is often just `{ tripId }` — destination, budget,
+  // governorate, people, title are NOT on it. Every place in this file that
+  // read `tripPlan.destination` / `tripPlan.budget` / `tripPlan.adults` /
+  // `tripPlan.title` directly was therefore silently working with
+  // `undefined`. That's what produced "undefined Trip" as the title,
+  // `totalBudgetEgp: 1` (the Math.max(1, undefined) fallback), no
+  // city/destinationGovernorate at all in the save payload → 400
+  // ValidationError, and `people: 1` always sent to the AI edit endpoint
+  // regardless of the trip's real party size.
+  // tripMeta is populated from the API response once the trip is fetched,
+  // and everything below now reads tripPlan.X ?? tripMeta.X instead of
+  // tripPlan.X alone.
+  const [tripMeta, setTripMeta] = useState({
+    title: tripPlan?.title ?? null,
+    destination: tripPlan?.destination ?? null,
+    governorate: tripPlan?.governorate ?? null,
+    budget: tripPlan?.budget ?? null,
+    totalBudgetEgp: tripPlan?.totalBudgetEgp ?? null,
+    adults: tripPlan?.adults ?? null,
+    children: tripPlan?.children ?? 0,
+    startDate: tripPlan?.startDate ?? null,
+    endDate: tripPlan?.endDate ?? null,
+  });
+  // Convenience getters — always prefer a value already present on the
+  // freshly-generated tripPlan prop, fall back to what we fetched from
+  // the API for trips loaded by tripId.
+  const destination = tripPlan?.destination ?? tripMeta.destination;
+  const governorate = tripPlan?.governorate ?? tripMeta.governorate;
+  const budget = tripPlan?.budget ?? tripMeta.budget;
+  const totalBudgetEgp =
+    tripPlan?.totalBudgetEgp ?? tripMeta.totalBudgetEgp ?? budget;
+  const adults = tripPlan?.adults ?? tripMeta.adults ?? 1;
+  const children = tripPlan?.children ?? tripMeta.children ?? 0;
+  const tripTitle =
+    tripPlan?.title ?? tripMeta.title ?? (destination ? `${destination} Trip` : "Trip");
+  // ✅ FIX: tripPlan.days is also missing for trips loaded by tripId — fall
+  // back to however many days dayDetails actually has once it's hydrated.
+ const tripDays = tripPlan?.days ?? (Object.keys(dayDetails).length || 1);
+  const tripNights = tripPlan?.nights ?? Math.max(0, tripDays - 1);
+
   // Checkbox state: { [day]: { [`${slotIdx}-${placeIdx}`]: boolean } }
   const [checkedPlaces, setCheckedPlaces] = useState({});
 
@@ -888,14 +929,116 @@ const TripResult = ({ tripPlan, user }) => {
   const [removingDay, setRemovingDay] = useState(null);
 
   // Save
-  const [isSaved, setIsSaved] = useState(false);
+  // ✅ FIX: a trip opened via tripId is already saved in the backend — this
+  // used to default to `false` always, so the page showed a "Save Trip"
+  // button (which calls createTrip) even for an existing trip, creating a
+  // DUPLICATE trip on every click instead of updating the one being edited.
+  const [isSaved, setIsSaved] = useState(!!tripPlan?.tripId);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [showSavedPopup, setShowSavedPopup] = useState(false);
 
+  // ✅ FIX: same zone-less-string class of bug as Profile.jsx's fmtDate —
+  // parse Y-M-D directly instead of letting `new Date(iso)` reinterpret a
+  // zone-less timestamp as local time first.
+  const fmtShortDate = (iso) => {
+    if (!iso) return null;
+    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return null;
+    const [, y, mo, d] = m;
+    const date = new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d)));
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    });
+  };
+
   // Chatbot — removed FAB, kept component available if needed elsewhere
   const [showChatbot, setShowChatbot] = useState(false);
   const [isLoadingTrip, setIsLoadingTrip] = useState(false);
+
+  // ✅ FIX: shared builder used by both the initial fetch, the
+  // "tripPlanUpdated" listener, and the AI-edit response handler so all
+  // three paths hydrate hotel / costs / hidden-gem / coordinates the exact
+  // same way instead of three slightly-different (and buggy) copies.
+  const buildPlanState = (rawPlan, days, destLabel) => {
+    const plan = rawPlan ?? {};
+    const builtDayDetails = {};
+    for (let d = 1; d <= days; d++) {
+      const dayData = plan[`day${d}`] ?? {};
+      builtDayDetails[d] = ["morning", "afternoon", "evening"].map((slot) => {
+        // Keep the FULL place objects (place_id, lat, lng, cost, price,
+        // is_hidden_gem, photo_url, etc.) in rawItems — this is what feeds
+        // both the place price/hidden-gem badges in the list AND the
+        // Mapbox markers (which read p.lat / p.lng straight off rawItems).
+        const items = (dayData[slot] ?? []).filter(Boolean);
+        const titles = items.map((p) => p?.name ?? p?.title ?? "").filter(Boolean);
+        return {
+          time: slot.charAt(0).toUpperCase() + slot.slice(1),
+          title: titles[0] ?? `${slot} activities`,
+          activities: titles.length ? titles : ["Explore the area"],
+          rawItems: items,
+        };
+      });
+    }
+
+    const builtItinerary = Array.from({ length: days }, (_, i) => {
+      const d = i + 1;
+      const dayData = plan[`day${d}`] ?? {};
+      const allPlaces = [
+        ...(dayData.morning ?? []),
+        ...(dayData.afternoon ?? []),
+        ...(dayData.evening ?? []),
+      ].filter(Boolean);
+      // ✅ FIX: per-day cost from each place's cost/price, not a flat 0
+      const dayCost = allPlaces.reduce(
+        (sum, p) => sum + (Number(p?.cost) || Number(p?.price) || 0),
+        0,
+      );
+      const dayImg =
+        allPlaces.find((p) => p?.photo_url)?.photo_url ??
+        allPlaces.find((p) => p?.image_urls?.[0])?.image_urls?.[0] ??
+        "";
+      const tagSet = new Set();
+      allPlaces.forEach((p) => {
+        if (p?.category) tagSet.add(p.category);
+        (p?.interests ?? []).forEach((t) => tagSet.add(t));
+      });
+      return {
+        day: d,
+        description: `Day ${d} in ${destLabel ?? ""}`,
+        img: dayImg,
+        cost: dayCost,
+        tags: [...tagSet].slice(0, 3),
+        stops: allPlaces.length || null,
+      };
+    });
+
+    // ✅ FIX: hotel/accommodation lives inside the saved `plan` object
+    // (plan.accommodation), NOT on a top-level `data.hotel` field — the
+    // backend's TripResponse schema has no such field, so reading
+    // `data.hotel` always returned undefined for trips loaded from the API.
+    const accommodationRaw = plan.accommodation ?? null;
+    const firstHotel = Array.isArray(accommodationRaw)
+      ? accommodationRaw[0]
+      : accommodationRaw;
+    const hotelState = firstHotel
+      ? {
+          name: firstHotel.name,
+          city: firstHotel.city ?? firstHotel.city_en,
+          address: firstHotel.address,
+          photoUrl: firstHotel.photo_url ?? firstHotel.photoUrl,
+          price: Number(firstHotel.cost ?? firstHotel.price ?? 0) || null,
+          rating: firstHotel.rating,
+          checkIn: firstHotel.checkIn ?? null,
+          checkOut: firstHotel.checkOut ?? null,
+          nights: days > 0 ? days - 1 : null,
+        }
+      : null;
+
+    return { builtItinerary, builtDayDetails, hotelState };
+  };
 
   useEffect(() => {
     if (tripPlan?.tripId && !tripPlan?.itinerary) {
@@ -907,55 +1050,49 @@ const TripResult = ({ tripPlan, user }) => {
         .then((res) => {
           const data = res.data;
           console.log("Trip API Response:", data);
-          if (data.hotel) {
-            setHotel(data.hotel);
-          }
           const plan = data.plan ?? {};
           const days = data.durationDays ?? Object.keys(plan).length;
-          const builtDayDetails = {};
-          for (let d = 1; d <= days; d++) {
-            const dayData = plan[`day${d}`] ?? {};
-            builtDayDetails[d] = ["morning", "afternoon", "evening"].map(
-              (slot) => ({
-                time: slot.charAt(0).toUpperCase() + slot.slice(1),
-                title: slot,
-                activities: (dayData[slot] ?? []).map((p) => p?.name ?? p),
-                rawItems: dayData[slot] ?? [],
-              }),
-            );
-          }
-          // ✅ FIX: cost وصورة وtags من الـ plan لكل يوم — مش صورة واحدة للكل و cost=0
-          const builtItinerary = Array.from({ length: days }, (_, i) => {
-            const d = i + 1;
-            const dayData = plan[`day${d}`] ?? {};
-            const allPlaces = [
-              ...(dayData.morning ?? []),
-              ...(dayData.afternoon ?? []),
-              ...(dayData.evening ?? []),
-            ];
-            const dayCost = allPlaces.reduce(
-              (sum, p) => sum + (Number(p?.cost) || Number(p?.price) || 0), 0,
-            );
-            const dayImg =
-              allPlaces.find((p) => p?.photo_url)?.photo_url ??
-              allPlaces.find((p) => p?.image_urls?.[0])?.image_urls?.[0] ??
-              data.coverImageUrl ?? "";
-            const tagSet = new Set();
-            allPlaces.forEach((p) => {
-              if (p?.category) tagSet.add(p.category);
-              (p?.interests ?? []).forEach((t) => tagSet.add(t));
-            });
-            return {
-              day: d,
-              description: `Day ${d} in ${data.destinationGovernorate ?? data.city ?? ""}`,
-              img: dayImg,
-              cost: dayCost,
-              tags: [...tagSet].slice(0, 3),
-              stops: allPlaces.length || null,
-            };
+          const destLabel = data.destinationGovernorate ?? data.city ?? "";
+
+          const { builtItinerary, builtDayDetails, hotelState } =
+            buildPlanState(plan, days, destLabel);
+
+          // Fall back to data.coverImageUrl for any day that has no place photo
+          builtItinerary.forEach((d) => {
+            if (!d.img) d.img = data.coverImageUrl ?? "";
           });
+
           setItinerary(builtItinerary);
           setDayDetails(builtDayDetails);
+          // ✅ FIX: hotel now hydrated from plan.accommodation (see
+          // buildPlanState) — `data.hotel` never existed on saved trips.
+          // We still honor a legacy top-level `data.hotel` if present so
+          // older cached responses keep working.
+          if (hotelState) {
+            setHotel({
+              ...hotelState,
+              checkIn: fmtShortDate(data.startDate) ?? hotelState.checkIn,
+              checkOut: fmtShortDate(data.endDate) ?? hotelState.checkOut,
+            });
+          } else if (data.hotel) {
+            setHotel(data.hotel);
+          }
+
+          // ✅ FIX: capture the real trip metadata — this is what
+          // handleSaveTrip / handleUpdateItinerary were missing for trips
+          // opened from the profile, causing "undefined Trip", a missing
+          // city/destinationGovernorate, and a wrong people count.
+          setTripMeta({
+            title: data.title ?? null,
+            destination: data.city ?? data.destinationGovernorate ?? null,
+            governorate: data.destinationGovernorate ?? null,
+            budget: data.totalBudgetEgp ?? null,
+            totalBudgetEgp: data.totalBudgetEgp ?? null,
+            adults: data.people ?? null,
+            children: 0,
+            startDate: data.startDate ?? null,
+            endDate: data.endDate ?? null,
+          });
         })
         .catch((err) => console.error("Failed to load trip:", err))
         .finally(() => setIsLoadingTrip(false));
@@ -979,50 +1116,37 @@ const TripResult = ({ tripPlan, user }) => {
           const data = res.data;
           const plan = data.plan ?? {};
           const days = data.durationDays ?? Object.keys(plan).length;
-          const builtDayDetails = {};
-          for (let d = 1; d <= days; d++) {
-            const dayData = plan[`day${d}`] ?? {};
-            builtDayDetails[d] = ["morning", "afternoon", "evening"].map(
-              (slot) => ({
-                time: slot.charAt(0).toUpperCase() + slot.slice(1),
-                title: slot,
-                activities: (dayData[slot] ?? []).map((p) => p?.name ?? p),
-                rawItems: dayData[slot] ?? [],
-              }),
-            );
-          }
-          const builtItinerary = Array.from({ length: days }, (_, i) => {
-            const d = i + 1;
-            const dayData = plan[`day${d}`] ?? {};
-            const allPlaces = [
-              ...(dayData.morning ?? []),
-              ...(dayData.afternoon ?? []),
-              ...(dayData.evening ?? []),
-            ];
-            const dayCost = allPlaces.reduce(
-              (sum, p) => sum + (Number(p?.cost) || Number(p?.price) || 0), 0,
-            );
-            const dayImg =
-              allPlaces.find((p) => p?.photo_url)?.photo_url ??
-              allPlaces.find((p) => p?.image_urls?.[0])?.image_urls?.[0] ??
-              data.coverImageUrl ?? "";
-            const tagSet = new Set();
-            allPlaces.forEach((p) => {
-              if (p?.category) tagSet.add(p.category);
-              (p?.interests ?? []).forEach((t) => tagSet.add(t));
-            });
-            return {
-              day: d,
-              description: `Day ${d} in ${data.destinationGovernorate ?? data.city ?? ""}`,
-              img: dayImg,
-              cost: dayCost,
-              tags: [...tagSet].slice(0, 3),
-              stops: allPlaces.length || null,
-            };
+          const destLabel = data.destinationGovernorate ?? data.city ?? "";
+
+          const { builtItinerary, builtDayDetails, hotelState } =
+            buildPlanState(plan, days, destLabel);
+
+          builtItinerary.forEach((d) => {
+            if (!d.img) d.img = data.coverImageUrl ?? "";
           });
+
           setItinerary(builtItinerary);
           setDayDetails(builtDayDetails);
-          if (data.hotel) setHotel(data.hotel);
+          if (hotelState) {
+            setHotel({
+              ...hotelState,
+              checkIn: fmtShortDate(data.startDate) ?? hotelState.checkIn,
+              checkOut: fmtShortDate(data.endDate) ?? hotelState.checkOut,
+            });
+          } else if (data.hotel) {
+            setHotel(data.hotel);
+          }
+          setTripMeta({
+            title: data.title ?? null,
+            destination: data.city ?? data.destinationGovernorate ?? null,
+            governorate: data.destinationGovernorate ?? null,
+            budget: data.totalBudgetEgp ?? null,
+            totalBudgetEgp: data.totalBudgetEgp ?? null,
+            adults: data.people ?? null,
+            children: 0,
+            startDate: data.startDate ?? null,
+            endDate: data.endDate ?? null,
+          });
         })
         .catch((err) => console.error("[TripResult] re-fetch failed:", err));
     };
@@ -1111,19 +1235,30 @@ const TripResult = ({ tripPlan, user }) => {
     setIsEditLoading(true);
     setEditError("");
     try {
-      const existingPlanFlat = Object.values(dayDetails)
-        .flat()
-        .flatMap((slot) => (slot.rawItems ?? []).filter(Boolean));
+      // ✅ FIX: each item now carries its real `day` number. Before, items
+      // were flattened straight off `dayDetails` (an object keyed by day),
+      // so that key was lost and the backend had no reliable way to match
+      // "remove this place" to a specific day — it would look for the item
+      // under the wrong day, find nothing, and report it as "already
+      // removed". Tagging `day` here is what the matching logic needs.
+      const existingPlanFlat = Object.entries(dayDetails).flatMap(
+        ([day, slots]) =>
+          slots.flatMap((slot) =>
+            (slot.rawItems ?? [])
+              .filter(Boolean)
+              .map((item) => ({ ...item, day: Number(day) })),
+          ),
+      );
       const newUserTurn = { role: "user", content: editText };
       const conversationWindow = [...editConversation, newUserTurn].slice(-8);
 
       const response = await callEdit({
         targetChange: editText,
-        destination: tripPlan.destination,
-        days: tripPlan.days,
-        budget: tripPlan.budget,
-        people: Math.max(1, (tripPlan.adults ?? 1) + (tripPlan.children ?? 0)),
-        interests: tripPlan.requestPayload?.interests ?? [],
+        destination: destination,
+        days: tripDays,
+        budget: budget,
+        people: Math.max(1, adults + children),
+        interests: tripPlan?.requestPayload?.interests ?? [],
         existingPlan: existingPlanFlat,
         places: [],
         conversation: conversationWindow,
@@ -1139,38 +1274,76 @@ const TripResult = ({ tripPlan, user }) => {
         ].slice(-8),
       );
 
-      if (mode === "surgical" || mode === "add") {
-        const updatedRaw = data.plan;
+      // ✅ FIX: "surgical", "add" AND "replan" all return a full updated
+      // plan — previously only "surgical"/"add" applied it, while "replan"
+      // (the mode the bot uses for a "replace X with Y" request) just
+      // closed the modal without touching state, which looked exactly like
+      // an empty/no-op response to the user.
+      if (mode === "surgical" || mode === "add" || mode === "replan") {
+        // The backend may key the updated plan as `data.plan`,
+        // `data.updatedPlan`, or `data.newPlan` depending on the route —
+        // accept any of them instead of assuming a single shape.
+        const updatedRaw = data.plan ?? data.updatedPlan ?? data.newPlan;
         if (updatedRaw) {
-          const newDayDetails = { ...dayDetails };
-          for (let d = 1; d <= tripPlan.days; d++) {
-            const dayData = updatedRaw[`day${d}`];
-            if (!dayData) continue;
-            newDayDetails[d] = ["morning", "afternoon", "evening"].map(
-              (slot) => {
-                const items = dayData[slot] ?? [];
-                const titles = items
-                  .map((p) => p?.name ?? p?.title ?? "")
-                  .filter(Boolean);
-                return {
-                  time: slot.charAt(0).toUpperCase() + slot.slice(1),
-                  title: titles[0] ?? `${slot} activities`,
-                  activities: titles.length ? titles : ["Explore the area"],
-                  rawItems: items,
-                };
-              },
-            );
-          }
-          setDayDetails(newDayDetails);
+          const { builtItinerary, builtDayDetails } = buildPlanState(
+            updatedRaw,
+            tripDays,
+            destination,
+          );
+          // Preserve images already shown if the new plan response has none
+          builtItinerary.forEach((d, i) => {
+            if (!d.img) d.img = itinerary[i]?.img ?? "";
+          });
+          setDayDetails(builtDayDetails);
+          setItinerary(builtItinerary);
+          setShowEditModal(false);
+          setEditText("");
+          // ✅ FIX: actually write the edit back to the backend (see
+          // persistTripChanges above) — previously nothing called the API
+          // here at all, so a refresh/profile reopen reverted the edit.
+          await persistTripChanges(builtDayDetails, hotel, builtItinerary);
+        } else {
+          setEditError(data?.message ?? "No changes were made.");
         }
-        setShowEditModal(false);
-        setEditText("");
       } else if (mode === "remove") {
+        // ✅ FIX: previously this branch never touched dayDetails/itinerary
+        // at all — it just told the user the place was removed, while the
+        // place was still sitting in state (and in the backend). Now we
+        // actually filter it out locally AND persist that removal.
+        const removed = data?.removed_item;
+        if (removed) {
+          const removedDay = Number(removed.day ?? editingDay);
+          const newDayDetails = { ...dayDetails };
+          const slots = newDayDetails[removedDay];
+          if (slots) {
+            newDayDetails[removedDay] = slots.map((slot) => ({
+              ...slot,
+              rawItems: (slot.rawItems ?? []).filter((p) => {
+                if (removed.place_id && p?.place_id) {
+                  return p.place_id !== removed.place_id;
+                }
+                return (p?.name ?? "") !== (removed.name ?? "");
+              }),
+            }));
+          }
+          const removedCost = Number(removed.cost ?? removed.price ?? 0) || 0;
+          const newItinerary = itinerary.map((item) => {
+            if (item.day !== removedDay) return item;
+            return {
+              ...item,
+              cost: Math.max(0, (item.cost ?? 0) - removedCost),
+              stops:
+                item.stops != null ? Math.max(0, item.stops - 1) : item.stops,
+            };
+          });
+
+          setDayDetails(newDayDetails);
+          setItinerary(newItinerary);
+          await persistTripChanges(newDayDetails, hotel, newItinerary);
+        }
         setEditError(
-          `"${data?.removed_item?.name ?? "the item"}" was removed. Please describe a replacement.`,
+          `"${removed?.name ?? "The item"}" was removed. Describe a replacement, or close this dialog if you're done.`,
         );
-      } else if (mode === "replan") {
-        setShowEditModal(false);
       } else {
         setEditError(data?.message ?? "No changes were made.");
       }
@@ -1186,56 +1359,151 @@ const TripResult = ({ tripPlan, user }) => {
   };
 
   // ── save trip → POST /api/v1/trips ────────────────────────────────────────
+  // ✅ FIX: shared by the manual "Save Trip" button AND by the AI-edit
+  // auto-persist below, so both write the exact same shape to the backend.
+  const buildPlanPayload = (daysObj, hotelObj) => {
+    const sortedDays = Object.keys(daysObj)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const planPayload = {};
+    sortedDays.forEach((dayNum, index) => {
+      const newKey = `day${index + 1}`;
+      planPayload[newKey] = {};
+      daysObj[dayNum].forEach((slot) => {
+        planPayload[newKey][slot.time.toLowerCase()] = slot.rawItems ?? [];
+      });
+    });
+    planPayload.accommodation = hotelObj
+      ? [
+          {
+            name: hotelObj.name,
+            city: hotelObj.city,
+            city_en: hotelObj.city,
+            address: hotelObj.address,
+            photo_url: hotelObj.photoUrl,
+            cost: hotelObj.price,
+            price: hotelObj.price,
+            rating: hotelObj.rating,
+            checkIn: hotelObj.checkIn,
+            checkOut: hotelObj.checkOut,
+          },
+        ]
+      : (tripPlan?.accommodation ?? []);
+    return { planPayload, actualDays: sortedDays.length };
+  };
+
+  // ✅ FIX: Use date-only strings (YYYY-MM-DD) to avoid UTC timezone shift.
+  // Sending a full ISO string causes the backend to subtract hours for Egypt (UTC+3)
+  // and ends up saving the day before. A plain date string has no timezone ambiguity.
+  const toDateStr = (iso) => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    const year = d.getUTCFullYear();
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // ✅ FIX: silently persist AI-edit changes (remove / surgical / add /
+  // replan) straight to the backend for trips that already exist. Before,
+  // an edit only ever touched local React state — it looked applied in the
+  // UI, but the database record was never updated, so a refresh (or
+  // re-opening the trip from the profile) brought back the old plan. Only
+  // fires for trips that have a tripId; the fresh "generate plan" flow
+  // (no tripId yet) is untouched and still uses the explicit Save button.
+  const persistTripChanges = async (daysObj, hotelObj, itineraryObj) => {
+    if (!tripPlan?.tripId) return;
+    try {
+      const { planPayload, actualDays } = buildPlanPayload(daysObj, hotelObj);
+      const computedTotalCost =
+        itineraryObj.reduce((sum, item) => sum + (item.cost ?? 0), 0) +
+        (hotelObj?.price ?? 0);
+      // ✅ FIX: totalBudgetEgp must never be lower than totalCost or the
+      // backend rejects the request — if we don't know the original budget
+      // (trip loaded with incomplete metadata), default it to the cost.
+      const resolvedBudget = Math.max(
+        totalBudgetEgp ?? 0,
+        computedTotalCost,
+        1,
+      );
+      await tripService.updateTripPlan(tripPlan.tripId, {
+        title: tripTitle,
+        destinationGovernorate: governorate ?? destination,
+        city: destination,
+        durationDays: actualDays,
+        totalBudgetEgp: resolvedBudget,
+        totalCost: computedTotalCost,
+        plan: planPayload,
+      });
+    } catch (err) {
+      console.error("[TripResult] failed to persist AI edit:", err);
+      setEditError(
+        "Changes were applied here, but failed to save to your account. Try Save Trip manually.",
+      );
+    }
+  };
+
   const handleSaveTrip = async () => {
     setIsSaving(true);
     setSaveError("");
     try {
-      // ✅ رتبي الأيام وأعيدي ترقيمها بدون gaps
-      const sortedDays = Object.keys(dayDetails)
-        .map(Number)
-        .sort((a, b) => a - b);
-      const actualDays = sortedDays.length;
+      const { planPayload, actualDays } = buildPlanPayload(dayDetails, hotel);
 
-      const planPayload = {};
-      sortedDays.forEach((dayNum, index) => {
-        const newKey = `day${index + 1}`;
-        planPayload[newKey] = {};
-        dayDetails[dayNum].forEach((slot) => {
-          planPayload[newKey][slot.time.toLowerCase()] = slot.rawItems ?? [];
-        });
-      });
-
-      const startDate = tripPlan.startDate
-        ? new Date(tripPlan.startDate).toISOString()
-        : new Date().toISOString();
-
-      // ✅ FIX: endDate = startDate + (actualDays - 1) days
-      // e.g. 3-day trip starting Jul 16 → ends Jul 18 (not Jul 19)
-      const endDate = new Date(
-        new Date(startDate).getTime() + (actualDays - 1) * 86400000,
-      ).toISOString();
-      console.log(
-        "itinerary imgs:",
-        itinerary.map((d) => d.img),
+      const startDateRaw = tripPlan?.startDate ?? tripMeta.startDate;
+      const startDateStr =
+        toDateStr(startDateRaw) ?? toDateStr(new Date().toISOString());
+      const startMs = new Date(startDateStr + "T00:00:00Z").getTime();
+      const endDateStr = toDateStr(
+        new Date(startMs + (actualDays - 1) * 86400000).toISOString(),
       );
-      const res = await tripService.createTrip({
-        title: tripPlan.title ?? `${tripPlan.destination} Trip`,
-        destinationGovernorate: tripPlan.governorate ?? tripPlan.destination,
-        city: tripPlan.destination,
+
+      const startDate = startDateStr;
+      const endDate = endDateStr;
+
+      const computedTotalCost =
+        itinerary.reduce((sum, item) => sum + (item.cost ?? 0), 0) +
+        (hotel?.price ?? 0);
+      // ✅ FIX: previously `Math.max(1, tripPlan.budget ?? 1)` — for trips
+      // loaded by tripId, tripPlan.budget is undefined, so this always sent
+      // totalBudgetEgp: 1, which is smaller than almost any real totalCost
+      // and triggered "TotalCost cannot be greater than TotalBudgetEgp."
+      const resolvedBudget = Math.max(
+        totalBudgetEgp ?? 0,
+        computedTotalCost,
+        1,
+      );
+
+      const payload = {
+        title: tripTitle,
+        // ✅ FIX: previously always tripPlan.governorate/tripPlan.destination,
+        // both undefined for trips opened from the profile → backend
+        // rejected with "DestinationGovernorate or City is required."
+        destinationGovernorate: governorate ?? destination,
+        city: destination,
         startDate,
         endDate,
         durationDays: actualDays,
         coverImageUrl: itinerary[0]?.img ?? "",
-        people: Math.max(1, (tripPlan.adults ?? 1) + (tripPlan.children ?? 0)),
-        totalBudgetEgp: Math.max(1, tripPlan.budget ?? 1),
-        budget: tripPlan.budget ?? 0,
-        totalCost: itinerary.reduce((sum, item) => sum + (item.cost ?? 0), 0),
+        people: Math.max(1, adults + children),
+        totalBudgetEgp: resolvedBudget,
+        budget: budget ?? resolvedBudget,
+        totalCost: computedTotalCost,
         plan: planPayload,
         isPublic: false,
-        status: 0,
-      });
+      };
 
-      const newTripId = res.data?.tripId ?? res.data?.id;
+      let newTripId = tripPlan?.tripId;
+      if (tripPlan?.tripId) {
+        // ✅ FIX: trip already exists — update it in place instead of
+        // calling createTrip again, which used to silently create a
+        // duplicate trip (or 400 out) every time "Save" was pressed on an
+        // already-saved trip.
+        await tripService.updateTripPlan(tripPlan.tripId, payload);
+      } else {
+        const res = await tripService.createTrip({ ...payload, status: 0 });
+        newTripId = res.data?.tripId ?? res.data?.id;
+      }
+
       if (newTripId) {
         localStorage.setItem(
           `tripPlan_${newTripId}`,
@@ -1254,6 +1522,12 @@ const TripResult = ({ tripPlan, user }) => {
       setIsSaving(false);
     }
   };
+  // ✅ FIX: grand total displayed in the header, recalculated live from
+  // current itinerary day costs + hotel price (so checkbox/edit/remove-day
+  // actions keep it accurate, not a stale value frozen at load time).
+  const grandTotal =
+    itinerary.reduce((sum, item) => sum + (item.cost ?? 0), 0) +
+    (hotel?.price ?? 0);
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="aip-page">
@@ -1267,15 +1541,16 @@ const TripResult = ({ tripPlan, user }) => {
       <div className="aip-result-header">
         <h1 className="aip-result-title">
           <span className="aip-result-dest">Your</span>{" "}
-          <span className="aip-result-dest-name">{tripPlan.destination}</span>{" "}
+          <span className="aip-result-dest-name">{destination}</span>{" "}
           <span className="aip-result-dest">Getaway</span>
         </h1>
         <p className="aip-result-meta">
-          {tripPlan.days} Days, {tripPlan.nights} Nights &nbsp;|&nbsp;
-          {tripPlan.adults} Adults
-          {tripPlan.children > 0 ? `, ${tripPlan.children} Kid` : ""}
-          {tripPlan.pets > 0 ? `, ${tripPlan.pets} Pet` : ""}
-          &nbsp;|&nbsp; Est. {tripPlan.budget} EGP / person
+          {tripDays} Days, {tripNights} Nights &nbsp;|&nbsp;
+          {adults} Adults
+          {children > 0 ? `, ${children} Kid` : ""}
+          {tripPlan?.pets > 0 ? `, ${tripPlan.pets} Pet` : ""}
+          &nbsp;|&nbsp; Est. {budget ?? "—"} EGP / person
+          &nbsp;|&nbsp; Total: {grandTotal.toLocaleString()} EGP
         </p>
       </div>
 

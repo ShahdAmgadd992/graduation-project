@@ -21,6 +21,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { useHomePlaces }    from "../../services/useHomePlaces";
 import { useAddToTrip, calcBudget } from "../../services/useAddToTrip";
 import { usePlaceReviews }  from "../../services/usePlaceReviews";
+import userService          from "../../services/userService";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const FOOD_CATEGORIES = ["restaurant", "cafe", "food", "dining", "eatery"];
@@ -210,6 +211,14 @@ const TripDetails = ({ place }) => {
   const mapContainerRef = useRef(null);
   const mapRef          = useRef(null);
 
+  // ── User interests (fetched from profile for createTripWithPlan) ──────────
+  const [userInterests, setUserInterests] = useState([]);
+  useEffect(() => {
+    userService.getMyProfile()
+      .then((res) => setUserInterests(res.data?.interests ?? []))
+      .catch(() => {});
+  }, []);
+
   // ── Custom hooks ──────────────────────────────────────────────────────────
   const {
     trips, tripsLoading, actionLoading,
@@ -357,7 +366,7 @@ const TripDetails = ({ place }) => {
     }, 400);
 
     try {
-      const result = await createTripWithPlan({ startDate, endDate, budgetTier, people: numPeople });
+      const result = await createTripWithPlan({ startDate, endDate, budgetTier, people: numPeople, interests: userInterests });
       clearInterval(interval);
       setLoadingProgress(100);
       await new Promise((r) => setTimeout(r, 500));

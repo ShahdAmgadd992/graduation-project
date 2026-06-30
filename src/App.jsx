@@ -10,7 +10,7 @@ import Explore from "./components/pages/Explore";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./components/pages/Profile";
 import AiPlanner from "./components/pages/AiPlanner";
-import Landing from "./components/pages/Landing";
+import Landing from "./components/pages/landing";
 import CalendarPage from "./components/pages/Calendar";
 import AboutUs from "./components/pages/AboutUs.jsx";
 import Interests from "./components/pages/Interests";
