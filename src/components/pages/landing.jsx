@@ -1,6 +1,6 @@
 import landingImg from "../../assets/general/landing.jpg";
 import logoImg from "../../assets/general/logo.png";
-import "./Landing.css";
+import "./landing.css";
 
 const Landing = ({ onNavigate }) => {
   const goTo = (path, page) => {
