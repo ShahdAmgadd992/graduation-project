@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./Home.css";
-import SignUpModal from "../auth/SignUpModal";
+import SignUpModal from "../auth/Signupmodal";
 import bgImage from "../../assets/general/egypt-bg.png";
 import bgImage2 from "../../assets/general/egypt2.jpg";
 import dahab from "../../assets/cities/dahab.jpg";
